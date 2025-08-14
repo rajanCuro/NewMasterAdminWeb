@@ -74,7 +74,7 @@ const AgentList = () => {
             <input
               type="search"
               placeholder="Search by name or ID..."
-              className="w-full bg-gray-700 text-white rounded-lg px-4 py-2 pl-10 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full  rounded-lg px-4 py-2 pl-10 focus:outline-none focus:ring-2 focus:ring-blue-500"
               name="searchTerm"
               // value={filters.searchTerm}
               // onChange={handleFilterChange}
@@ -95,9 +95,9 @@ const AgentList = () => {
         </div>
       </div>
 
-      <div className="bg-gray-800 shadow-md rounded-lg overflow-hidden">
+      <div className=" shadow-md rounded-lg overflow-hidden">
         <table className="min-w-full divide-y divide-gray-700">
-          <thead className="bg-gray-800">
+          <thead className="bg-gray-300">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">ID</th>
               <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Name</th>
@@ -106,23 +106,23 @@ const AgentList = () => {
               <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
-          <tbody className="bg-gray-800 divide-y divide-gray-700">
+          <tbody className=" divide-y divide-gray-300">
             {agents.map((agent) => (
-              <tr key={agent.id} className="hover:bg-gray-700">
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{agent.id}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-300">{agent.name}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{agent.email}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{agent.phone}</td>
+              <tr key={agent.id} className="hover:bg-gray-300 hover:cursor-pointer">
+                <td className="px-6 py-4 whitespace-nowrap text-sm ">{agent.id}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium ">{agent.name}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm ">{agent.email}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm ">{agent.phone}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <button
                     onClick={() => handleEdit(agent.id)}
-                    className="text-indigo-400 hover:text-indigo-300 mr-3 cursor-pointer"
+                    className="text-indigo-600 hover:text-indigo-800 mr-3 hover:rounded-full hover:bg-indigo-300 p-2 cursor-pointer"
                   >
                     <FiEdit />
                   </button>
                   <button
                     onClick={() => handleDelete(agent.id)}
-                    className="text-red-400 hover:text-red-300 cursor-pointer"
+                    className="text-red-600 hover:text-red-800 hover:rounded-full hover:bg-red-200 p-2 cursor-pointer"
                   >
                     <RiDeleteBin6Line />
                   </button>
