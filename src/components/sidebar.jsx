@@ -9,15 +9,13 @@ import {
   FiSettings,
   FiChevronLeft,
   FiChevronRight,
-  FiMenu
+  FiMenu,
 } from 'react-icons/fi';
 
-const Sidebar = () => {
-  const [collapsed, setCollapsed] = useState(false);
+const Sidebar = ({ collapsed, toggleSidebar }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
 
-  const toggleSidebar = () => setCollapsed(!collapsed);
   const toggleMobileSidebar = () => setMobileOpen(!mobileOpen);
 
   const menuItems = [
@@ -32,15 +30,23 @@ const Sidebar = () => {
   return (
     <>
       {/* Mobile menu button */}
-      <button onClick={toggleMobileSidebar} className="md:hidden fixed top-4 left-4 z-50 p-2 rounded-md sidebar_bg">
+      <button
+        onClick={toggleMobileSidebar}
+        className="md:hidden fixed top-4 left-4 z-50 p-2 rounded-md sidebar_bg"
+      >
         <FiMenu className="text-xl" />
       </button>
 
       {/* Sidebar */}
-      <div className={`fixed top-0 left-0 h-screen sidebar_bg transition-all duration-300 ease-in-out ${collapsed ? 'w-20' : 'w-64'} ${mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'} z-40`}>
+      <div
+        className={`fixed top-0 left-0 h-screen sidebar_bg transition-all duration-300 ease-in-out ${collapsed ? 'w-20' : 'w-64'
+          } ${mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'} z-40`}
+      >
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className={`flex items-center ${collapsed ? 'justify-center' : 'justify-between'} p-4 border-b border-gray-700`}>
+          <div
+            className={`flex items-center ${collapsed ? 'justify-center' : 'justify-between'} p-4 border-b border-gray-700`}
+          >
             {!collapsed && <h1 className="text-xl font-bold">Admin Panel</h1>}
             <button onClick={toggleSidebar} className="p-1 rounded-full hover:bg-gray-700">
               {collapsed ? <FiChevronRight /> : <FiChevronLeft />}
@@ -54,7 +60,8 @@ const Sidebar = () => {
                 <li key={index}>
                   <Link
                     to={item.path}
-                    className={`flex items-center p-3 rounded-lg transition-colors ${location.pathname === item.path ? 'bg-gray-700' : 'hover:bg-gray-700'} ${collapsed ? 'justify-center' : ''}`}
+                    className={`flex items-center p-3 rounded-lg transition-colors ${location.pathname === item.path ? 'bg-gray-700' : 'hover:bg-gray-700'
+                      } ${collapsed ? 'justify-center' : ''}`}
                   >
                     <span className="flex-shrink-0">{item.icon}</span>
                     {!collapsed && <span className="ml-3">{item.label}</span>}
@@ -65,7 +72,9 @@ const Sidebar = () => {
           </nav>
 
           {/* Profile */}
-          <div className={`p-4 border-t border-gray-700 ${collapsed ? 'text-center' : 'flex items-center'}`}>
+          <div
+            className={`p-4 border-t border-gray-700 ${collapsed ? 'text-center' : 'flex items-center'}`}
+          >
             <div className="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center">
               <span>U</span>
             </div>
@@ -80,7 +89,12 @@ const Sidebar = () => {
       </div>
 
       {/* Overlay for mobile */}
-      {mobileOpen && <div onClick={toggleMobileSidebar} className="md:hidden fixed inset-0 bg-black bg-opacity-50 z-30"></div>}
+      {mobileOpen && (
+        <div
+          onClick={toggleMobileSidebar}
+          className="md:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
+        ></div>
+      )}
     </>
   );
 };
