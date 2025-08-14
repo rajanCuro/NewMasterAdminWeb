@@ -4,7 +4,7 @@ import Login from './auth/Login'
 
 function App() {
   return (
-    <div>
+    <div className=''>
       {/* <Sidebar /> */}
       <Login/>
     </div>
