@@ -120,8 +120,8 @@ const Sidebar = ({ collapsed, toggleSidebar }) => {
 
             {/* Logout Confirmation Modal */}
             {showLogoutModal && (
-                <div className="fixed inset-0 backdrop-blur-xl flex items-center justify-center z-50">
-                    <div className="text-white bg-gray-800 rounded-lg p-6 max-w-sm w-full">
+                <div className="fixed inset-0 backdrop-brightness-50 flex items-center justify-center z-80">
+                    <div className="bg-white rounded-lg p-6 max-w-sm w-full">
                         <h3 className="text-lg font-medium mb-4">Confirm Logout</h3>
                         <p className="mb-6">Are you sure you want to logout?</p>
                         <div className="flex justify-end space-x-3">
@@ -133,7 +133,7 @@ const Sidebar = ({ collapsed, toggleSidebar }) => {
                             </button>
                             <button
                                 onClick={confirmLogout}
-                                className="px-4 cursor-pointer py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
+                                className="px-4 cursor-pointer py-2 bg-red-500 rounded-md hover:bg-red-600 transition-colors"
                             >
                                 Logout
                             </button>
