@@ -1,12 +1,89 @@
 @import "tailwindcss";
 
-.email_input {
-    border: 1px solid black;
-    position: fixed;  /* or 'absolute' depending on your needs */
-    top: 20px;        /* adjust as needed */
-    left: 20px;       /* adjust as needed */
-    background: white; /* to ensure readability */
-    z-index: 1000;    /* to ensure it stays on top */
-    padding: 8px;     /* for better appearance */
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2); /* optional shadow for floating effect */
+.body {
+  background-color: #ECFAE5;
+}
+
+.float-container {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+
+.float-input {
+    width: 100%;
+    padding: 1rem;
+    font-size: 0.9375rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.5rem;
+    background-color: #f8fafc;
+    transition: all 0.2s ease;
+}
+
+.float-input:focus {
+    border-color: #3b82f6;
+    background-color: white;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    outline: none;
+}
+
+.float-label {
+    position: absolute;
+    left: 1rem;
+    top: 1rem;
+    color: #64748b;
+    font-size: 0.9375rem;
+    pointer-events: none;
+    transition: all 0.2s ease;
+    background-color: transparent;
+}
+
+.float-input:focus + .float-label,
+.float-input:not(:placeholder-shown) + .float-label {
+    top: -0.5rem;
+    left: 0.8rem;
+    font-size: 0.75rem;
+    background-color: white;
+    padding: 0 0.25rem;
+    color: #3b82f6;
+}
+
+/* Submit Button */
+.submit-btn {
+    padding: 0.875rem 1rem;
+    background-color: #3b82f6;
+    color: white;
+    font-weight: 500;
+    border-radius: 0.5rem;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.submit-btn:hover {
+    background-color: #2563eb;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Animation for the left side */
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .min-h-screen {
+        flex-direction: column;
+    }
+    .w-full.md\:w-1\/2 {
+    width: 100%;
+    height: auto;
+}
+
 }
