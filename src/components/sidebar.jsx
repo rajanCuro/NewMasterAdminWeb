@@ -23,7 +23,7 @@ const Sidebar = () => {
   const menuItems = [
     { icon: <FiHome className="text-lg" />, label: 'Dashboard', path: '/dashboard' },
     { icon: <FiFileText className="text-lg" />, label: 'Report', path: '/report' },
-    { icon: <FiUsers className="text-lg" />, label: 'Zonal Head', path: '/zonal-head' },
+    { icon: <FiUsers className="text-lg" />, label: 'Zonal Head', path: '/zonal' },
     { icon: <FiUser className="text-lg" />, label: 'Agent', path: '/agent' },
     { icon: <FiUserCheck className="text-lg" />, label: 'Circle Officer', path: '/circle-officer' },
     { icon: <FiSettings className="text-lg" />, label: 'Settings', path: '/settings' },
@@ -32,12 +32,12 @@ const Sidebar = () => {
   return (
     <>
       {/* Mobile menu button */}
-      <button onClick={toggleMobileSidebar} className="md:hidden fixed top-4 left-4 z-50 p-2 rounded-md bg-gray-800 text-white">
+      <button onClick={toggleMobileSidebar} className="md:hidden fixed top-4 left-4 z-50 p-2 rounded-md sidebar_bg">
         <FiMenu className="text-xl" />
       </button>
 
       {/* Sidebar */}
-      <div className={`fixed top-0 left-0 h-screen bg-gray-800 text-white transition-all duration-300 ease-in-out ${collapsed ? 'w-20' : 'w-64'} ${mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'} z-40`}>
+      <div className={`fixed top-0 left-0 h-screen sidebar_bg transition-all duration-300 ease-in-out ${collapsed ? 'w-20' : 'w-64'} ${mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'} z-40`}>
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className={`flex items-center ${collapsed ? 'justify-center' : 'justify-between'} p-4 border-b border-gray-700`}>
