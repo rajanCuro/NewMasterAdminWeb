@@ -19,7 +19,7 @@ function App() {
 
         {/* Main content area with dynamic margin */}
         <main
-          className={`flex-1 transition-all duration-300 ease-in-out ${isLoggedIn ? (collapsed ? 'md:ml-20' : 'md:ml-64') : ''
+          className={`flex-1 transition-all duration-300 ease-in-out  ${isLoggedIn ? (collapsed ? 'md:ml-20' : 'md:ml-64') : ''
             } ${isLoggedIn ? 'ml-0' : ''}`}
         >
           <Routes>
@@ -37,7 +37,7 @@ function App() {
             />
             <Route path="/settings" element={isLoggedIn ? <h1 className="p-4">Settings Page</h1> : <Navigate to="/" />} />
           </Routes>
-        </main>
+        </main> 
       </div>
     </Router>
   );
