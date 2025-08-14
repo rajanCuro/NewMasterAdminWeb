@@ -108,17 +108,17 @@ function CircleOfficerList() {
 
   return (
     <div className="min-h-screen main_bg">
-      <div className="mw-full mx-auto px-4">
+      <div className="mw-full mx-auto px-4 ">
         {/* Header with Search */}
         <div className='flex flex-col md:flex-row justify-between items-center py-4 gap-4 sticky top-0 z-50 main_bg'>
-          <h1 className="text-sm md:text-xl font-bold text-white">Circle Officers Dashboard</h1>
+          <h1 className="text-sm md:text-xl font-bold ">Circle Officers Dashboard</h1>
 
           <div className="flex flex-col md:flex-row w-full md:w-auto gap-4">
             <div className="relative flex-grow max-w-md">
               <input
                 type="search"
                 placeholder="Search by name or ID..."
-                className="w-full bg-gray-700 text-white rounded-lg px-4 py-2 pl-10 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-gray-300  rounded-lg px-4 py-2 pl-10 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 name="searchTerm"
                 value={filters.searchTerm}
                 onChange={handleFilterChange}
@@ -137,15 +137,15 @@ function CircleOfficerList() {
         </div>
 
         {/* Filter Controls */}
-        <div className="flex flex-wrap items-center gap-4 my-4 p-4 bg-gray-800 rounded-lg">
+        <div className="flex flex-wrap items-center gap-4 my-4 p-4 bg-gray-300 rounded-lg">
           <div className="flex items-center gap-2">
-            <label htmlFor="statusFilter" className="text-sm text-gray-300">Status:</label>
+            <label htmlFor="statusFilter" className="text-sm ">Status:</label>
             <select
               id="statusFilter"
               name="statusFilter"
               value={filters.statusFilter}
               onChange={handleFilterChange}
-              className="bg-gray-700 text-white rounded px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="bg-gray-300  rounded px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="all">All Status</option>
               <option value="Pending">Pending</option>
@@ -155,46 +155,46 @@ function CircleOfficerList() {
           </div>
 
           <div className="flex items-center gap-2">
-            <label htmlFor="dateFilter" className="text-sm text-gray-300">Created Date:</label>
+            <label htmlFor="dateFilter" className="text-sm ">Created Date:</label>
             <input
               type="date"
               id="dateFilter"
               name="dateFilter"
               value={filters.dateFilter}
               onChange={handleFilterChange}
-              className="bg-gray-700 text-white rounded px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="bg-gray-300  rounded px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           <button
             onClick={resetFilters}
-            className="text-sm bg-gray-600 hover:bg-gray-500 text-white px-3 py-1 rounded transition-colors"
+            className="text-sm bg-red-300 hover:bg-red-500 cursor-pointer text-white px-3 py-1 rounded transition-colors"
           >
             Reset Filters
           </button>
         </div>
 
         {/* Table Container */}
-        <div className="relative bg-gray-800 rounded-xl shadow-xl overflow-hidden">
+        <div className="relative  rounded-xl shadow-xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-700">
-              <thead className="bg-gray-800">
+              <thead className="bg-gray-300 ">
                 <tr>
                   {['Circle Name', 'Circle ID', 'Created Date', 'Last Updated', 'Status', 'Actions'].map((header) => (
                     <th
                       key={header}
                       scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider"
+                      className="px-6 py-3 text-left text-xs font-medium  uppercase tracking-wider"
                     >
                       {header}
                     </th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-700">
+              <tbody className="divide-y divide-gray-300">
                 {isLoading ? (
                   <tr>
-                    <td colSpan="6" className="px-6 py-4 text-center text-gray-400">
+                    <td colSpan="6" className="px-6 py-4 text-center ">
                       <div className="flex justify-center items-center">
                         <svg
                           className="animate-spin h-5 w-5 mr-3 text-blue-500"
@@ -209,7 +209,7 @@ function CircleOfficerList() {
                   </tr>
                 ) : currentItems.length === 0 ? (
                   <tr>
-                    <td colSpan="6" className="px-6 py-4 text-center text-gray-400">
+                    <td colSpan="6" className="px-6 py-4 text-center">
                       No data available
                     </td>
                   </tr>
@@ -217,27 +217,27 @@ function CircleOfficerList() {
                   currentItems.map((circle, index) => (
                     <tr
                       key={index}
-                      className="hover:bg-gray-700/50 transition-colors duration-200"
+                      className="hover:bg-gray-300/50 transition-colors duration-200"
                     >
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium ">
                         {circle.circleName}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm ">
                         {circle.circleId}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm ">
                         {circle.created}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm ">
                         {circle.lastUpdated}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
                           className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${circle.status === 'Verified'
-                            ? 'bg-green-900/30 text-green-400'
+                            ? 'bg-green-900/20 text-green-900'
                             : circle.status === 'Rejected'
-                              ? 'bg-red-900/30 text-red-400'
-                              : 'bg-yellow-900/30 text-yellow-400'
+                              ? 'bg-red-900/20 text-red-900'
+                              : 'bg-yellow-900/20 text-yellow-900'
                             }`}
                         >
                           {circle.status}
@@ -302,20 +302,20 @@ function CircleOfficerList() {
         {/* Pagination */}
         {!isLoading && filteredCircleOfficers.length > 0 && (
           <div className="mt-6 pb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="text-sm text-gray-300">
+            <div className="text-sm ">
               Showing{' '}
-              <span className="font-medium text-white">{indexOfFirstItem + 1}</span> to{' '}
-              <span className="font-medium text-white">
+              <span className="font-medium ">{indexOfFirstItem + 1}</span> to{' '}
+              <span className="font-medium ">
                 {Math.min(indexOfLastItem, filteredCircleOfficers.length)}
               </span>{' '}
-              of <span className="font-medium text-white">{filteredCircleOfficers.length}</span> entries
+              of <span className="font-medium ">{filteredCircleOfficers.length}</span> entries
             </div>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => paginate(currentPage - 1)}
                 disabled={currentPage === 1}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${currentPage === 1
-                  ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                  ? 'bg-gray-300 text-gray-400 cursor-not-allowed'
                   : 'bg-blue-600 hover:bg-blue-700 text-white'
                   }`}
               >
