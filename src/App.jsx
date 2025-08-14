@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Sidebar from './components/sidebar';
 import Login from './auth/Login';
 import Zonal from './pages/ZonalHead/Zonal';
+import AgentList from './pages/Agent/AgentList';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -30,7 +31,7 @@ function App() {
             <Route path="/dashboard" element={isLoggedIn ? <h1 className="p-4">Dashboard Page</h1> : <Navigate to="/" />} />
             <Route path="/report" element={isLoggedIn ? <h1 className="p-4">Report Page</h1> : <Navigate to="/" />} />
             <Route path="/zonal" element={isLoggedIn ? <Zonal /> : <Navigate to="/" />} />
-            <Route path="/agent" element={isLoggedIn ? <h1 className="p-4">Agent Page</h1> : <Navigate to="/" />} />
+            <Route path="/agent" element={isLoggedIn ? <AgentList/> : <Navigate to="/" />} />
             <Route
               path="/circle-officer"
               element={isLoggedIn ? <h1 className="p-4">Circle Officer Page</h1> : <Navigate to="/" />}
