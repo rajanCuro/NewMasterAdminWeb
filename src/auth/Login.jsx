@@ -34,7 +34,61 @@ function Login({ onLogin }) {
                     <h1 className="text-4xl font-bold mb-4">Welcome to Curo24</h1>
                     <p className="text-xl mb-8">Your 24/7 digital healthcare companion</p>
                     {/* SVG kept as in original */}
-                    <div className="relative h-64"> ...your existing SVG here... </div>
+                    <div className="relative h-64">
+                        <div className="relative h-64">
+                            <svg className="w-full h-full" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M100,300 L150,250 L200,300 L250,250 L300,300 L350,250 L400,300"
+                                    fill="none"
+                                    stroke="rgba(255,255,255,0.3)"
+                                    strokeWidth="3"
+                                >
+                                    <animate
+                                        attributeName="stroke-dashoffset"
+                                        values="0;100;0"
+                                        dur="4s"
+                                        repeatCount="indefinite"
+                                    />
+                                </path>
+
+                                <rect
+                                    x="225" y="175"
+                                    width="50" height="150"
+                                    rx="3"
+                                    fill="rgba(255,255,255,0.15)"
+                                    stroke="white"
+                                    strokeWidth="2"
+                                >
+                                    <animateTransform
+                                        attributeName="transform"
+                                        type="translate"
+                                        values="0 0; 0 -5; 0 0"
+                                        dur="3s"
+                                        repeatCount="indefinite"
+                                    />
+                                </rect>
+                                <rect
+                                    x="175" y="225"
+                                    width="150" height="50"
+                                    rx="3"
+                                    fill="rgba(255,255,255,0.15)"
+                                    stroke="white"
+                                    strokeWidth="2"
+                                />
+
+                                <g transform="rotate(0 250 250)">
+                                    <circle cx="380" cy="250" r="15" fill="white" opacity="0.7">
+                                        <animateMotion
+                                            path="M0,0a130,130 0 1,1 0,1z"
+                                            dur="8s"
+                                            repeatCount="indefinite"
+                                        />
+                                    </circle>
+                                    <text x="380" y="250" textAnchor="middle" fontSize="20" fill="white">❤️</text>
+                                </g>
+                            </svg>
+                        </div>
+                    </div>
                     <p className="text-sm opacity-80 mt-8">
                         HIPAA-compliant platform connecting you to healthcare professionals 24/7
                     </p>

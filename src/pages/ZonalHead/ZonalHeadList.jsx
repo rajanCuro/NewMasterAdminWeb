@@ -280,7 +280,7 @@ function ZonalHeadList() {
                         </button>
                         <button
                           onClick={() => handleEditZonal(zonal)}
-                          className="text-green-400 hover:text-green-300 transition-colors duration-200"
+                          className="cursor-pointer text-green-400 hover:text-green-300 transition-colors duration-200"
                           title="Edit"
                         >
                           <svg
@@ -371,14 +371,14 @@ function ZonalHeadList() {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-lg shadow-lg w-full max-w-md transform transition-all duration-300 scale-100 animate-modalFade p-6"
+            className=" main_bg rounded-lg shadow-lg w-full max-w-md transform transition-all duration-300 scale-100 animate-modalFade p-6"
           >
             {/* Header */}
             <div className="flex justify-between items-center border-b pb-3 mb-4">
-              <h2 className="text-lg font-semibold text-gray-800">Add New Zonal Head</h2>
+              <h2 className="text-lg font-semibold ">Add New Zonal Head</h2>
               <button
                 onClick={() => setAddZonalModal(false)}
-                className="text-gray-500 hover:text-red-500 text-xl font-bold"
+                className="text-gray-500 hover:text-red-500 text-2xl font-bold cursor-pointer"
               >
                 &times;
               </button>
@@ -396,14 +396,19 @@ function ZonalHeadList() {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-lg shadow-lg w-full max-w-md transform transition-all duration-300 scale-100 animate-modalFade p-6"
+            className="main_bg  rounded-lg shadow-lg w-full max-w-md transform transition-all duration-300 scale-100 animate-modalFade p-6"
           >
             {/* Header */}
             <div className="flex justify-between items-center border-b pb-3 mb-4">
-              <h2 className="text-lg font-semibold text-gray-800">Update Zonal Head</h2>
+              <h2 className="flex items-center gap-2 text-lg font-semibold ">
+                Update Zonal Head
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                  {editData.zoneId}
+                </span>
+              </h2>
               <button
                 onClick={() => setEditZonalModal(false)}
-                className="text-gray-500 hover:text-red-500 text-xl font-bold"
+                className="text-gray-500 hover:text-red-500 text-2xl font-bold cursor-pointer"
               >
                 &times;
               </button>
