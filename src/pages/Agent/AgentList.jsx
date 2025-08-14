@@ -74,7 +74,7 @@ const AgentList = () => {
             <input
               type="search"
               placeholder="Search by name or ID..."
-              className="w-full  rounded-lg px-4 py-2 pl-10 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 pl-10 focus:outline-none focus:ring-2 focus:ring-blue-500"
               name="searchTerm"
               // value={filters.searchTerm}
               // onChange={handleFilterChange}
@@ -141,14 +141,14 @@ const AgentList = () => {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-gray-800 rounded-lg shadow-lg w-full max-w-md transform transition-all duration-300 scale-100 animate-modalFade p-6"
+            className="bg-white rounded-lg shadow-lg w-full max-w-md transform transition-all duration-300 scale-100 animate-modalFade p-6"
           >
             {/* Header */}
             <div className="flex justify-between items-center border-b border-gray-700 pb-3 mb-4">
-              <h2 className="text-lg font-semibold text-white">Add New Agent</h2>
+              <h2 className="text-lg font-semibold ">Add New Agent</h2>
               <button
                 onClick={() => setAddAgentModal(false)}
-                className="text-gray-400 hover:text-white text-xl font-bold cursor-pointer"
+                className="text-red-400 hover:text-red-500 text-xl font-bold cursor-pointer"
               >
                 &times;
               </button>
