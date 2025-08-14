@@ -1,0 +1,12 @@
+@import "tailwindcss";
+
+.email_input {
+    border: 1px solid black;
+    position: fixed;  /* or 'absolute' depending on your needs */
+    top: 20px;        /* adjust as needed */
+    left: 20px;       /* adjust as needed */
+    background: white; /* to ensure readability */
+    z-index: 1000;    /* to ensure it stays on top */
+    padding: 8px;     /* for better appearance */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2); /* optional shadow for floating effect */
+}
