@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import {
   FiHome,
+  FiFileText,
+  FiUserCheck,
+  FiUser,
   FiUsers,
   FiSettings,
-  FiShoppingCart,
-  FiFileText,
-  FiPieChart,
   FiChevronLeft,
   FiChevronRight,
   FiMenu
@@ -25,10 +25,10 @@ const Sidebar = () => {
 
   const menuItems = [
     { icon: <FiHome className="text-lg" />, label: 'Dashboard' },
-    { icon: <FiUsers className="text-lg" />, label: 'Users' },
-    { icon: <FiShoppingCart className="text-lg" />, label: 'Products' },
-    { icon: <FiFileText className="text-lg" />, label: 'Orders' },
-    { icon: <FiPieChart className="text-lg" />, label: 'Analytics' },
+    { icon: <FiFileText className="text-lg" />, label: 'Report' },
+    { icon: <FiUsers className="text-lg" />, label: 'Zonal Head' },
+    { icon: <FiUser className="text-lg" />, label: 'Agent' },
+    { icon: <FiUserCheck className="text-lg" />, label: 'Circle Officer' },
     { icon: <FiSettings className="text-lg" />, label: 'Settings' },
   ];
 
