@@ -118,8 +118,8 @@ function ZonalHeadList() {
     <div className="min-h-screen main_bg">
       <div className="mw-full mx-auto px-4">
         {/* Header with Search */}
-        <div className='flex flex-col md:flex-row justify-between items-center py-4 gap-4 sticky top-0 z-50 main_bg'>
-          <h1 className="text-sm md:text-xl font-bold text-white">Zonal Heads Dashboard</h1>
+        <div className='flex p-2 flex-col md:flex-row justify-between items-center py-4 gap-4 sticky top-0 z-50 main_bg'>
+          <h1 className="text-sm md:text-xl font-bold ">Zonal Heads Dashboard</h1>
 
           <div className="flex flex-col md:flex-row w-full md:w-auto gap-4">
             <div className="relative flex-grow max-w-md">

@@ -67,7 +67,7 @@ const AgentList = () => {
 
   return (
     <div className="h-screen overflow-y-auto w-full mx-auto px-4 main_bg">
-      <div className='flex flex-col md:flex-row justify-between items-center py-4 gap-4 main_bg sticky top-0 z-50'>
+      <div className='flex p-2 flex-col md:flex-row justify-between items-center py-4 gap-4 main_bg sticky top-0 z-50'>
         <h1 className="text-sm md:text-xl font-bold">Agent List</h1>
         <div className="flex flex-col md:flex-row w-full md:w-auto gap-4">
           <div className="relative flex-grow max-w-md">
