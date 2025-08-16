@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import AddUpdate_CircleOfficer from './Add_Update_CircleOfficer';
+import Pagination from '../Pagination';
 
 function CircleOfficerList() {
   const [circleOfficers, setCircleOfficers] = useState([]);
   const [filteredCircleOfficers, setFilteredCircleOfficers] = useState([]);
   const [addCircleModal, setAddCircleModal] = useState(false);
-  const [editData, setEditData] = useState(null); 
+  const [editData, setEditData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [filters, setFilters] = useState({
     searchTerm: '',
@@ -13,6 +14,8 @@ function CircleOfficerList() {
     dateFilter: ''
   });
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   // Generate mock data
   useEffect(() => {
     setIsLoading(true);
@@ -87,8 +90,13 @@ function CircleOfficerList() {
   const handleEditCircle = (data) => {
     setEditData(data)
     setAddCircleModal(true)
-  
+
   };
+
+  // Pagination logic
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentCircleOfficers = circleOfficers.slice(indexOfFirstItem, indexOfLastItem);
 
   return (
     <div className="min-h-screen main_bg">
@@ -191,14 +199,14 @@ function CircleOfficerList() {
                       </div>
                     </td>
                   </tr>
-                ) : filteredCircleOfficers.length === 0 ? (
+                ) : currentCircleOfficers.length === 0 ? (
                   <tr>
                     <td colSpan="6" className="px-6 py-4 text-center">
                       No data available
                     </td>
                   </tr>
                 ) : (
-                  filteredCircleOfficers.map((circle, index) => (
+                  currentCircleOfficers.map((circle, index) => (
                     <tr
                       key={index}
                       className="hover:bg-gray-300/50 transition-colors duration-200"
@@ -283,6 +291,12 @@ function CircleOfficerList() {
           </div>
         </div>
       </div>
+      <Pagination
+        currentPage={currentPage}
+        totalItems={circleOfficers.length}
+        itemsPerPage={itemsPerPage}
+        onPageChange={setCurrentPage}
+      />
 
       {/* Add Circle Modal */}
       {addCircleModal && (

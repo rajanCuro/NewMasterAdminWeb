@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import { FiEdit } from "react-icons/fi";
-import AddAgent from "./AddAgent";
+import Add_Update_Agent from "./Add_Update_Agent";
+import Pagination from "../Pagination";
 
 const AgentList = () => {
   const [agents, setAgents] = useState([]);
   const [addAgentModal, setAddAgentModal] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   // Initialize with sample data
   useEffect(() => {
@@ -40,19 +43,24 @@ const AgentList = () => {
     const fiftyAgents = Array.from({ length: 50 }, (_, i) => {
       const baseAgent = baseAgents[i % 4]; // Cycle through the 4 base agents
       const id = i + 1;
-      
+
       return {
         id,
         name: `${baseAgent.name.split(' ')[0]} ${baseAgent.name.split(' ')[1]}${i < 4 ? '' : id}`, // Add ID to last name only for generated agents
         email: `${baseAgent.email.split('@')[0]}${i < 4 ? '' : id}@${baseAgent.email.split('@')[1]}`,
-        phone: i < 4 ? 
-          baseAgent.phone : 
+        phone: i < 4 ?
+          baseAgent.phone :
           `(${Math.floor(100 + Math.random() * 900)}) ${Math.floor(100 + Math.random() * 900)}-${Math.floor(1000 + Math.random() * 9000)}`
       };
     });
 
     setAgents(fiftyAgents);
   }, []);
+
+  // Pagination logic
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentAgents = agents.slice(indexOfFirstItem, indexOfLastItem);
 
   // Action handlers
   const handleEdit = (agentId) => {
@@ -67,7 +75,7 @@ const AgentList = () => {
 
   return (
     <div className="h-screen overflow-y-auto w-full mx-auto px-4 main_bg">
-      <div className='flex p-2 flex-col md:flex-row justify-between items-center py-4 gap-4 main_bg sticky top-0 z-50'>
+      <div className='flex flex-col md:flex-row justify-between items-center py-4 gap-4 main_bg sticky top-0 z-50'>
         <h1 className="text-sm md:text-xl font-bold">Agent List</h1>
         <div className="flex flex-col md:flex-row w-full md:w-auto gap-4">
           <div className="relative flex-grow max-w-md">
@@ -76,8 +84,8 @@ const AgentList = () => {
               placeholder="Search by name or ID..."
               className="w-full border border-gray-300 rounded-lg px-4 py-2 pl-10 focus:outline-none focus:ring-2 focus:ring-blue-500"
               name="searchTerm"
-              // value={filters.searchTerm}
-              // onChange={handleFilterChange}
+            // value={filters.searchTerm}
+            // onChange={handleFilterChange}
             />
             <button type="submit" className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
               <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
@@ -86,8 +94,8 @@ const AgentList = () => {
               </svg>
             </button>
           </div>
-          <button 
-            onClick={() => setAddAgentModal(true)} 
+          <button
+            onClick={() => setAddAgentModal(true)}
             className='cursor-pointer bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg whitespace-nowrap transition-colors'
           >
             Add Agent
@@ -106,23 +114,23 @@ const AgentList = () => {
               <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
-          <tbody className=" divide-y divide-gray-300">
-            {agents.map((agent) => (
+          <tbody className="divide-y divide-gray-300">
+            {currentAgents.map((agent) => (
               <tr key={agent.id} className="hover:bg-gray-300 hover:cursor-pointer">
-                <td className="px-6 py-4 whitespace-nowrap text-sm ">{agent.id}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium ">{agent.name}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm ">{agent.email}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm ">{agent.phone}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm">{agent.id}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">{agent.name}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm">{agent.email}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm">{agent.phone}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <button
                     onClick={() => handleEdit(agent.id)}
-                    className="text-indigo-600 hover:text-indigo-800 mr-3 hover:rounded-full hover:bg-indigo-300 p-2 cursor-pointer"
+                    className="text-indigo-600 hover:text-indigo-800 mr-3 hover:rounded-full hover:bg-indigo-300 p-2"
                   >
                     <FiEdit />
                   </button>
                   <button
                     onClick={() => handleDelete(agent.id)}
-                    className="text-red-600 hover:text-red-800 hover:rounded-full hover:bg-red-200 p-2 cursor-pointer"
+                    className="text-red-600 hover:text-red-800 hover:rounded-full hover:bg-red-200 p-2"
                   >
                     <RiDeleteBin6Line />
                   </button>
@@ -132,7 +140,12 @@ const AgentList = () => {
           </tbody>
         </table>
       </div>
-
+      <Pagination
+        currentPage={currentPage}
+        totalItems={agents.length}
+        itemsPerPage={itemsPerPage}
+        onPageChange={setCurrentPage}
+      />
       {/* Add Agent Modal */}
       {addAgentModal && (
         <div
@@ -153,10 +166,10 @@ const AgentList = () => {
                 &times;
               </button>
             </div>
-            <AddAgent 
+            <Add_Update_Agent
               onClose={() => setAddAgentModal(false)}
               onAddAgent={(newAgent) => {
-                setAgents([...agents, {...newAgent, id: agents.length + 1}]);
+                setAgents([...agents, { ...newAgent, id: agents.length + 1 }]);
                 setAddAgentModal(false);
               }}
             />
