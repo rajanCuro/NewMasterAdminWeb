@@ -1,21 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import AddZonalHead from './AddZonalHead';
-import EditZonal from './EditZonal';
+import Add_Update_ZonalHead from './Add_Update_ZonalHead';
 
 function ZonalHeadList() {
   const [zonalHeads, setZonalHeads] = useState([]);
   const [filteredZonalHeads, setFilteredZonalHeads] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
   const [addZonalModal, setAddZonalModal] = useState(false);
   const [editData, setEditData] = useState(null);
-  const [EditZonalModal, setEditZonalModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [filters, setFilters] = useState({
     searchTerm: '',
     statusFilter: 'all',
     dateFilter: ''
   });
-  const itemsPerPage = 10;
 
   // Generate mock data
   useEffect(() => {
@@ -68,20 +64,7 @@ function ZonalHeadList() {
     }
 
     setFilteredZonalHeads(result);
-    setCurrentPage(1); // Reset to first page when filters change
   }, [filters, zonalHeads]);
-
-  // Pagination logic
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredZonalHeads.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(filteredZonalHeads.length / itemsPerPage);
-
-  const paginate = (pageNumber) => {
-    if (pageNumber >= 1 && pageNumber <= totalPages) {
-      setCurrentPage(pageNumber);
-    }
-  };
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
@@ -105,13 +88,13 @@ function ZonalHeadList() {
   };
 
   const handleAddZonal = () => {
+    setEditData(null)
     setAddZonalModal(true);
   };
 
   const handleEditZonal = (data) => {
     setEditData(data)
-    setEditData(data);
-    setEditZonalModal(true);
+    setAddZonalModal(true);
   };
 
   return (
@@ -215,20 +198,21 @@ function ZonalHeadList() {
                       </div>
                     </td>
                   </tr>
-                ) : currentItems.length === 0 ? (
+                ) : filteredZonalHeads.length === 0 ? (
                   <tr>
                     <td colSpan="6" className="px-6 py-4 text-center ">
                       No data available
                     </td>
                   </tr>
                 ) : (
-                  currentItems.map((zonal, index) => (
+                  filteredZonalHeads.map((zonal, index) => (
                     <tr
                       key={index}
                       className="hover:bg-gray-300/50 cursor-pointer transition-colors duration-200"
                     >
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium ">
                         {zonal.zoneName}
+                        <span onClick={() => alert("dg")} className='ml-5'>  Action</span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm ">
                         {zonal.zoneId}
@@ -306,68 +290,13 @@ function ZonalHeadList() {
             </table>
           </div>
         </div>
-
-        {/* Pagination */}
-        {!isLoading && filteredZonalHeads.length > 0 && (
-          <div className="mt-6 pb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="text-sm text-gray-300">
-              Showing{' '}
-              <span className="font-medium ">{indexOfFirstItem + 1}</span> to{' '}
-              <span className="font-medium ">
-                {Math.min(indexOfLastItem, filteredZonalHeads.length)}
-              </span>{' '}
-              of <span className="font-medium ">{filteredZonalHeads.length}</span> entries
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => paginate(currentPage - 1)}
-                disabled={currentPage === 1}
-                className={`px-4 py-2 rounded-lg text-sm font-medium cursor-pointer transition-colors duration-200 ${currentPage === 1
-                  ? 'bg-gray-50 text-gray-400 cursor-not-allowed'
-                  : 'bg-blue-600 hover:bg-blue-700 text-white '
-                  }`}
-              >
-                Previous
-              </button>
-              <div className="flex gap-1">
-                {Array.from({ length: totalPages }, (_, i) => i + 1)
-                  .slice(
-                    Math.max(0, currentPage - 3),
-                    Math.min(totalPages, currentPage + 2)
-                  )
-                  .map((page) => (
-                    <button
-                      key={page}
-                      onClick={() => paginate(page)}
-                      className={`w-10 h-10 rounded-lg text-sm font-medium transition-colors duration-200 ${currentPage === page
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-700/50 text-gray-300 hover:bg-gray-600'
-                        }`}
-                    >
-                      {page}
-                    </button>
-                  ))}
-              </div>
-              <button
-                onClick={() => paginate(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className={`px-4 py-2 rounded-lg text-sm cursor-pointer font-medium transition-colors duration-200 ${currentPage === totalPages
-                  ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
-                  : 'bg-blue-600 hover:bg-blue-700 text-white'
-                  }`}
-              >
-                Next
-              </button>
-            </div>
-          </div>
-        )}
       </div>
 
-      {/* Add Zonal Modal */}
+      {/* Add and Update Zonal Modal */}
       {addZonalModal && (
         <div
           className="fixed inset-0 backdrop-brightness-50 flex items-center justify-center z-50"
-          onClick={() => setAddZonalModal(false)}
+          onClick={() => { setAddZonalModal(false), setEditData(null) }}
         >
           <div
             onClick={(e) => e.stopPropagation()}
@@ -375,45 +304,15 @@ function ZonalHeadList() {
           >
             {/* Header */}
             <div className="flex justify-between items-center border-b pb-3 mb-4">
-              <h2 className="text-lg font-semibold ">Add New Zonal Head</h2>
+              <h2 className="text-lg font-semibold ">{editData ? "Update Zonal Head" : "Add New Zonal Head"} </h2>
               <button
-                onClick={() => setAddZonalModal(false)}
+                onClick={() => { setAddZonalModal(false), setEditData(null) }}
                 className="text-gray-500 hover:text-red-500 text-2xl font-bold cursor-pointer"
               >
                 &times;
               </button>
             </div>
-            <AddZonalHead onClose={() => setAddZonalModal(false)} />
-          </div>
-        </div>
-      )}
-
-      {/* edit Zonal Modal */}
-      {EditZonalModal && (
-        <div
-          className="fixed inset-0 backdrop-brightness-50 flex items-center justify-center z-50"
-          onClick={() => setEditZonalModal(false)}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="main_bg  rounded-lg shadow-lg w-full max-w-md transform transition-all duration-300 scale-100 animate-modalFade p-6"
-          >
-            {/* Header */}
-            <div className="flex justify-between items-center border-b pb-3 mb-4">
-              <h2 className="flex items-center gap-2 text-lg font-semibold ">
-                Update Zonal Head
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                  {editData.zoneId}
-                </span>
-              </h2>
-              <button
-                onClick={() => setEditZonalModal(false)}
-                className="text-gray-500 hover:text-red-500 text-2xl font-bold cursor-pointer"
-              >
-                &times;
-              </button>
-            </div>
-            <EditZonal onClose={() => setEditZonalModal(false)} data={editData} />
+            <Add_Update_ZonalHead EditData={editData} onClose={() => setAddZonalModal(false)} />
           </div>
         </div>
       )}
