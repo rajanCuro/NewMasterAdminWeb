@@ -1,7 +1,23 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 
-function Pagination({ currentPage, totalItems, itemsPerPage, onPageChange }) {
-    const totalPages = Math.ceil(totalItems / itemsPerPage);
+function Pagination({ currentPage, totalItems, itemsPerPage, onPageChange, onItemsPerPageChange }) {
+    const [localItemsPerPage, setLocalItemsPerPage] = useState(itemsPerPage);
+    const totalPages = Math.ceil(totalItems / localItemsPerPage);
+
+    // Sync local state with props
+    useEffect(() => {
+        setLocalItemsPerPage(itemsPerPage);
+    }, [itemsPerPage]);
+
+    const handleItemsPerPageChange = (e) => {
+        const newItemsPerPage = Number(e.target.value);
+        setLocalItemsPerPage(newItemsPerPage);
+        if (onItemsPerPageChange) {
+            onItemsPerPageChange(newItemsPerPage);
+        }
+        // Reset to first page when changing items per page
+        onPageChange(1);
+    };
 
     const paginate = (pageNumber) => {
         if (pageNumber >= 1 && pageNumber <= totalPages) {
@@ -9,14 +25,70 @@ function Pagination({ currentPage, totalItems, itemsPerPage, onPageChange }) {
         }
     };
 
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const indexOfLastItem = currentPage * localItemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - localItemsPerPage;
+
+    // Generate visible page numbers with ellipsis for large ranges
+    const getPageNumbers = () => {
+        const pages = [];
+        const maxVisiblePages = 5;
+        
+        if (totalPages <= maxVisiblePages) {
+            for (let i = 1; i <= totalPages; i++) {
+                pages.push(i);
+            }
+        } else {
+            // Always show first page
+            pages.push(1);
+            
+            // Show ellipsis or pages around current page
+            if (currentPage > 3) {
+                pages.push('...');
+            }
+            
+            // Show current page and neighbors
+            const start = Math.max(2, currentPage - 1);
+            const end = Math.min(totalPages - 1, currentPage + 1);
+            
+            for (let i = start; i <= end; i++) {
+                if (i !== 1 && i !== totalPages) {
+                    pages.push(i);
+                }
+            }
+            
+            // Show ellipsis or last pages
+            if (currentPage < totalPages - 2) {
+                pages.push('...');
+            }
+            
+            // Always show last page
+            pages.push(totalPages);
+        }
+        
+        return pages;
+    };
 
     return (
         <div className="mt-6 pb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex justify-start items-center gap-4">
+                <label htmlFor="itemsPerPage" className="text-sm text-gray-600">Items Per Page:</label>
+                <select
+                    value={localItemsPerPage}
+                    onChange={handleItemsPerPageChange}
+                    name="itemsPerPage" 
+                    id="itemsPerPage" 
+                    className="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select>
+            </div>
+            
             <div className="text-sm text-gray-600">
                 Showing{" "}
-                <span className="font-medium">{indexOfFirstItem + 1}</span> to{" "}
+                <span className="font-medium">{totalItems === 0 ? 0 : indexOfFirstItem + 1}</span> to{" "}
                 <span className="font-medium">
                     {Math.min(indexOfLastItem, totalItems)}
                 </span>{" "}
@@ -28,43 +100,47 @@ function Pagination({ currentPage, totalItems, itemsPerPage, onPageChange }) {
                 <button
                     onClick={() => paginate(currentPage - 1)}
                     disabled={currentPage === 1}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${currentPage === 1
-                        ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                        : "bg-blue-600 hover:bg-blue-700 text-white"
-                        }`}
+                    className={`px-3 py-1 rounded-md text-sm font-medium transition-colors duration-200 ${
+                        currentPage === 1
+                            ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                            : "bg-blue-600 hover:bg-blue-700 text-white"
+                    }`}
                 >
                     Previous
                 </button>
 
                 {/* Page Numbers */}
                 <div className="flex gap-1">
-                    {Array.from({ length: totalPages }, (_, i) => i + 1)
-                        .slice(
-                            Math.max(0, currentPage - 3),
-                            Math.min(totalPages, currentPage + 2)
-                        )
-                        .map((page) => (
+                    {getPageNumbers().map((page, index) => (
+                        page === '...' ? (
+                            <span key={`ellipsis-${index}`} className="w-10 h-10 flex items-center justify-center">
+                                ...
+                            </span>
+                        ) : (
                             <button
                                 key={page}
                                 onClick={() => paginate(page)}
-                                className={`w-10 h-10 rounded-lg text-sm font-medium transition-colors duration-200 ${currentPage === page
-                                    ? "bg-blue-600 text-white"
-                                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                                    }`}
+                                className={`w-10 h-10 rounded-md text-sm font-medium transition-colors duration-200 ${
+                                    currentPage === page
+                                        ? "bg-blue-600 text-white"
+                                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                }`}
                             >
                                 {page}
                             </button>
-                        ))}
+                        )
+                    ))}
                 </div>
 
                 {/* Next */}
                 <button
                     onClick={() => paginate(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${currentPage === totalPages
-                        ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                        : "bg-blue-600 hover:bg-blue-700 text-white"
-                        }`}
+                    disabled={currentPage === totalPages || totalPages === 0}
+                    className={`px-3 py-1 rounded-md text-sm font-medium transition-colors duration-200 ${
+                        currentPage === totalPages || totalPages === 0
+                            ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                            : "bg-blue-600 hover:bg-blue-700 text-white"
+                    }`}
                 >
                     Next
                 </button>

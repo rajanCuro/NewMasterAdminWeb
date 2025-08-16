@@ -13,8 +13,9 @@ function ZonalHeadList() {
     statusFilter: 'all',
     dateFilter: ''
   });
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const [currentPage, setCurrentPage] = useState(1);  
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+
   // Generate mock data
   useEffect(() => {
     setIsLoading(true);
@@ -303,6 +304,7 @@ function ZonalHeadList() {
         totalItems={zonalHeads.length}
         itemsPerPage={itemsPerPage}
         onPageChange={setCurrentPage}
+        onItemsPerPageChange={setItemsPerPage}
       />
 
       {/* Add and Update Zonal Modal */}
