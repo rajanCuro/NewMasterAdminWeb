@@ -1,13 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 function AddUpdate_CircleOfficer({ Editdata }) {
-  console.log('Editdata: ', Editdata);
   const [formData, setFormData] = useState({
-    name: '',
+    circle_name: '',
     email: '',
     phone: '',
     role: ''
   });
+
+  // Initialize form with Editdata when component mounts or Editdata changes
+  useEffect(() => {
+    if (Editdata) {
+      setFormData({
+        circle_name: Editdata.circleName || '',
+        email: Editdata.email || '',
+        phone: Editdata.phone || '',
+        role: Editdata.role || ''
+      });
+    }
+  }, [Editdata]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -18,19 +29,23 @@ function AddUpdate_CircleOfficer({ Editdata }) {
   };
 
   const handleUpdate = () => {
-    alert('Update Circle Officer');
-  }
+    // Here you would typically make an API call to update the officer
+    console.log('Updating officer with data:', formData);
+    alert(`Updating Circle Officer: ${Editdata.id}`);
+  };
 
   const AddCircleOfficier = () => {
-    alert('Add Circle Officer');
-  }
+    // Here you would typically make an API call to add a new officer
+    console.log('Adding new officer with data:', formData);
+    alert('Adding new Circle Officer');
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (Editdata) {
-      handleUpdate()
+      handleUpdate();
     } else {
-      AddCircleOfficier()
+      AddCircleOfficier();
     }
   };
 
@@ -48,9 +63,11 @@ function AddUpdate_CircleOfficer({ Editdata }) {
             placeholder=" "
             className="float-input text-black"
             required
+            disabled={!!Editdata} // Disable if in edit mode
           />
           <label htmlFor="circle_name" className="float-label">Circle Name</label>
         </div>
+        
         {/* Email Field */}
         <div className="float-container mt-4">
           <input
@@ -99,8 +116,10 @@ function AddUpdate_CircleOfficer({ Editdata }) {
           <label htmlFor="role" className="float-label">Role</label>
         </div>
 
-        <div className='flex  mt-6'>
-          <button type="submit" className='submit-btn w-full'>{Editdata ? "Update" : "Add"}</button>
+        <div className='flex mt-6'>
+          <button type="submit" className='submit-btn w-full'>
+            {Editdata ? "Update" : "Add"}
+          </button>
         </div>
       </form>
     </div>

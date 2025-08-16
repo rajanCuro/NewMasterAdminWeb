@@ -1,8 +1,10 @@
 import React, { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 function Login({ onLogin }) {
     const [otp, setOtp] = useState(Array(6).fill(""));
+    const [showPassword, setShowPassword] = useState(false);
     const inputsRef = useRef([]);
     const navigate = useNavigate();
 
@@ -15,6 +17,22 @@ function Login({ onLogin }) {
         }
     };
 
+    const handlePaste = (e) => {
+        e.preventDefault();
+        const pasteData = e.clipboardData.getData('text/plain').trim();
+        
+        // Only proceed if pasted data is exactly 6 digits
+        if (/^\d{6}$/.test(pasteData)) {
+            const newOtp = pasteData.split('').slice(0, 6);
+            setOtp(newOtp);
+            
+            // Focus on the last input field after paste
+            if (inputsRef.current[5]) {
+                inputsRef.current[5].focus();
+            }
+        }
+    };
+
     const handleKeyDown = (e, index) => {
         if (e.key === "Backspace" && !otp[index] && index > 0) {
             inputsRef.current[index - 1].focus();
@@ -24,6 +42,10 @@ function Login({ onLogin }) {
     const handleLogin = () => {
         onLogin(); // Set login true in App.js
         navigate("/dashboard"); // Redirect to dashboard
+    };
+
+    const togglePasswordVisibility = () => {
+        setShowPassword(!showPassword);
     };
 
     return (
@@ -100,26 +122,47 @@ function Login({ onLogin }) {
 
             {/* Right Side - Login Form */}
             <div className="w-full md:w-1/2 flex items-center justify-center p-8">
-                <div className="w-full max-w-md ">
-                    <h2 className="text-2xl font-bold text-gray-800 mb-6">Login to your account</h2>
+                <div className="w-full max-w-md border px-14 py-8 border-gray-200 shadow rounded-xl ">
+                    <h2 className="text-2xl font-bold text-gray-800 mb-6">Sign in securely</h2>
                     <div className="space-y-6">
                         <div className="float-container">
                             <input type="email" id="email" placeholder=" " className="float-input" required />
                             <label htmlFor="email" className="float-label">Email Address</label>
                         </div>
-                        <div className="float-container">
-                            <input type="password" id="password" placeholder=" " className="float-input" required />
+                        <div className="float-container relative">
+                            <input 
+                                type={showPassword ? "text" : "password"} 
+                                id="password" 
+                                placeholder=" " 
+                                className="float-input pr-10" 
+                                required 
+                            />
                             <label htmlFor="password" className="float-label">Password</label>
+                            <button 
+                                type="button" 
+                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                                onClick={togglePasswordVisibility}
+                            >
+                                {showPassword ? <FaEyeSlash /> : <FaEye />}
+                            </button>
                         </div>
                         <div className="pt-2">
                             <label className="block text-sm font-medium text-gray-700 mb-2">Verification Code</label>
                             <div className="flex justify-between space-x-2">
                                 {otp.map((digit, index) => (
-                                    <input key={index} type="text" inputMode="numeric" pattern="[0-9]*" maxLength={1} value={digit}
+                                    <input 
+                                        key={index} 
+                                        type="text" 
+                                        inputMode="numeric" 
+                                        pattern="[0-9]*" 
+                                        maxLength={1} 
+                                        value={digit}
                                         ref={(el) => (inputsRef.current[index] = el)}
                                         onChange={(e) => handleChange(e.target.value, index)}
                                         onKeyDown={(e) => handleKeyDown(e, index)}
-                                        className="w-12 h-12 text-center text-xl border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all" />
+                                        onPaste={handlePaste}
+                                        className="w-12 h-12 text-center text-xl border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all" 
+                                    />
                                 ))}
                             </div>
                             <p className="mt-2 text-xs text-gray-500">We've sent a 6-digit code to your email</p>
