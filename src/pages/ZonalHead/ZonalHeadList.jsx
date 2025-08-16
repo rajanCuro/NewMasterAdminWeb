@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Add_Update_ZonalHead from './Add_Update_ZonalHead';
+import Pagination from '../Pagination';
 
 function ZonalHeadList() {
   const [zonalHeads, setZonalHeads] = useState([]);
@@ -12,7 +13,8 @@ function ZonalHeadList() {
     statusFilter: 'all',
     dateFilter: ''
   });
-
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   // Generate mock data
   useEffect(() => {
     setIsLoading(true);
@@ -96,6 +98,11 @@ function ZonalHeadList() {
     setEditData(data)
     setAddZonalModal(true);
   };
+
+  // Pagination logic
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentZonalHead = zonalHeads.slice(indexOfFirstItem, indexOfLastItem);
 
   return (
     <div className="min-h-screen main_bg">
@@ -198,14 +205,14 @@ function ZonalHeadList() {
                       </div>
                     </td>
                   </tr>
-                ) : filteredZonalHeads.length === 0 ? (
+                ) : currentZonalHead.length === 0 ? (
                   <tr>
                     <td colSpan="6" className="px-6 py-4 text-center ">
                       No data available
                     </td>
                   </tr>
                 ) : (
-                  filteredZonalHeads.map((zonal, index) => (
+                  currentZonalHead.map((zonal, index) => (
                     <tr
                       key={index}
                       className="hover:bg-gray-300/50 cursor-pointer transition-colors duration-200"
@@ -291,6 +298,12 @@ function ZonalHeadList() {
           </div>
         </div>
       </div>
+      <Pagination
+        currentPage={currentPage}
+        totalItems={zonalHeads.length}
+        itemsPerPage={itemsPerPage}
+        onPageChange={setCurrentPage}
+      />
 
       {/* Add and Update Zonal Modal */}
       {addZonalModal && (
