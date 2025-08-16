@@ -1,21 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import AddCircleOfficer from './AddCircleOfficer';
-import EditCircleOfficier from './EditCircleOfficer';
+import AddUpdate_CircleOfficer from './Add_Update_CircleOfficer';
 
 function CircleOfficerList() {
   const [circleOfficers, setCircleOfficers] = useState([]);
   const [filteredCircleOfficers, setFilteredCircleOfficers] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
   const [addCircleModal, setAddCircleModal] = useState(false);
-  const [editData, setEditData] = useState(null);
-  const [editCircleModal, setEditCircleModal] = useState(false);
+  const [editData, setEditData] = useState(null); 
   const [isLoading, setIsLoading] = useState(true);
   const [filters, setFilters] = useState({
     searchTerm: '',
     statusFilter: 'all',
     dateFilter: ''
   });
-  const itemsPerPage = 10;
 
   // Generate mock data
   useEffect(() => {
@@ -65,20 +61,7 @@ function CircleOfficerList() {
     }
 
     setFilteredCircleOfficers(result);
-    setCurrentPage(1);
   }, [filters, circleOfficers]);
-
-  // Pagination logic
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredCircleOfficers.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(filteredCircleOfficers.length / itemsPerPage);
-
-  const paginate = (pageNumber) => {
-    if (pageNumber >= 1 && pageNumber <= totalPages) {
-      setCurrentPage(pageNumber);
-    }
-  };
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
@@ -102,8 +85,9 @@ function CircleOfficerList() {
   };
 
   const handleEditCircle = (data) => {
-    setEditData(data);
-    setEditCircleModal(true);
+    setEditData(data)
+    setAddCircleModal(true)
+  
   };
 
   return (
@@ -207,14 +191,14 @@ function CircleOfficerList() {
                       </div>
                     </td>
                   </tr>
-                ) : currentItems.length === 0 ? (
+                ) : filteredCircleOfficers.length === 0 ? (
                   <tr>
                     <td colSpan="6" className="px-6 py-4 text-center">
                       No data available
                     </td>
                   </tr>
                 ) : (
-                  currentItems.map((circle, index) => (
+                  filteredCircleOfficers.map((circle, index) => (
                     <tr
                       key={index}
                       className="hover:bg-gray-300/50 transition-colors duration-200"
@@ -298,108 +282,30 @@ function CircleOfficerList() {
             </table>
           </div>
         </div>
-
-        {/* Pagination */}
-        {!isLoading && filteredCircleOfficers.length > 0 && (
-          <div className="mt-6 pb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="text-sm ">
-              Showing{' '}
-              <span className="font-medium ">{indexOfFirstItem + 1}</span> to{' '}
-              <span className="font-medium ">
-                {Math.min(indexOfLastItem, filteredCircleOfficers.length)}
-              </span>{' '}
-              of <span className="font-medium ">{filteredCircleOfficers.length}</span> entries
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => paginate(currentPage - 1)}
-                disabled={currentPage === 1}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${currentPage === 1
-                  ? 'bg-gray-300 text-gray-400 cursor-not-allowed'
-                  : 'bg-blue-600 hover:bg-blue-700 text-white'
-                  }`}
-              >
-                Previous
-              </button>
-              <div className="flex gap-1">
-                {Array.from({ length: totalPages }, (_, i) => i + 1)
-                  .slice(
-                    Math.max(0, currentPage - 3),
-                    Math.min(totalPages, currentPage + 2)
-                  )
-                  .map((page) => (
-                    <button
-                      key={page}
-                      onClick={() => paginate(page)}
-                      className={`w-10 h-10 rounded-lg text-sm font-medium transition-colors duration-200 ${currentPage === page
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-700/50 text-gray-300 hover:bg-gray-600'
-                        }`}
-                    >
-                      {page}
-                    </button>
-                  ))}
-              </div>
-              <button
-                onClick={() => paginate(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${currentPage === totalPages
-                  ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
-                  : 'bg-blue-600 hover:bg-blue-700 text-white'
-                  }`}
-              >
-                Next
-              </button>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Add Circle Modal */}
       {addCircleModal && (
         <div
           className="fixed inset-0 backdrop-brightness-50 flex items-center justify-center z-50"
-          onClick={() => setAddCircleModal(false)}
+          onClick={() => { setAddCircleModal(false), setEditData(null) }}
         >
           <div
             onClick={(e) => e.stopPropagation()}
             className="main_bg rounded-lg shadow-lg w-full max-w-md transform transition-all duration-300 scale-100 animate-modalFade p-6"
           >
             <div className="flex justify-between items-center border-b pb-3 mb-4">
-              <h2 className="text-lg font-semibold">Add New Circle Officer</h2>
+              <h2 className="text-lg font-semibold">
+                {editData ? "Update Circle Officer" : "Add New Circle Officer"}
+              </h2>
               <button
-                onClick={() => setAddCircleModal(false)}
+                onClick={() => { setAddCircleModal(false), setEditData(null) }}
                 className="text-gray-500 hover:text-red-500 text-2xl font-bold cursor-pointer"
               >
                 &times;
               </button>
             </div>
-            <AddCircleOfficer onClose={() => setAddCircleModal(false)} />
-          </div>
-        </div>
-      )}
-
-      {/* edit circle Modal */}
-
-      {editCircleModal && (
-        <div
-          className="fixed inset-0 backdrop-brightness-50 flex items-center justify-center z-50"
-          onClick={() => setEditCircleModal(false)}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="main_bg rounded-lg shadow-lg w-full max-w-md transform transition-all duration-300 scale-100 animate-modalFade p-6"
-          >
-            <div className="flex justify-between items-center border-b pb-3 mb-4">
-              <h2 className="text-lg font-semibold">Add New Circle Officer</h2>
-              <button
-                onClick={() => setEditCircleModal(false)}
-                className="text-gray-500 hover:text-red-500 text-2xl font-bold cursor-pointer"
-              >
-                &times;
-              </button>
-            </div>
-            <EditCircleOfficier data={editData} onClose={() => setEditCircleModal(false)} />
+            <AddUpdate_CircleOfficer Editdata={editData} onClose={() => { setAddCircleModal(false), setEditData(null) }} />
           </div>
         </div>
       )}

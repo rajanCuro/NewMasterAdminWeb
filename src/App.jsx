@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Sidebar from './components/sidebar';
 import Login from './auth/Login';
-import Zonal from './pages/ZonalHead/Zonal';
+import Zonal from './pages/ZonalHead/ZonalHeadList';
 import AgentList from './pages/Agent/AgentList';
 import CircleOfficerList from './pages/CircleOfficer/CircleOfficerList';
 import DashBoard from './pages/dashboard/DashBoard';
