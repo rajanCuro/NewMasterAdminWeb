@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import Add_Update_ZonalHead from './Add_Update_ZonalHead';
 import Pagination from '../Pagination';
+import VIewZonal from './VIewZonal';
 
 function ZonalHeadList() {
   const [zonalHeads, setZonalHeads] = useState([]);
   const [filteredZonalHeads, setFilteredZonalHeads] = useState([]);
   const [addZonalModal, setAddZonalModal] = useState(false);
+  const [viewZonalModal, setViewZonalModal] = useState(false);
+  const [viewZonalData, setViewZonalModalData] = useState(null);
   const [editData, setEditData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [filters, setFilters] = useState({
@@ -15,6 +18,7 @@ function ZonalHeadList() {
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [selectedZonal, setSelectedZonal] = useState(null); // Track which status dropdown is open
 
   // Generate mock data
   useEffect(() => {
@@ -78,9 +82,13 @@ function ZonalHeadList() {
     }));
   };
 
-  const handleVerify = (id) => {
-    console.log(`Verify zonal head with ID: ${id}`);
-    // Add verification logic here
+  const handleStatusChange = (id, newStatus) => {
+    setZonalHeads(prev =>
+      prev.map(item =>
+        item.id === id ? { ...item, status: newStatus } : item
+      )
+    );
+    setSelectedZonal(null); // Close the dropdown
   };
 
   const resetFilters = () => {
@@ -101,11 +109,28 @@ function ZonalHeadList() {
     setAddZonalModal(true);
   };
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setSelectedZonal(null);
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, []);
+
   // Pagination logic
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentZonalHead = filteredZonalHeads.slice(indexOfFirstItem, indexOfLastItem);
   const totalItems = filteredZonalHeads.length;
+
+
+  const handleViewZonal = (data) => {
+    setViewZonalModal(true)
+    setViewZonalModalData(data)
+  }
 
   return (
     <div className="min-h-screen main_bg">
@@ -172,12 +197,10 @@ function ZonalHeadList() {
           </button>
         </div>
 
-
-
         {/* Table Container with fixed header and scrollable body */}
         <div className="relative rounded-xl shadow-xl overflow-hidden">
           <div className="overflow-x-auto">
-            <div className="max-h-[calc(100vh-200px)] overflow-y-auto"> {/* Adjust height as needed */}
+            <div className="max-h-[calc(100vh-200px)] overflow-y-auto">
               <table className="min-w-full divide-y divide-gray-700">
                 <thead className="bg-gray-400 sticky top-0 z-10">
                   <tr>
@@ -222,7 +245,6 @@ function ZonalHeadList() {
                       >
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           {zonal.zoneName}
-                          <span onClick={() => alert("dg")} className='ml-5'>Action</span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm">
                           {zonal.zoneId}
@@ -234,20 +256,69 @@ function ZonalHeadList() {
                           {zonal.lastUpdated}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span
-                            className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${zonal.status === 'Verified'
-                              ? 'bg-green-900/50 text-green-900'
-                              : zonal.status === 'Rejected'
-                                ? 'bg-red-900/50 text-red-900'
-                                : 'bg-yellow-900/40 text-yellow-900'
-                              }`}
-                          >
-                            {zonal.status}
-                          </span>
+                          <div className="relative inline-block">
+                            <span
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedZonal(zonal.id === selectedZonal ? null : zonal.id);
+                              }}
+                              className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full cursor-pointer ${zonal.status === 'Verified'
+                                ? 'bg-green-900/50 text-green-900'
+                                : zonal.status === 'Rejected'
+                                  ? 'bg-red-900/50 text-red-900'
+                                  : 'bg-yellow-900/40 text-yellow-900'
+                                }`}
+                            >
+                              {zonal.status}
+                            </span>
+
+                            {selectedZonal === zonal.id && (
+                              <div className="absolute z-10 mt-1 w-32 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
+                                <div className="py-1">
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleStatusChange(zonal.id, 'Verified');
+                                    }}
+                                    className={`block px-4 py-2 text-sm w-full text-left ${zonal.status === 'Verified'
+                                      ? 'bg-green-100 text-green-900'
+                                      : 'text-gray-700 hover:bg-gray-100'
+                                      }`}
+                                  >
+                                    Verified
+                                  </button>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleStatusChange(zonal.id, 'Rejected');
+                                    }}
+                                    className={`block px-4 py-2 text-sm w-full text-left ${zonal.status === 'Rejected'
+                                      ? 'bg-red-100 text-red-900'
+                                      : 'text-gray-700 hover:bg-gray-100'
+                                      }`}
+                                  >
+                                    Rejected
+                                  </button>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleStatusChange(zonal.id, 'Pending');
+                                    }}
+                                    className={`block px-4 py-2 text-sm w-full text-left ${zonal.status === 'Pending'
+                                      ? 'bg-yellow-100 text-yellow-900'
+                                      : 'text-gray-700 hover:bg-gray-100'
+                                      }`}
+                                  >
+                                    Pending
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+                          </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex gap-2">
                           <button
-                            onClick={() => handleVerify(zonal.id)}
+                            onClick={() => handleViewZonal(zonal)}
                             className="text-blue-400 hover:text-blue-300 transition-colors duration-200"
                             title="View"
                           >
@@ -272,6 +343,9 @@ function ZonalHeadList() {
                               />
                             </svg>
                           </button>
+                          <button></button>
+
+
                           <button
                             onClick={() => handleEditZonal(zonal)}
                             className="cursor-pointer text-green-400 hover:text-green-300 transition-colors duration-200"
@@ -334,6 +408,30 @@ function ZonalHeadList() {
               </button>
             </div>
             <Add_Update_ZonalHead EditData={editData} onClose={() => setAddZonalModal(false)} />
+          </div>
+        </div>
+      )}
+
+      {viewZonalModal && (
+        <div
+          className="fixed inset-0 backdrop-brightness-50 flex items-center justify-center z-50"
+          onClick={() => { setViewZonalModal(false), setViewZonalModalData(null) }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="main_bg rounded-lg shadow-lg w-full max-w-md transform transition-all duration-300 scale-100 animate-modalFade p-6"
+          >
+            {/* Header */}
+            <div className="flex justify-between items-center border-b pb-3 mb-4">
+              <h2 className="text-lg font-semibold">{editData ? "Update Zonal Head" : "Add New Zonal Head"}</h2>
+              <button
+                onClick={() => { setViewZonalModal(false), setViewZonalModalData(null) }}
+                className="text-gray-500 hover:text-red-500 text-2xl font-bold cursor-pointer"
+              >
+                &times;
+              </button>
+            </div>
+            <VIewZonal ViewData={viewZonalData} onClose={() => setViewZonalModal(false)} />
           </div>
         </div>
       )}

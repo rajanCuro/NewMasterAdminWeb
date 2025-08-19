@@ -12,6 +12,8 @@ import {
     FiMenu,
 } from 'react-icons/fi';
 import { CiLogin } from "react-icons/ci";
+import { FaMapMarkerAlt } from "react-icons/fa";
+
 
 const Sidebar = ({ collapsed, toggleSidebar }) => {
     const [mobileOpen, setMobileOpen] = useState(false);
@@ -40,7 +42,7 @@ const Sidebar = ({ collapsed, toggleSidebar }) => {
         { icon: <FiUsers className="text-lg" />, label: 'Zonal Head', path: '/zonal' },
         { icon: <FiUser className="text-lg" />, label: 'Agent', path: '/agent' },
         { icon: <FiUserCheck className="text-lg" />, label: 'Circle Officer', path: '/circle-officer' },
-        { icon: <FiSettings className="text-lg" />, label: 'Curo Map', path: '/curo_map' },
+        { icon: <FaMapMarkerAlt className="text-lg" />, label: 'Curo Map', path: '/curo_map' },
     ];
 
     return (

@@ -76,8 +76,8 @@ export default function MyLocationMap() {
       </button>
 
       {/* Branding Footer */}
-      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-white/80 text-gray-800 text-sm font-semibold px-4 py-1 rounded-full shadow-md">
-        Curo Map
+      <div className="absolute bottom-3 left-18.5 transform -translate-x-1/2 bg-white text-gray-800 text-sm font-semibold px-4 py-1 rounded-full shadow-md">
+       <span className="mapText"> Curo </span>Map
       </div>
 
       {/* Address Modal */}
