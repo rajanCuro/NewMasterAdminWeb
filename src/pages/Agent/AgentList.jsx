@@ -11,6 +11,7 @@ const AgentList = () => {
    const [itemsPerPage, setItemsPerPage] = useState(10);
    const [editData,setEditData] = useState('')
 
+
   // Initialize with sample data
   useEffect(() => {
     const baseAgents = [
