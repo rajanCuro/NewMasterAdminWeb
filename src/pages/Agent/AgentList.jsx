@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import { FiEdit } from "react-icons/fi";
-import Add_Update_Agent from "./Add_Update_Agent";
+import Add_Update_Agent from "./AddUpdateAgent";
 import Pagination from "../Pagination";
 
 const AgentList = () => {

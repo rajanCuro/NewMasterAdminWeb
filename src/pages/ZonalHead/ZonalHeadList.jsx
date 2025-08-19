@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import Add_Update_ZonalHead from './Add_Update_ZonalHead';
+import Add_Update_ZonalHead from './AddUpdateZonalHead';
 import Pagination from '../Pagination';
 import VIewZonal from './VIewZonal';
 

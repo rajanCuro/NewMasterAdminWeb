@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import AddUpdate_CircleOfficer from './Add_Update_CircleOfficer';
+import AddUpdate_CircleOfficer from './AddUpdateCircleOfficer';
 import Pagination from '../Pagination';
 
 function CircleOfficerList() {
