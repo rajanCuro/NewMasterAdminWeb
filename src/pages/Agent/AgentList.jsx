@@ -8,7 +8,9 @@ const AgentList = () => {
   const [agents, setAgents] = useState([]);
   const [addAgentModal, setAddAgentModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+   const [itemsPerPage, setItemsPerPage] = useState(10);
+   const [editData,setEditData] = useState('')
+
 
   // Initialize with sample data
   useEffect(() => {
@@ -63,9 +65,9 @@ const AgentList = () => {
   const currentAgents = agents.slice(indexOfFirstItem, indexOfLastItem);
 
   // Action handlers
-  const handleEdit = (agentId) => {
-    console.log("Edit agent:", agentId);
-    // Add your edit logic here
+  const handleEdit = (agent) => {
+    setAddAgentModal(true)
+    setEditData(agent);
   };
 
   const handleDelete = (agentId) => {
@@ -123,8 +125,8 @@ const AgentList = () => {
                 <td className="px-6 py-4 whitespace-nowrap text-sm">{agent.phone}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <button
-                    onClick={() => handleEdit(agent.id)}
-                    className="text-indigo-600 hover:text-indigo-800 mr-3 hover:rounded-full hover:bg-indigo-300 p-2"
+                    onClick={() => handleEdit(agent)}
+                    className="text-green-600 hover:text-green-800 mr-3 hover:rounded-full hover:bg-green-300 p-2"
                   >
                     <FiEdit />
                   </button>
@@ -169,10 +171,7 @@ const AgentList = () => {
             </div>
             <Add_Update_Agent
               onClose={() => setAddAgentModal(false)}
-              onAddAgent={(newAgent) => {
-                setAgents([...agents, { ...newAgent, id: agents.length + 1 }]);
-                setAddAgentModal(false);
-              }}
+              editData = {editData}
             />
           </div>
         </div>
