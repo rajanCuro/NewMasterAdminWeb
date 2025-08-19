@@ -1,6 +1,7 @@
 import React from 'react'
 
-function AddAgent() {
+function AddAgent({editData}) {
+  console.log('editeData',editData);
   return (
     <div>
       <form action="">
