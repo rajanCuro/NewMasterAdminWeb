@@ -6,6 +6,7 @@ import Zonal from './pages/ZonalHead/ZonalHeadList';
 import AgentList from './pages/Agent/AgentList';
 import CircleOfficerList from './pages/CircleOfficer/CircleOfficerList';
 import DashBoard from './pages/dashboard/DashBoard';
+import Map from './pages/Map/Map';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -38,7 +39,7 @@ function App() {
               path="/circle-officer"
               element={isLoggedIn ? <CircleOfficerList /> : <Navigate to="/" />}
             />
-            <Route path="/settings" element={isLoggedIn ? <h1 className="p-4">Settings Page</h1> : <Navigate to="/" />} />
+            <Route path="/curo_map" element={isLoggedIn ? <Map/> : <Navigate to="/" />} />
           </Routes>
         </main>
       </div>
