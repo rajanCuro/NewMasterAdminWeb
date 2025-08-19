@@ -40,7 +40,7 @@ const Sidebar = ({ collapsed, toggleSidebar }) => {
         { icon: <FiUsers className="text-lg" />, label: 'Zonal Head', path: '/zonal' },
         { icon: <FiUser className="text-lg" />, label: 'Agent', path: '/agent' },
         { icon: <FiUserCheck className="text-lg" />, label: 'Circle Officer', path: '/circle-officer' },
-        // { icon: <FiSettings className="text-lg" />, label: 'Settings', path: '/settings' },
+        { icon: <FiSettings className="text-lg" />, label: 'Curo Map', path: '/curo_map' },
     ];
 
     return (
