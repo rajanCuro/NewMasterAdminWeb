@@ -40,8 +40,8 @@ const Sidebar = ({ collapsed, toggleSidebar }) => {
         { icon: <FiHome className="text-lg" />, label: 'Dashboard', path: '/dashboard' },
         // { icon: <FiFileText className="text-lg" />, label: 'Report', path: '/report' },
         { icon: <FiUsers className="text-lg" />, label: 'Zonal Head', path: '/zonal' },
-        { icon: <FiUser className="text-lg" />, label: 'Agent', path: '/agent' },
         { icon: <FiUserCheck className="text-lg" />, label: 'Circle Officer', path: '/circle-officer' },
+        { icon: <FiUser className="text-lg" />, label: 'Agent', path: '/agent' },
         { icon: <FaMapMarkerAlt className="text-lg" />, label: 'Curo Map', path: '/curo_map' },
     ];
 
@@ -58,7 +58,7 @@ const Sidebar = ({ collapsed, toggleSidebar }) => {
             {/* Sidebar */}
             <div
                 className={`fixed shadow-md top-0 left-0 h-screen sidebar_bg transition-all duration-300 ease-in-out ${collapsed ? 'w-20' : 'w-64'
-                    } ${mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'} z-40`}
+                    } ${mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'} z-50`}
              >
                 <div className="flex flex-col h-full">
                     {/* Logo */}
