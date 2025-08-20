@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { RiSearchLine, RiFilterLine, RiCloseLine } from 'react-icons/ri';
 import Add_Update_ZonalHead from './AddUpdateZonalHead';
 import Pagination from '../Pagination';
 import VIewZonal from './VIewZonal';
@@ -16,39 +17,47 @@ function ZonalHeadList() {
     statusFilter: 'all',
     dateFilter: ''
   });
+  const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
-  const [selectedZonal, setSelectedZonal] = useState(null); // Track which status dropdown is open
+  const [selectedZonal, setSelectedZonal] = useState(null);
 
   // Generate mock data
   useEffect(() => {
     setIsLoading(true);
     const mockData = Array.from({ length: 50 }, (_, i) => ({
       id: `ZH-${1000 + i}`,
-      zoneName: `Zone ${i + 1}`,
+      name: `Zonal Head ${i + 1}`,
+      email: `zonalhead${i + 1}@example.com`,
+      phone: `+1 ${Math.floor(Math.random() * 900 + 100)}-${Math.floor(Math.random() * 900 + 100)}-${Math.floor(Math.random() * 9000 + 1000)}`,
+      zoneName: `Zone ${['North', 'South', 'East', 'West', 'Central'][i % 5]}`,
       zoneId: `ZID-${2000 + i}`,
       created: new Date(Date.now() - Math.floor(Math.random() * 1000 * 60 * 60 * 24 * 30)).toLocaleDateString(),
-      createdDate: new Date(Date.now() - Math.floor(Math.random() * 1000 * 60 * 60 * 24 * 30)), // For proper date comparison
+      createdDate: new Date(Date.now() - Math.floor(Math.random() * 1000 * 60 * 60 * 24 * 30)),
       lastUpdated: new Date(Date.now() - Math.floor(Math.random() * 1000 * 60 * 60 * 24 * 7)).toLocaleDateString(),
       status: ['Pending', 'Verified', 'Rejected'][Math.floor(Math.random() * 3)],
+      performance: ['Excellent', 'Good', 'Average', 'Needs Improvement'][Math.floor(Math.random() * 4)],
+      agentsCount: Math.floor(Math.random() * 20) + 5
     }));
     setTimeout(() => {
       setZonalHeads(mockData);
       setFilteredZonalHeads(mockData);
       setIsLoading(false);
-    }, 1000); // Simulate API delay
+    }, 1000);
   }, []);
 
   // Apply filters
   useEffect(() => {
     let result = zonalHeads;
 
-    // Search by name or ID
+    // Search by name, ID, email or zone
     if (filters.searchTerm) {
       const term = filters.searchTerm.toLowerCase();
       result = result.filter(item =>
         item.zoneName.toLowerCase().includes(term) ||
-        item.zoneId.toLowerCase().includes(term)
+        item.zoneId.toLowerCase().includes(term) ||
+        item.name.toLowerCase().includes(term) ||
+        item.email.toLowerCase().includes(term)
       );
     }
 
@@ -71,7 +80,7 @@ function ZonalHeadList() {
     }
 
     setFilteredZonalHeads(result);
-    setCurrentPage(1); // Reset to first page when filters change
+    setCurrentPage(1);
   }, [filters, zonalHeads]);
 
   const handleFilterChange = (e) => {
@@ -85,10 +94,10 @@ function ZonalHeadList() {
   const handleStatusChange = (id, newStatus) => {
     setZonalHeads(prev =>
       prev.map(item =>
-        item.id === id ? { ...item, status: newStatus } : item
+        item.id === id ? { ...item, status: newStatus, lastUpdated: new Date().toLocaleDateString() } : item
       )
     );
-    setSelectedZonal(null); // Close the dropdown
+    setSelectedZonal(null);
   };
 
   const resetFilters = () => {
@@ -100,13 +109,18 @@ function ZonalHeadList() {
   };
 
   const handleAddZonal = () => {
-    setEditData(null)
+    setEditData(null);
     setAddZonalModal(true);
   };
 
   const handleEditZonal = (data) => {
-    setEditData(data)
+    setEditData(data);
     setAddZonalModal(true);
+  };
+
+  const handleViewZonal = (data) => {
+    setViewZonalModal(true);
+    setViewZonalModalData(data);
   };
 
   // Close dropdown when clicking outside
@@ -126,312 +140,285 @@ function ZonalHeadList() {
   const currentZonalHead = filteredZonalHeads.slice(indexOfFirstItem, indexOfLastItem);
   const totalItems = filteredZonalHeads.length;
 
+  // Status badge color
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "Verified":
+        return "bg-green-100 text-green-800 border-green-200";
+      case "Pending":
+        return "bg-yellow-100 text-yellow-800 border-yellow-200";
+      case "Rejected":
+        return "bg-red-100 text-red-800 border-red-200";
+      default:
+        return "bg-gray-100 text-gray-800 border-gray-200";
+    }
+  };
 
-  const handleViewZonal = (data) => {
-    setViewZonalModal(true)
-    setViewZonalModalData(data)
-  }
+  // Performance indicator
+  const getPerformanceColor = (performance) => {
+    switch (performance) {
+      case "Excellent":
+        return "text-green-600 bg-green-50 border-green-200";
+      case "Good":
+        return "text-blue-600 bg-blue-50 border-blue-200";
+      case "Average":
+        return "text-yellow-600 bg-yellow-50 border-yellow-200";
+      case "Needs Improvement":
+        return "text-red-600 bg-red-50 border-red-200";
+      default:
+        return "text-gray-600 bg-gray-50 border-gray-200";
+    }
+  };
 
   return (
-    <div className="min-h-screen main_bg">
-      <div className="mw-full mx-auto px-4">
-        {/* Header with Search */}
-        <div className='flex p-2 flex-col md:flex-row justify-between items-center py-4  sticky top-0 z-50 main_bg'>
-          <div className="flex flex-col md:flex-row w-full md:w-auto gap-4">
-            <div className="relative flex-grow max-w-md">
-              <input
-                type="search"
-                placeholder="Search by name or ID..."
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 pl-10 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                name="searchTerm"
-                value={filters.searchTerm}
-                onChange={handleFilterChange}
-              />
-              <button type="submit" className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
-                  <path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 0 0 1.48-5.34c-.47-2.78-2.79-5-5.59-5.34a6.505 6.505 0 0 0-7.27 7.27c.34 2.8 2.56 5.12 5.34 5.59a6.5 6.5 0 0 0 5.34-1.48l.27.28v.79l4.25 4.25c.41.41 1.08.41 1.49 0 .41-.41.41-1.08 0-1.49L15.5 14zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
-                    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </button>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white  px-6 py-4  sticky top-0 z-50">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+          <div className="relative w-full md:max-w-md">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <RiSearchLine className="text-gray-400" />
             </div>
+            <input
+              type="search"
+              placeholder="Search zonal heads by name, ID, email or zone..."
+              className="w-full border border-gray-300 rounded-lg pl-10 pr-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              name="searchTerm"
+              value={filters.searchTerm}
+              onChange={handleFilterChange}
+            />
           </div>
-          {/* Filter Controls */}
-          <div className="flex flex-wrap items-center gap-4 my-4 p-4 bg-gray-50 rounded-lg">
-            <div className="flex items-center gap-2">
-              <label htmlFor="statusFilter" className="text-sm text-gray-900">Status:</label>
-              <select
-                id="statusFilter"
-                name="statusFilter"
-                value={filters.statusFilter}
-                onChange={handleFilterChange}
-                className="bg-gray-300 rounded px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="all">All Status</option>
-                <option value="Pending">Pending</option>
-                <option value="Verified">Verified</option>
-                <option value="Rejected">Rejected</option>
-              </select>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <label htmlFor="dateFilter" className="text-sm text-gray-900">Created Date:</label>
-              <input
-                type="date"
-                id="dateFilter"
-                name="dateFilter"
-                value={filters.dateFilter}
-                onChange={handleFilterChange}
-                className="bg-gray-300 rounded px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
+          
+          <div className="mt-4 md:mt-0">
             <button
-              onClick={resetFilters}
-              className="text-sm bg-red-200 hover:bg-red-500 cursor-pointer text-white px-3 py-1 rounded transition-colors"
+              onClick={handleAddZonal}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg flex items-center gap-2 transition-colors shadow-sm"
             >
-              Reset Filters
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+              </svg>
+              Zonal Head
             </button>
           </div>
-          <button onClick={handleAddZonal} className='cursor-pointer bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg whitespace-nowrap transition-colors'>
-            Add Zonal Head
-          </button>
         </div>
-
-        {/* Table Container with fixed header and scrollable body */}
-        <div className="relative rounded-xl shadow-xl overflow-hidden">
+      </div>
+      {/* Zonal Heads Table */}
+      <div className="px-6 py-4">
+        <div className="bg-white rounded-lg shadow-xs border border-gray-200 overflow-hidden">
           <div className="overflow-x-auto">
-            <div className="max-h-[calc(100vh-200px)] overflow-y-auto">
-              <table className="min-w-full divide-y divide-gray-700">
-                <thead className="bg-gray-400 sticky top-0 z-10">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Zonal Head</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Zone</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Agents</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Performance</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {isLoading ? (
                   <tr>
-                    {['Zone Name', 'Zone ID', 'Created Date', 'Last Updated', 'Status', 'Actions'].map((header) => (
-                      <th
-                        key={header}
-                        scope="col"
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-50 uppercase tracking-wider"
-                      >
-                        {header}
-                      </th>
-                    ))}
+                    <td colSpan="8" className="px-6 py-8 text-center">
+                      <div className="flex justify-center items-center">
+                        <svg
+                          className="animate-spin h-5 w-5 mr-3 text-blue-500"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                        </svg>
+                        Loading zonal heads...
+                      </div>
+                    </td>
                   </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-400 bg-white">
-                  {isLoading ? (
-                    <tr>
-                      <td colSpan="6" className="px-6 py-4 text-center">
-                        <div className="flex justify-center items-center">
-                          <svg
-                            className="animate-spin h-5 w-5 mr-3 text-blue-500"
-                            viewBox="0 0 24 24"
+                ) : currentZonalHead.length === 0 ? (
+                  <tr>
+                    <td colSpan="8" className="px-6 py-8 text-center">
+                      <div className="flex flex-col items-center justify-center text-gray-500">
+                        <svg className="w-16 h-16 mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <p className="text-lg font-medium">No zonal heads found</p>
+                        <p className="text-sm mt-1">Try adjusting your search or filter criteria</p>
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  currentZonalHead.map((zonal, index) => (
+                    <tr key={index} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#{zonal.id}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">{zonal.name}</div>
+                        <div className="text-xs text-gray-500">{zonal.email}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">{zonal.zoneName}</div>
+                        <div className="text-xs text-gray-500">{zonal.zoneId}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                          {zonal.agentsCount} agents
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="relative inline-block">
+                          <span
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedZonal(zonal.id === selectedZonal ? null : zonal.id);
+                            }}
+                            className={`px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full border cursor-pointer ${getStatusColor(zonal.status)}`}
                           >
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
-                          </svg>
-                          Loading...
+                            {zonal.status}
+                          </span>
+
+                          {selectedZonal === zonal.id && (
+                            <div className="absolute z-10 mt-1 w-32 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
+                              <div className="py-1">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleStatusChange(zonal.id, 'Verified');
+                                  }}
+                                  className={`block px-4 py-2 text-sm w-full text-left ${zonal.status === 'Verified'
+                                    ? 'bg-green-100 text-green-900'
+                                    : 'text-gray-700 hover:bg-gray-100'
+                                    }`}
+                                >
+                                  Verified
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleStatusChange(zonal.id, 'Rejected');
+                                  }}
+                                  className={`block px-4 py-2 text-sm w-full text-left ${zonal.status === 'Rejected'
+                                    ? 'bg-red-100 text-red-900'
+                                    : 'text-gray-700 hover:bg-gray-100'
+                                    }`}
+                                >
+                                  Rejected
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleStatusChange(zonal.id, 'Pending');
+                                  }}
+                                  className={`block px-4 py-2 text-sm w-full text-left ${zonal.status === 'Pending'
+                                    ? 'bg-yellow-100 text-yellow-900'
+                                    : 'text-gray-700 hover:bg-gray-100'
+                                    }`}
+                                >
+                                  Pending
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2.5 py-1 text-xs font-medium rounded-full border ${getPerformanceColor(zonal.performance)}`}>
+                          {zonal.performance}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{zonal.created}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleViewZonal(zonal)}
+                            className="text-blue-600 hover:text-blue-800 p-1.5 rounded-md hover:bg-blue-100 transition-colors"
+                            title="View details"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                          </button>
+                          <button
+                            onClick={() => handleEditZonal(zonal)}
+                            className="text-green-600 hover:text-green-800 p-1.5 rounded-md hover:bg-green-100 transition-colors"
+                            title="Edit zonal head"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                          </button>
                         </div>
                       </td>
                     </tr>
-                  ) : currentZonalHead.length === 0 ? (
-                    <tr>
-                      <td colSpan="6" className="px-6 py-4 text-center">
-                        No data available
-                      </td>
-                    </tr>
-                  ) : (
-                    currentZonalHead.map((zonal, index) => (
-                      <tr
-                        key={index}
-                        className="hover:bg-gray-300/50 cursor-pointer transition-colors duration-200"
-                      >
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          {zonal.zoneName}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          {zonal.zoneId}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          {zonal.created}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          {zonal.lastUpdated}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="relative inline-block">
-                            <span
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedZonal(zonal.id === selectedZonal ? null : zonal.id);
-                              }}
-                              className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full cursor-pointer ${zonal.status === 'Verified'
-                                ? 'bg-green-900/50 text-green-900'
-                                : zonal.status === 'Rejected'
-                                  ? 'bg-red-900/50 text-red-900'
-                                  : 'bg-yellow-900/40 text-yellow-900'
-                                }`}
-                            >
-                              {zonal.status}
-                            </span>
-
-                            {selectedZonal === zonal.id && (
-                              <div className="absolute z-10 mt-1 w-32 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
-                                <div className="py-1">
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleStatusChange(zonal.id, 'Verified');
-                                    }}
-                                    className={`block px-4 py-2 text-sm w-full text-left ${zonal.status === 'Verified'
-                                      ? 'bg-green-100 text-green-900'
-                                      : 'text-gray-700 hover:bg-gray-100'
-                                      }`}
-                                  >
-                                    Verified
-                                  </button>
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleStatusChange(zonal.id, 'Rejected');
-                                    }}
-                                    className={`block px-4 py-2 text-sm w-full text-left ${zonal.status === 'Rejected'
-                                      ? 'bg-red-100 text-red-900'
-                                      : 'text-gray-700 hover:bg-gray-100'
-                                      }`}
-                                  >
-                                    Rejected
-                                  </button>
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleStatusChange(zonal.id, 'Pending');
-                                    }}
-                                    className={`block px-4 py-2 text-sm w-full text-left ${zonal.status === 'Pending'
-                                      ? 'bg-yellow-100 text-yellow-900'
-                                      : 'text-gray-700 hover:bg-gray-100'
-                                      }`}
-                                  >
-                                    Pending
-                                  </button>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex gap-2">
-                          <button
-                            onClick={() => handleViewZonal(zonal)}
-                            className="text-blue-400 hover:text-blue-300 transition-colors duration-200"
-                            title="View"
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              className="h-5 w-5"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                              />
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                              />
-                            </svg>
-                          </button>
-                          <button></button>
-
-
-                          <button
-                            onClick={() => handleEditZonal(zonal)}
-                            className="cursor-pointer text-green-400 hover:text-green-300 transition-colors duration-200"
-                            title="Edit"
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              className="h-5 w-5"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                              />
-                            </svg>
-                          </button>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-          {/* Fixed Pagination at bottom */}
-          <div className="sticky bottom-0 bg-white border-t border-gray-200 px-4 py-1">
-            <Pagination
-              currentPage={currentPage}
-              totalItems={totalItems}
-              itemsPerPage={itemsPerPage}
-              onPageChange={setCurrentPage}
-              onItemsPerPageChange={setItemsPerPage}
-            />
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
 
-      {/* Add and Update Zonal Modal */}
+      {/* Pagination */}
+      <div className="px-6 py-4 bg-white border-t border-gray-200">
+        <Pagination
+          currentPage={currentPage}
+          totalItems={totalItems}
+          itemsPerPage={itemsPerPage}
+          onPageChange={setCurrentPage}
+          onItemsPerPageChange={setItemsPerPage}
+        />
+      </div>
+
+      {/* Add/Edit Zonal Head Modal */}
       {addZonalModal && (
         <div
-          className="fixed inset-0 backdrop-brightness-50 flex items-center justify-center z-50"
-          onClick={() => { setAddZonalModal(false), setEditData(null) }}
+          className="fixed inset-0 backdrop-brightness-50 flex items-center justify-center z-50 p-4"
+          onClick={() => { setAddZonalModal(false); setEditData(null); }}
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="main_bg rounded-lg shadow-lg w-full max-w-md transform transition-all duration-300 scale-100 animate-modalFade p-6"
+            className="bg-white rounded-xl shadow-2xl w-full max-w-2xl transform transition-all duration-300 scale-100 max-h-[90vh] overflow-y-auto"
           >
-            {/* Header */}
-            <div className="flex justify-between items-center border-b pb-3 mb-4">
-              <h2 className="text-lg font-semibold">{editData ? "Update Zonal Head" : "Add New Zonal Head"}</h2>
+            <div className="flex justify-between items-center border-b border-gray-200 p-6 sticky top-0 bg-white">
+              <h2 className="text-xl font-semibold text-gray-800">
+                {editData ? "Edit Zonal Head" : "Add New Zonal Head"}
+              </h2>
               <button
-                onClick={() => { setAddZonalModal(false), setEditData(null) }}
-                className="text-gray-500 hover:text-red-500 text-2xl font-bold cursor-pointer"
+                onClick={() => { setAddZonalModal(false); setEditData(null); }}
+                className="text-gray-400 hover:text-gray-500 text-2xl font-bold cursor-pointer"
               >
                 &times;
               </button>
             </div>
-            <Add_Update_ZonalHead EditData={editData} onClose={() => setAddZonalModal(false)} />
+            <div className="p-6">
+              <Add_Update_ZonalHead EditData={editData} onClose={() => setAddZonalModal(false)} />
+            </div>
           </div>
         </div>
       )}
 
+      {/* View Zonal Head Modal */}
       {viewZonalModal && (
         <div
-          className="fixed inset-0 backdrop-brightness-50 flex items-center justify-center z-50"
-          onClick={() => { setViewZonalModal(false), setViewZonalModalData(null) }}
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+          onClick={() => { setViewZonalModal(false); setViewZonalModalData(null); }}
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="main_bg rounded-lg shadow-lg w-full max-w-md transform transition-all duration-300 scale-100 animate-modalFade p-6"
+            className="bg-white rounded-xl shadow-2xl w-full max-w-2xl transform transition-all duration-300 scale-100 max-h-[90vh] overflow-y-auto"
           >
-            {/* Header */}
-            <div className="flex justify-between items-center border-b pb-3 mb-4">
-              <h2 className="text-lg font-semibold">{editData ? "Update Zonal Head" : "Add New Zonal Head"}</h2>
+            <div className="flex justify-between items-center border-b border-gray-200 p-6 sticky top-0 bg-white">
+              <h2 className="text-xl font-semibold text-gray-800">Zonal Head Details</h2>
               <button
-                onClick={() => { setViewZonalModal(false), setViewZonalModalData(null) }}
-                className="text-gray-500 hover:text-red-500 text-2xl font-bold cursor-pointer"
+                onClick={() => { setViewZonalModal(false); setViewZonalModalData(null); }}
+                className="text-gray-400 hover:text-gray-500 text-2xl font-bold cursor-pointer"
               >
                 &times;
               </button>
             </div>
-            <VIewZonal ViewData={viewZonalData} onClose={() => setViewZonalModal(false)} />
+            <div className="p-6">
+              <VIewZonal ViewData={viewZonalData} onClose={() => setViewZonalModal(false)} />
+            </div>
           </div>
         </div>
       )}
