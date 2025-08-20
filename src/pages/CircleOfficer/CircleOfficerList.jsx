@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import AddUpdate_CircleOfficer from './AddUpdateCircleOfficer';
 import Pagination from '../Pagination';
 import { RiSearchLine } from 'react-icons/ri';
+import { GrFormView } from "react-icons/gr";
+import CircleOfficerDetail from './CircleOfficerDetail';
 
 function CircleOfficerList() {
   const [circleOfficers, setCircleOfficers] = useState([]);
@@ -17,6 +19,7 @@ function CircleOfficerList() {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [detailModal, setDetailModal] = useState(false);
 
   // Generate mock data
   useEffect(() => {
@@ -123,9 +126,9 @@ function CircleOfficerList() {
 
   return (
     <div className="min-h-screen main_bg">
-      <div className="mw-full mx-auto ">
+      <div className="w-full mx-auto">
         {/* Header with Search */}
-        <div className="sticky top-0 z-50 bg-white  border-b-gray-100 px-4 py-3">
+        <div className="sticky top-0 z-50 bg-white border-b-gray-100 px-4 py-3">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
 
             {/* Search */}
@@ -154,11 +157,11 @@ function CircleOfficerList() {
         </div>
 
         {/* Table Container */}
-        <div className="px-6 py-4">
-          <div className="bg-white rounded-lg shadow-xs border border-gray-200 overflow-hidden">
-            <div className="overflow-x-auto border border-gray-100">
+        <div className="px-6 py-4 flex flex-col" style={{ height: 'calc(107vh - 115px)' }}>
+          <div className="bg-white rounded-lg shadow-xs border border-gray-200 overflow-hidden flex flex-col flex-grow">
+            <div className="overflow-x-auto border border-gray-100 flex flex-col flex-grow">
               <table className="min-w-full divide-y divide-gray-700">
-                <thead className="bg-gray-300">
+                <thead className="bg-gray-300 sticky top-0 z-10">
                   <tr>
                     {['Circle Name', 'Circle ID', 'Created Date', 'Last Updated', 'Status', 'Actions'].map((header) => (
                       <th
@@ -171,7 +174,7 @@ function CircleOfficerList() {
                     ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-300">
+                <tbody className="divide-y divide-gray-300 overflow-y-auto flex-grow">
                   {isLoading ? (
                     <tr>
                       <td colSpan="6" className="px-6 py-4 text-center">
@@ -225,24 +228,11 @@ function CircleOfficerList() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex gap-2">
                           <button
-                            onClick={() => handleVerify(circle.id)}
+                            onClick={() => setDetailModal(true)}
                             className="text-blue-400 hover:text-blue-300 transition-colors duration-200"
-                            title="Verify"
+                            title="View Details"
                           >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              className="h-5 w-5"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M5 13l4 4L19 7"
-                              />
-                            </svg>
+                            <GrFormView size={28} />
                           </button>
                           <button
                             onClick={() => handleEditCircle(circle)}
@@ -271,14 +261,18 @@ function CircleOfficerList() {
                 </tbody>
               </table>
             </div>
+            
+            {/* Fixed Pagination at Bottom */}
+            <div className="sticky bottom-0 bg-white border-t border-gray-200 px-4 py-3">
+              <Pagination
+                currentPage={currentPage}
+                totalItems={filteredCircleOfficers.length}
+                itemsPerPage={itemsPerPage}
+                onPageChange={setCurrentPage}
+                onItemsPerPageChange={setItemsPerPage}
+              />
+            </div>
           </div>
-          <Pagination
-            currentPage={currentPage}
-            totalItems={filteredCircleOfficers.length}
-            itemsPerPage={itemsPerPage}
-            onPageChange={setCurrentPage}
-            onItemsPerPageChange={setItemsPerPage}
-          />
         </div>
       </div>
 
@@ -312,6 +306,34 @@ function CircleOfficerList() {
           </div>
         </div>
       )}
+      
+      {/* Detail Modal */}
+      {
+        detailModal && (
+          <div
+            className="fixed inset-0 backdrop-brightness-50 flex items-center justify-center z-50"
+            onClick={() => setDetailModal(false)}
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-xl shadow-2xl max-w-6xl w-full max-h-[95vh] overflow-y-auto hide-scrollbar transform transition-all duration-300 scale-100"
+            >
+              <div className="flex justify-between items-center border-b border-gray-200 p-6 sticky top-0 bg-blue-700 text-white z-10">
+                <h2 className="text-xl font-semibold">Circle Officer Details</h2>
+                <button
+                  onClick={() => setDetailModal(false)}
+                  className="text-white hover:text-red-300 text-2xl font-bold cursor-pointer transition-colors"
+                >
+                  &times;
+                </button>
+              </div>
+              <div className="p-6">
+                <CircleOfficerDetail />
+              </div>
+            </div>
+          </div>
+        )
+      }
     </div>
   );
 }

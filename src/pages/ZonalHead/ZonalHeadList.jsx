@@ -172,9 +172,9 @@ function ZonalHeadList() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 ">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-white  px-6 py-4  sticky top-0 z-30">
+      <div className="bg-white px-6 py-4 sticky top-0 z-30">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between">
           <div className="relative w-full md:max-w-md">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -203,28 +203,27 @@ function ZonalHeadList() {
           </div>
         </div>
       </div>
-      {/* Zonal Heads Table */}
-      <div className="px-6 py-4">
-        <div className="bg-white rounded-lg shadow-xs border border-gray-200 overflow-hidden">
-          <div className="overflow-x-auto ">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+      
+      {/* Zonal Heads Table Container */}
+      <div className="px-6 py-4 flex flex-col" style={{ height: 'calc(106vh - 110px)' }}>
+        <div className="bg-white rounded-lg shadow-xs border border-gray-200 overflow-hidden flex flex-col flex-grow">
+          <div className="overflow-x-auto border border-gray-100 flex flex-col flex-grow">
+            <table className="min-w-full divide-y divide-gray-700">
+              <thead className="bg-gray-50 sticky top-0 z-10">
                 <tr>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Zonal Head</th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Zone</th>
-                  {/* <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Agents</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">CO</th> */}
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Performance</th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-white divide-y divide-gray-200 overflow-y-auto">
                 {isLoading ? (
                   <tr>
-                    <td colSpan="8" className="px-6 py-8 text-center">
+                    <td colSpan="7" className="px-6 py-8 text-center">
                       <div className="flex justify-center items-center">
                         <svg
                           className="animate-spin h-5 w-5 mr-3 text-blue-500"
@@ -239,7 +238,7 @@ function ZonalHeadList() {
                   </tr>
                 ) : currentZonalHead.length === 0 ? (
                   <tr>
-                    <td colSpan="8" className="px-6 py-8 text-center">
+                    <td colSpan="7" className="px-6 py-8 text-center">
                       <div className="flex flex-col items-center justify-center text-gray-500">
                         <svg className="w-16 h-16 mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -261,16 +260,6 @@ function ZonalHeadList() {
                         <div className="text-sm font-medium text-gray-900">{zonal.zoneName}</div>
                         <div className="text-xs text-gray-500">{zonal.zoneId}</div>
                       </td>
-                      {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                          {zonal.agentsCount} agents
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                          {zonal.coCounts} CO
-                        </span>
-                      </td> */}
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="relative inline-block">
                           <span
@@ -362,18 +351,18 @@ function ZonalHeadList() {
               </tbody>
             </table>
           </div>
+          
+          {/* Fixed Pagination at Bottom */}
+          <div className="sticky bottom-0 bg-white border-t border-gray-200 px-4 py-3">
+            <Pagination
+              currentPage={currentPage}
+              totalItems={totalItems}
+              itemsPerPage={itemsPerPage}
+              onPageChange={setCurrentPage}
+              onItemsPerPageChange={setItemsPerPage}
+            />
+          </div>
         </div>
-      </div>
-
-      {/* Pagination */}
-      <div className="px-6 py-4 bg-white border-t border-gray-200">
-        <Pagination
-          currentPage={currentPage}
-          totalItems={totalItems}
-          itemsPerPage={itemsPerPage}
-          onPageChange={setCurrentPage}
-          onItemsPerPageChange={setItemsPerPage}
-        />
       </div>
 
       {/* Add/Edit Zonal Head Modal */}
@@ -415,10 +404,10 @@ function ZonalHeadList() {
             className="bg-white rounded-xl shadow-2xl w-full max-h-[95vh] overflow-y-auto hide-scrollbar transform transition-all duration-300 scale-100"
           >
             <div className="flex justify-between items-center border-b border-gray-200 p-6 sticky top-0 bg-blue-700 text-white z-10">
-              <h2 className="text-xl font-semibold 0">Zonal Head Details</h2>
+              <h2 className="text-xl font-semibold">Zonal Head Details</h2>
               <button
                 onClick={() => { setViewZonalModal(false); setViewZonalModalData(null); }}
-                className="text-red-400 hover:text-red-500 text-2xl font-bold cursor-pointer"
+                className="text-white hover:text-red-300 text-2xl font-bold cursor-pointer transition-colors"
               >
                 &times;
               </button>
