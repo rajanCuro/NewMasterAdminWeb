@@ -2,20 +2,24 @@ import React, { useState, useEffect } from 'react';
 
 function AddUpdate_CircleOfficer({ Editdata }) {
   const [formData, setFormData] = useState({
-    circle_name: '',
+    cityId: '', // keeping in state but no input field
     email: '',
-    phone: '',
-    role: ''
+    mobileNumber: '',
+    profilePicture: '',
+    firstName: '',
+    lastName: ''
   });
 
-  // Initialize form with Editdata when component mounts or Editdata changes
+  // Initialize form with Editdata
   useEffect(() => {
     if (Editdata) {
       setFormData({
-        circle_name: Editdata.circleName || '',
+        cityId: Editdata.cityId || '',
         email: Editdata.email || '',
-        phone: Editdata.phone || '',
-        role: Editdata.role || ''
+        mobileNumber: Editdata.mobileNumber || '',
+        profilePicture: Editdata.profilePicture || '',
+        firstName: Editdata.firstName || '',
+        lastName: Editdata.lastName || ''
       });
     }
   }, [Editdata]);
@@ -29,91 +33,102 @@ function AddUpdate_CircleOfficer({ Editdata }) {
   };
 
   const handleUpdate = () => {
-    // Here you would typically make an API call to update the officer
-    console.log('Updating officer with data:', formData);
-    alert(`Updating Circle Officer: ${Editdata.id}`);
+    console.log('Updating Officer with data:', formData);
+    alert(`Updating Officer ID: ${Editdata.id}`);
   };
 
-  const AddCircleOfficier = () => {
-    // Here you would typically make an API call to add a new officer
-    console.log('Adding new officer with data:', formData);
-    alert('Adding new Circle Officer');
+  const handleAdd = () => {
+    console.log('Adding new Officer with data:', formData);
+    alert('Adding new Officer');
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     if (Editdata) {
       handleUpdate();
     } else {
-      AddCircleOfficier();
+      handleAdd();
     }
   };
 
   return (
     <div>
       <form onSubmit={handleSubmit}>
-        {/* Circle Name Field */}
-        <div className="float-container">
+        
+        {/* First + Last Name in one row */}
+        <div className="flex gap-4">
+          <div className="float-container flex-1">
+            <input
+              type="text"
+              id="firstName"
+              name="firstName"
+              value={formData.firstName}
+              onChange={handleChange}
+              placeholder=" "
+              className="float-input text-black"
+              required
+            />
+            <label htmlFor="firstName" className="float-label">First Name</label>
+          </div>
+
+          <div className="float-container flex-1">
+            <input
+              type="text"
+              id="lastName"
+              name="lastName"
+              value={formData.lastName}
+              onChange={handleChange}
+              placeholder=" "
+              className="float-input text-black"
+              required
+            />
+            <label htmlFor="lastName" className="float-label">Last Name</label>
+          </div>
+        </div>
+
+        {/* Email + Mobile Number in one row */}
+        <div className="flex gap-4 mt-4">
+          <div className="float-container flex-1">
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              placeholder=" "
+              className="float-input text-black"
+              required
+            />
+            <label htmlFor="email" className="float-label">Email</label>
+          </div>
+
+          <div className="float-container flex-1">
+            <input
+              type="tel"
+              id="mobileNumber"
+              name="mobileNumber"
+              value={formData.mobileNumber}
+              onChange={handleChange}
+              placeholder=" "
+              className="float-input text-black"
+              required
+            />
+            <label htmlFor="mobileNumber" className="float-label">Mobile Number</label>
+          </div>
+        </div>
+
+        {/* Profile Picture */}
+        <div className="float-container mt-4">
           <input
             type="text"
-            id="circle_name"
-            name="circle_name"
-            value={formData.circle_name}
+            id="profilePicture"
+            name="profilePicture"
+            value={formData.profilePicture}
             onChange={handleChange}
             placeholder=" "
             className="float-input text-black"
-            required
-            disabled={!!Editdata} // Disable if in edit mode
           />
-          <label htmlFor="circle_name" className="float-label">Circle Name</label>
-        </div>
-        
-        {/* Email Field */}
-        <div className="float-container mt-4">
-          <input
-            type="email"
-            id="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            placeholder=" "
-            className="float-input text-black"
-            required
-          />
-          <label htmlFor="email" className="float-label">Email</label>
-        </div>
-
-        {/* Phone Field */}
-        <div className="float-container mt-4">
-          <input
-            type="tel"
-            id="phone"
-            name="phone"
-            value={formData.phone}
-            onChange={handleChange}
-            placeholder=" "
-            className="float-input text-black"
-            required
-          />
-          <label htmlFor="phone" className="float-label">Phone Number</label>
-        </div>
-
-        {/* Role Field */}
-        <div className="float-container mt-4">
-          <select
-            id="role"
-            name="role"
-            value={formData.role}
-            onChange={handleChange}
-            className="float-input text-black"
-            required
-          >
-            <option value="">Select a role</option>
-            <option value="admin">Admin</option>
-            <option value="officer">Officer</option>
-            <option value="manager">Manager</option>
-          </select>
-          <label htmlFor="role" className="float-label">Role</label>
+          <label htmlFor="profilePicture" className="float-label">Profile Picture (URL)</label>
         </div>
 
         <div className='flex mt-6'>

@@ -4,14 +4,13 @@ import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import leaf from '../assets/doc.png';
 import axiosInstance from './axiosInstance';
 import { useAuth } from './AuthContext';
-import axios from 'axios';
 
 function Login({ onLogin }) {
     const { setToken, setUser, setRole } = useAuth()
     const [otp, setOtp] = useState(Array(6).fill(""));
     const [showPassword, setShowPassword] = useState(false);
     const [username, setUsername] = useState('rajan@curo24.com');
-    const [password, setPassword] = useState('123456');
+    const [password, setPassword] = useState('raj38232644');
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [isLoading, setIsLoading] = useState(false);

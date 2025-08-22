@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
+import axiosInstance from './axiosInstance'
+import axios from "axios";
 
 // Create Context
 const AuthContext = createContext();
@@ -8,6 +10,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null); // store user info
   const [token, setToken] = useState(null);
   const [role, setRole] = useState(null);
+  const [stateList, setStateList] = useState([]);
 
 
   // On mount, check if user exists in localStorage
@@ -31,9 +34,24 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("token");
   };
 
+  useEffect(() => {
+    getALLState()
+  }, [])
+
+  const getALLState = async () => {
+    try {
+      const response = await axiosInstance.get("/head_admin/getAllStates");
+      console.log("All states:", response.data);
+      setStateList(response.data.stateList);
+    } catch (error) {
+      console.error("Error getting all states:", error);
+    }
+  };
+
+
   return (
     <AuthContext.Provider
-      value={{ user, logout, token, setUser, setToken, role, setRole }}
+      value={{ user, logout, token, setUser, setToken, role, setRole, getALLState }}
     >
       {children}
     </AuthContext.Provider>

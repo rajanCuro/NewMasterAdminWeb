@@ -296,7 +296,7 @@ function CircleOfficerList() {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="main_bg rounded-lg shadow-lg w-full max-w-md transform transition-all duration-300 scale-100 animate-modalFade p-6"
+            className="main_bg rounded-lg shadow-lg w-full max-w-4xl transform transition-all duration-300 scale-100 animate-modalFade p-6"
           >
             <div className="flex justify-between items-center border-b pb-3 mb-4">
               <h2 className="text-lg font-semibold">

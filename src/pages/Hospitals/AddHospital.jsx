@@ -50,6 +50,7 @@ function AddHospital() {
             onChange={handleChange}
             className="float-input"
             required
+            placeholder=" "
           />
           <label htmlFor="name" className="float-label">
             Hospital Name
@@ -66,6 +67,7 @@ function AddHospital() {
             onChange={handleChange}
             className="float-input"
             required
+            placeholder=" "
           />
           <label htmlFor="email" className="float-label">
             Email
@@ -82,6 +84,7 @@ function AddHospital() {
             onChange={handleChange}
             className="float-input"
             required
+            placeholder=" "
           />
           <label htmlFor="phone" className="float-label">
             Phone
@@ -97,6 +100,7 @@ function AddHospital() {
             onChange={handleChange}
             className="float-input"
             required
+            placeholder=" "
           />
           <label htmlFor="address" className="float-label">
             Address
@@ -114,6 +118,7 @@ function AddHospital() {
               onChange={handleChange}
               className="float-input"
               required
+              placeholder=" "
             />
             <label htmlFor="city" className="float-label">
               City
@@ -129,6 +134,7 @@ function AddHospital() {
               onChange={handleChange}
               className="float-input"
               required
+              placeholder=" "
             />
             <label htmlFor="state" className="float-label">
               State
@@ -144,6 +150,7 @@ function AddHospital() {
               onChange={handleChange}
               className="float-input"
               required
+              placeholder=" "
             />
             <label htmlFor="pincode" className="float-label">
               Pincode
@@ -161,6 +168,7 @@ function AddHospital() {
             onChange={handleChange}
             className="float-input"
             required
+            placeholder=" "
           />
           <label htmlFor="registrationNumber" className="float-label">
             Registration Number
