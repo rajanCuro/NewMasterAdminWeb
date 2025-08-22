@@ -4,21 +4,21 @@ import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import leaf from '../assets/doc.png';
 import axiosInstance from './axiosInstance';
 import { useAuth } from './AuthContext';
+import axios from 'axios';
 
 function Login({ onLogin }) {
     const { setToken, setUser, setRole } = useAuth()
     const [otp, setOtp] = useState(Array(6).fill(""));
     const [showPassword, setShowPassword] = useState(false);
-    const [username, setUsername] = useState('ravi@curo24.com');
-    const [password, setPassword] = useState('1234');
+    const [username, setUsername] = useState('rajan@curo24.com');
+    const [password, setPassword] = useState('123456');
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [showOtpSection, setShowOtpSection] = useState(false);
     const inputsRef = useRef([]);
     const navigate = useNavigate();
     const [countdown, setCountdown] = useState(null);
-
-
 
     useEffect(() => {
         let timer;
@@ -64,32 +64,71 @@ function Login({ onLogin }) {
         }
     };
 
-    const handleLogin = async () => {
+
+
+    const handleGenerateOtp = async () => {
         setIsLoading(true);
-        setError('');
+        setError("");
         try {
-            const response = await axiosInstance.post('/auth/signin', {
-                username: username,
-                password: password,
+            const response = await axiosInstance.post("/auth/generateOtp", {
+                email: username,   // e.g. "ravi@curo24.com"
+                password: password // e.g. "123456"
+            }, {
+                headers: {
+                    "accept": "*/*",
+                    "Content-Type": "application/json"
+                }
             });
 
-            console.log("Login successful:", response);
-            setSuccess("Login successful!");
-            setCountdown(3)
-            setTimeout(() => {
-                localStorage.setItem("user", JSON.stringify(response.data.user));
-                setUser(JSON.stringify(response.data.user));
-                setToken(response.data.token)
-                setRole(response.data.user.role)
-                localStorage.setItem('token', response.data.token);
-            }, 2000);
+            console.log("OTP generated:", response.data);
+            setSuccess("OTP sent to your email!");
+            setCountdown(5);
+            setShowOtpSection(true);
         } catch (error) {
-            console.log("Login failed:", error);
-            setError(error.response.data.message || error.message);
+            console.log("OTP generation failed:", error);
+            setError(error.response?.data?.message || error.message || "Failed to generate OTP");
         } finally {
             setIsLoading(false);
         }
     };
+
+
+    const handleSignIn = async () => {
+  setIsLoading(true);
+  setError('');
+
+  try {
+    const otpString = otp.join('');
+    const response = await axiosInstance.post('/auth/signin', {
+      email: username,
+      password: password,
+      logInOtp: otpString
+    });
+
+    console.log("Login successful:", response.data);
+
+    const { message, dto } = response.data;
+    const { jwtToken,  user } = dto;
+    setSuccess(message);
+    setCountdown(2);
+    localStorage.setItem("token", jwtToken);
+    localStorage.setItem("user", JSON.stringify(user));
+    localStorage.setItem('role', JSON.stringify(user.roles.roleName));
+    setUser(user);
+    setToken(jwtToken);
+    setRole(user.roles.roleName);
+    setTimeout(() => {
+      navigate('/dashboard');
+    }, 2000);
+
+  } catch (error) {
+    console.log("Login failed:", error);
+    setError(error.response?.data?.message || error.message || "Login failed");
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
     const togglePasswordVisibility = () => {
         setShowPassword(!showPassword);
@@ -97,7 +136,15 @@ function Login({ onLogin }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        handleLogin();
+        if (showOtpSection) {
+            handleSignIn();
+        } else {
+            handleGenerateOtp();
+        }
+    };
+
+    const handleResendOtp = () => {
+        handleGenerateOtp();
     };
 
     return (
@@ -181,7 +228,7 @@ function Login({ onLogin }) {
                         className="h-58 w-40 rotate-45 opacity-70 "
                     />
                 </div>
-                <form onSubmit={handleSubmit} className="w-full max-w-md border px-14 py-8 border-gray-200 shadow rounded-xl">
+                <form onSubmit={handleSubmit} className="w-full max-w-md border px-14 py-8 border-gray-200 shadow rounded-xl ">
                     <h2 className="text-2xl font-bold text-gray-800 mb-6">Sign in securely</h2>
 
                     {error && (
@@ -190,8 +237,8 @@ function Login({ onLogin }) {
                         </div>
                     )}
                     {success && (
-                        <div className="mt-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded">
-                            ✅ {success} (Hiding in {countdown})
+                        <div className="mt-1 p-3 mb-3 bg-green-100 border border-green-400 text-green-700 rounded">
+                            ✅ {success} 
                         </div>
                     )}
 
@@ -205,7 +252,7 @@ function Login({ onLogin }) {
                                 placeholder=" "
                                 className="float-input"
                                 required
-                                disabled={isLoading}
+                                disabled={isLoading || showOtpSection}
                             />
                             <label htmlFor="email" className="float-label">Email Address</label>
                         </div>
@@ -218,18 +265,50 @@ function Login({ onLogin }) {
                                 onChange={(e) => setPassword(e.target.value)}
                                 className="float-input pr-10"
                                 required
-                                disabled={isLoading}
+                                disabled={isLoading || showOtpSection}
                             />
                             <label htmlFor="password" className="float-label">Password</label>
                             <button
                                 type="button"
                                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
                                 onClick={togglePasswordVisibility}
-                                disabled={isLoading}
+                                disabled={isLoading || showOtpSection}
                             >
                                 {showPassword ? <FaEyeSlash /> : <FaEye />}
                             </button>
                         </div>
+
+                        {/* OTP Section */}
+                        {showOtpSection && (
+                            <div className="otp-section space-y-4">
+                                <p className="text-sm text-gray-600">Enter the 6-digit OTP sent to your email</p>
+                                <div className="flex justify-between space-x-2">
+                                    {otp.map((digit, index) => (
+                                        <input
+                                            key={index}
+                                            ref={(el) => (inputsRef.current[index] = el)}
+                                            type="text"
+                                            maxLength="1"
+                                            value={digit}
+                                            onChange={(e) => handleChange(e.target.value, index)}
+                                            onPaste={handlePaste}
+                                            onKeyDown={(e) => handleKeyDown(e, index)}
+                                            className="w-12 h-12 text-center border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                            disabled={isLoading}
+                                        />
+                                    ))}
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={handleResendOtp}
+                                    className="text-sm text-blue-600 hover:text-blue-800"
+                                    disabled={isLoading}
+                                >
+                                    Resend OTP
+                                </button>
+                            </div>
+                        )}
+
                         <div className="pt-4">
                             <button
                                 type="submit"
@@ -242,9 +321,9 @@ function Login({ onLogin }) {
                                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                         </svg>
-                                        Signing In...
+                                        {showOtpSection ? "Verifying..." : "Sending OTP..."}
                                     </>
-                                ) : "Sign In"}
+                                ) : showOtpSection ? "Verify OTP" : "Send OTP"}
                             </button>
                         </div>
                     </div>

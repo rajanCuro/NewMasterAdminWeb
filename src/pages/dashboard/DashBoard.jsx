@@ -417,19 +417,23 @@ function Dashboard() {
       {/* hospitalModal */}
       {hospitalModal && (
         <div className="fixed inset-0 flex items-center justify-center z-50 backdrop-brightness-50">
-          <div className="relative bg-purple-50 rounded-lg shadow-xl max-w-full w-full h-screen overflow-y-auto">
-            <button
-              onClick={closeModals}
-              className="absolute cursor-pointer top-4 right-4 flex items-center justify-center w-8 h-8 rounded-full bg-gray-200 text-gray-600 hover:bg-gray-300 hover:text-gray-800 transition"
-            >
-              ✕
-            </button>
-            <div className="p-6">
+
+          <button
+            onClick={closeModals}
+            className="fixed top-0 right-0 z-50 flex items-center justify-center w-8 h-8 rounded-full bg-gray-200 text-gray-600 hover:bg-gray-300 hover:text-gray-800 transition"
+          >
+            ✕
+          </button>
+
+          {/* Modal Box */}
+          
+            <div className="p-2 w-full">
               <Hospital />
-            </div>
+           
           </div>
         </div>
       )}
+
 
 
 
