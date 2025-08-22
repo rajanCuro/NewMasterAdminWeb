@@ -13,9 +13,14 @@ import {
 } from 'react-icons/fi';
 import { CiLogin } from "react-icons/ci";
 import { FaMapMarkerAlt } from "react-icons/fa";
+import { useAuth } from '../auth/AuthContext';
+import { IoMdSettings } from "react-icons/io";
+import Time from '../Time';
+
 
 
 const Sidebar = ({ collapsed, toggleSidebar }) => {
+    const { logout } = useAuth(); // 👈 get logout from context
     const [mobileOpen, setMobileOpen] = useState(false);
     const [showLogoutModal, setShowLogoutModal] = useState(false);
     const location = useLocation();
@@ -27,9 +32,9 @@ const Sidebar = ({ collapsed, toggleSidebar }) => {
         setShowLogoutModal(true);
     };
 
-    const confirmLogout = () => { 
-        window.location.reload()      
-        
+    const confirmLogout = () => {
+        logout()
+
     };
 
     const cancelLogout = () => {
@@ -38,11 +43,11 @@ const Sidebar = ({ collapsed, toggleSidebar }) => {
 
     const menuItems = [
         { icon: <FiHome className="text-lg" />, label: 'Dashboard', path: '/dashboard' },
-        // { icon: <FiFileText className="text-lg" />, label: 'Report', path: '/report' },
         { icon: <FiUsers className="text-lg" />, label: 'Zonal Head', path: '/zonal' },
         { icon: <FiUserCheck className="text-lg" />, label: 'Circle Officer', path: '/circle-officer' },
         { icon: <FiUser className="text-lg" />, label: 'Agent', path: '/agent' },
         { icon: <FaMapMarkerAlt className="text-lg" />, label: 'Curo Map', path: '/curo_map' },
+        { icon: <IoMdSettings className="text-lg" />, label: 'Settings', path: '/setting' },
     ];
 
     return (
@@ -59,7 +64,7 @@ const Sidebar = ({ collapsed, toggleSidebar }) => {
             <div
                 className={`fixed shadow-md top-0 left-0 h-screen sidebar_bg transition-all duration-300 ease-in-out ${collapsed ? 'w-20' : 'w-64'
                     } ${mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'} z-50`}
-             >
+            >
                 <div className="flex flex-col h-full">
                     {/* Logo */}
                     <div
@@ -69,6 +74,9 @@ const Sidebar = ({ collapsed, toggleSidebar }) => {
                         <button onClick={toggleSidebar} className="p-1 rounded-full hover:bg-gray-50">
                             {collapsed ? <FiChevronRight /> : <FiChevronLeft />}
                         </button>
+                    </div>
+                    <div className={`${collapsed ? "hidden" : "block"}`}>
+                        <Time />
                     </div>
 
                     {/* Menu */}
@@ -91,9 +99,9 @@ const Sidebar = ({ collapsed, toggleSidebar }) => {
                     </nav>
 
                     {/* Profile */}
-                    <div
-                        className={`p-4 border-t border-gray-700 ${collapsed ? 'text-center' : 'flex items-center'}`}
-                    >
+
+                    <div className={`p-4 border-t border-gray-700 ${collapsed ? 'text-center' : 'flex  items-center'}`}>
+
                         <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center">
                             <span>U</span>
                         </div>
@@ -135,7 +143,7 @@ const Sidebar = ({ collapsed, toggleSidebar }) => {
                             </button>
                             <button
                                 onClick={confirmLogout}
-                                className="px-4 cursor-pointer py-2 bg-red-500 rounded-md hover:bg-red-600 transition-colors"
+                                className="px-4 cursor-pointer py-2 bg-red-500 rounded-md hover:bg-red-600 transition-colors text-white"
                             >
                                 Logout
                             </button>

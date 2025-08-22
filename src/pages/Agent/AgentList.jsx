@@ -3,6 +3,8 @@ import { RiDeleteBin6Line, RiFilterLine, RiSearchLine } from "react-icons/ri";
 import { FiEdit, FiPlus } from "react-icons/fi";
 import Add_Update_Agent from "./AddUpdateAgent";
 import Pagination from "../Pagination";
+import { FaEye } from "react-icons/fa";
+import ViewAgentDetails from "./ViewAgentDetails";
 
 const AgentList = () => {
   const [agents, setAgents] = useState([]);
@@ -11,6 +13,8 @@ const AgentList = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [editData, setEditData] = useState(null);
+  const [viewAgentModal, setViewAgentModal] = useState(false);
+  const [viewAgentModalData, setViewAgentModalData] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
 
   // Filter state
@@ -135,7 +139,7 @@ const AgentList = () => {
     }));
   };
 
- 
+
 
   // Pagination logic
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -147,6 +151,16 @@ const AgentList = () => {
     setAddAgentModal(true);
     setEditData(agent);
   };
+  const handleViewAgent = (agent) => {
+    setViewAgentModal(true);
+    setViewAgentModalData(agent)
+  }
+  const handleCloseModal = () => {
+    setViewAgentModalData(null)
+    setAddAgentModal(false);
+    setViewAgentModal(false);
+    setEditData(null);
+  }
 
   const handleDelete = (agentId) => {
     setAgents(agents.filter(agent => agent.id !== agentId));
@@ -200,14 +214,14 @@ const AgentList = () => {
               onChange={handleFilterChange}
             />
           </div>
-        
+
           <div className="mt-4 md:mt-0">
             <button
               onClick={() => {
                 setEditData(null);
                 setAddAgentModal(true);
               }}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg flex items-center gap-2 w-full md:w-auto justify-center transition-colors shadow-sm"
+              className="submit-btn flex justify-center items-center"
             >
               <FiPlus className="w-4 h-4" />
               Agent
@@ -216,82 +230,85 @@ const AgentList = () => {
         </div>
       </div>
 
-      
+
 
       {/* Agents Table */}
       <div className="px-6 py-4">
         <div className="bg-white rounded-lg shadow-xs border border-gray-200 overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Agent</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Zone</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Performance</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {currentAgents.length > 0 ? (
-                  currentAgents.map((agent) => (
-                    <tr key={agent.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#{agent.id}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{agent.name}</div>
-                        <div className="text-xs text-gray-500">{agent.email}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{agent.phone}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{agent.zone}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2.5 py-1 text-xs font-medium rounded-full border ${getStatusColor(agent.status)}`}>
-                          {agent.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2.5 py-1 text-xs font-medium rounded-full border ${getPerformanceColor(agent.performance)}`}>
-                          {agent.performance}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{agent.createdAt}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => handleEdit(agent)}
-                            className="text-blue-600 hover:text-blue-800 p-1.5 rounded-md hover:bg-blue-100 transition-colors"
-                            title="Edit agent"
-                          >
-                            <FiEdit className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(agent.id)}
-                            className="text-red-600 hover:text-red-800 p-1.5 rounded-md hover:bg-red-100 transition-colors"
-                            title="Delete agent"
-                          >
-                            <RiDeleteBin6Line className="w-4 h-4" />
-                          </button>
+            <div className="min-w-full max-w-screen overflow-x-auto">
+              <table className="w-full divide-y divide-gray-200" style={{ minWidth: 'max-content' }}>
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">ID</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Agent</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Contact</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Zone</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Status</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Performance</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Created</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {currentAgents.length > 0 ? (
+                    currentAgents.map((agent) => (
+                      <tr onDoubleClick={() => handleViewAgent(agent)} key={agent.id} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#{agent.id}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-medium text-gray-900">{agent.name}</div>
+                          <div className="text-xs text-gray-500">{agent.email}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{agent.phone}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{agent.zone}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`px-2.5 py-1 text-xs font-medium rounded-full border ${getStatusColor(agent.status)}`}>
+                            {agent.status}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`px-2.5 py-1 text-xs font-medium rounded-full border ${getPerformanceColor(agent.performance)}`}>
+                            {agent.performance}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{agent.createdAt}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                          <div className="flex items-center gap-2">
+
+                            <button
+                              onClick={() => handleViewAgent(agent)}
+                              className="text-blue-600 cursor-pointer hover:text-blue-800 p-1.5 rounded-md hover:bg-blue-100 transition-colors"
+                              title="Edit agent"
+                            >
+                              <FaEye className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleEdit(agent)}
+                              className="text-blue-600 cursor-pointer hover:text-blue-800 p-1.5 rounded-md hover:bg-blue-100 transition-colors"
+                              title="Edit agent"
+                            >
+                              <FiEdit className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="8" className="px-6 py-8 text-center">
+                        <div className="flex flex-col items-center justify-center text-gray-500">
+                          <svg className="w-16 h-16 mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                          </svg>
+                          <p className="text-lg font-medium">No agents found</p>
+                          <p className="text-sm mt-1">Try adjusting your search or filter criteria</p>
                         </div>
                       </td>
                     </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="8" className="px-6 py-8 text-center">
-                      <div className="flex flex-col items-center justify-center text-gray-500">
-                        <svg className="w-16 h-16 mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                        <p className="text-lg font-medium">No agents found</p>
-                        <p className="text-sm mt-1">Try adjusting your search or filter criteria</p>
-                      </div>
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
@@ -351,6 +368,13 @@ const AgentList = () => {
               />
             </div>
           </div>
+        </div>
+      )}
+
+      {/* viewAgent Modal */}
+      {viewAgentModal && (
+        <div className="p-6">
+          <ViewAgentDetails onClose={handleCloseModal} data={viewAgentModalData} />
         </div>
       )}
     </div>
