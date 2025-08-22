@@ -17,11 +17,11 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     const storedToken = localStorage.getItem("token");
+    setRole(localStorage.getItem('role'));
 
     if (storedUser) {
       const parsedUser = JSON.parse(storedUser);
       setUser(parsedUser);
-      setRole(parsedUser.role); // set role here after user is restored
       setToken(storedToken);
     }
   }, []);
@@ -40,7 +40,7 @@ export const AuthProvider = ({ children }) => {
 
   const getALLState = async () => {
     try {
-      const response = await axiosInstance.get("/head_admin/getAllStates");
+      const response = await axiosInstance.get("/area/getAllStates");
       console.log("All states:", response.data);
       setStateList(response.data.stateList);
     } catch (error) {
@@ -51,7 +51,7 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{ user, logout, token, setUser, setToken, role, setRole, getALLState }}
+      value={{ user, logout, token, setUser, setToken, role, setRole, getALLState, stateList }}
     >
       {children}
     </AuthContext.Provider>
