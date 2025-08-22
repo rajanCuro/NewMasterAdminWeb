@@ -20,6 +20,7 @@ function CircleOfficerList() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [detailModal, setDetailModal] = useState(false);
+  const [viewCricleData, setViewCircleData] = useState(null);
 
   // Generate mock data
   useEffect(() => {
@@ -124,6 +125,11 @@ function CircleOfficerList() {
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentCircleOfficers = filteredCircleOfficers.slice(indexOfFirstItem, indexOfLastItem);
 
+  const handelOpen = (data) => {
+    setDetailModal(true)
+    setViewCircleData(data)
+  }
+
   return (
     <div className="min-h-screen main_bg">
       <div className="w-full mx-auto">
@@ -149,7 +155,7 @@ function CircleOfficerList() {
             {/* Action */}
             <button
               onClick={handleAddCircle}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg whitespace-nowrap transition-colors"
+              className="submit-btn "
             >
               + Circle Officer
             </button>
@@ -163,7 +169,7 @@ function CircleOfficerList() {
               <table className="min-w-full divide-y divide-gray-700">
                 <thead className="bg-gray-300 sticky top-0 z-10">
                   <tr>
-                    {['Circle Name', 'Circle ID', 'Created Date', 'Last Updated', 'Status', 'Actions'].map((header) => (
+                    {['Circle Name', 'Circle ID', 'EmailId', 'Phone', 'Created Date', 'Last Updated', 'Status', 'Actions'].map((header) => (
                       <th
                         key={header}
                         scope="col"
@@ -198,12 +204,18 @@ function CircleOfficerList() {
                     </tr>
                   ) : (
                     currentCircleOfficers.map((circle) => (
-                      <tr
+                      <tr onDoubleClick={() => handelOpen(circle)}
                         key={circle.id}
                         className="hover:bg-gray-300/50 transition-colors duration-200"
                       >
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           {circle.circleName}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm">
+                          {circle.circleId}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm">
+                          {circle.circleId}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm">
                           {circle.circleId}
@@ -228,7 +240,7 @@ function CircleOfficerList() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex gap-2">
                           <button
-                            onClick={() => setDetailModal(true)}
+                            onClick={() => handelOpen(circle)}
                             className="text-blue-400 hover:text-blue-300 transition-colors duration-200"
                             title="View Details"
                           >
@@ -261,7 +273,7 @@ function CircleOfficerList() {
                 </tbody>
               </table>
             </div>
-            
+
             {/* Fixed Pagination at Bottom */}
             <div className="sticky bottom-0 bg-white border-t border-gray-200 px-4 py-3">
               <Pagination
@@ -306,12 +318,12 @@ function CircleOfficerList() {
           </div>
         </div>
       )}
-      
+
       {/* Detail Modal */}
       {
         detailModal && (
           <div
-            className="fixed inset-0 backdrop-brightness-50 flex items-center justify-center z-50"
+            className="fixed inset-0 backdrop-brightness-50 flex items-center justify-center z-70"
             onClick={() => setDetailModal(false)}
           >
             <div
@@ -328,7 +340,7 @@ function CircleOfficerList() {
                 </button>
               </div>
               <div className="p-6">
-                <CircleOfficerDetail />
+                <CircleOfficerDetail ViewData={viewCricleData} onClose={() => setDetailModal(false)} />
               </div>
             </div>
           </div>
