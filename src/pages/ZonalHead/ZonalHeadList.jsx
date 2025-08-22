@@ -182,7 +182,7 @@ function ZonalHeadList() {
             </div>
             <input
               type="search"
-              placeholder="Search zonal heads by name, ID, email or zone..."
+              placeholder="Search zonal heads by name   "
               className="w-full border border-gray-300 rounded-lg pl-10 pr-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               name="searchTerm"
               value={filters.searchTerm}
@@ -193,7 +193,7 @@ function ZonalHeadList() {
           <div className="mt-4 md:mt-0">
             <button
               onClick={handleAddZonal}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg flex items-center gap-2 transition-colors shadow-sm"
+              className="submit-btn flex justify-center items-center"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
@@ -250,7 +250,7 @@ function ZonalHeadList() {
                   </tr>
                 ) : (
                   currentZonalHead.map((zonal, index) => (
-                    <tr key={index} className="hover:bg-gray-50 transition-colors">
+                    <tr onDoubleClick={() => handleViewZonal(zonal)} key={index} className="hover:bg-gray-50 transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#{zonal.id}</td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">{zonal.name}</div>
@@ -396,7 +396,7 @@ function ZonalHeadList() {
       {/* View Zonal Head Modal */}
       {viewZonalModal && (
         <div
-          className="fixed inset-0 backdrop-brightness-50 flex items-center justify-center z-50 p-4"
+          className="fixed inset-0 backdrop-brightness-50 flex items-center justify-center z-70 p-4"
           onClick={() => { setViewZonalModal(false); setViewZonalModalData(null); }}
         >
           <div
