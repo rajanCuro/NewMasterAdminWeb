@@ -16,6 +16,7 @@ function AddAddress({ initialPosition, onClose }) {
   const [success, setSuccess] = useState(null);
   const [showMap, setShowMap] = useState(false);
   const [selectedPosition, setSelectedPosition] = useState(initialPosition || null);
+  const [pressedKey, setPressedKey] = useState("");
 
   // Initialize map when component mounts
   useEffect(() => {
@@ -31,7 +32,7 @@ function AddAddress({ initialPosition, onClose }) {
     }
   }, [initialPosition]);
 
-  const [pressedKey, setPressedKey] = useState("");
+  
 
   useEffect(() => {
     const handleKeyDown = (event) => {
