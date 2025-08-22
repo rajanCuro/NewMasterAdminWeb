@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
 import Login from './auth/Login';
-import Zonal from './pages/ZonalHead/ZonalHeadList';
+import Zonal from './pages/Division/DivisionList.jsx';
 import AgentList from './pages/Agent/AgentList';
-import CircleOfficerList from './pages/CircleOfficer/CircleOfficerList';
+import CircleOfficerList from './pages/CircleOfficer/CircleOfficerList.jsx';
 import DashBoard from './pages/dashboard/DashBoard';
 import Map from './pages/Map/Map';
 import {  useAuth } from './auth/AuthContext.jsx'

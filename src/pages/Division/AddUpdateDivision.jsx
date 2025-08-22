@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-function Add_Update_ZonalHead({ EditData, onClose }) {
+function AddUpdateDivision({ EditData, onClose }) {
   console.log('EditData:', EditData);
   const [formData, setFormData] = useState({
     name: '',
@@ -182,4 +182,4 @@ function Add_Update_ZonalHead({ EditData, onClose }) {
   );
 }
 
-export default Add_Update_ZonalHead;
+export default AddUpdateDivision;

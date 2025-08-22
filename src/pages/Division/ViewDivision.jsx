@@ -6,7 +6,7 @@ import { MdSwapHorizontalCircle } from "react-icons/md";
 
 
 
-const VIewZonal = ({ ViewData: initialData, onSave, onClose }) => {
+const ViewDivision = ({ ViewData: initialData, onSave, onClose }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState('details');
   const [transferModal, setTransferModal] = useState(false);
@@ -568,7 +568,7 @@ const VIewZonal = ({ ViewData: initialData, onSave, onClose }) => {
 };
 
 // Default props with dummy data
-VIewZonal.defaultProps = {
+ViewDivision.defaultProps = {
   ViewData: {
     name: "John Doe",
     zoneName: "North Region",
@@ -588,4 +588,4 @@ VIewZonal.defaultProps = {
   onClose: () => console.log("Closing modal")
 };
 
-export default VIewZonal;
+export default ViewDivision;

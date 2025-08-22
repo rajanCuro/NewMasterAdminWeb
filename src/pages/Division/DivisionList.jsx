@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { RiSearchLine, RiFilterLine, RiCloseLine } from 'react-icons/ri';
-import Add_Update_ZonalHead from './AddUpdateZonalHead';
 import Pagination from '../Pagination';
-import VIewZonal from './VIewZonal';
+import ViewDivision from './ViewDivision';
+import AddUpdateDivision from './AddUpdateDivision';
 
 function ZonalHeadList() {
   const [zonalHeads, setZonalHeads] = useState([]);
@@ -198,7 +198,7 @@ function ZonalHeadList() {
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
               </svg>
-              Zonal Head
+              Division
             </button>
           </div>
         </div>
@@ -387,7 +387,7 @@ function ZonalHeadList() {
               </button>
             </div>
             <div className="p-6">
-              <Add_Update_ZonalHead EditData={editData} onClose={() => setAddZonalModal(false)} />
+              <AddUpdateDivision EditData={editData} onClose={() => setAddZonalModal(false)} />
             </div>
           </div>
         </div>
@@ -413,7 +413,7 @@ function ZonalHeadList() {
               </button>
             </div>
             <div className="p-6">
-              <VIewZonal ViewData={viewZonalData} onClose={() => setViewZonalModal(false)} />
+              <ViewDivision ViewData={viewZonalData} onClose={() => setViewZonalModal(false)} />
             </div>
           </div>
         </div>

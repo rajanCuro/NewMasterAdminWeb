@@ -21,7 +21,6 @@ import Time from '../Time';
 
 const Sidebar = ({ collapsed, toggleSidebar }) => {
     const { logout, role } = useAuth(); // 👈 get logout from context
-    console.log('sd',role);
     const [mobileOpen, setMobileOpen] = useState(false);
     const [showLogoutModal, setShowLogoutModal] = useState(false);
     const location = useLocation();
@@ -42,16 +41,15 @@ const Sidebar = ({ collapsed, toggleSidebar }) => {
         setShowLogoutModal(false);
     };
 
-   const menuItems = [
-  { icon: <FiHome className="text-lg" />, label: 'Dashboard', path: '/dashboard' },
-  ...(role === 'ROLE_ZONE_ADMIN' 
-      ? [{ icon: <FiUsers className="text-lg" />, label: 'Division Officer', path: '/zonal' }] 
-      : []),
-  { icon: <FiUserCheck className="text-lg" />, label: 'City Officer', path: '/circle-officer' },
-  { icon: <FiUser className="text-lg" />, label: 'Agent', path: '/agent' },
-  { icon: <FaMapMarkerAlt className="text-lg" />, label: 'Curo Map', path: '/curo_map' },
-  { icon: <IoMdSettings className="text-lg" />, label: 'Settings', path: '/setting' },
-];
+    const menuItems = [
+        { icon: <FiHome className="text-lg" />, label: 'Dashboard', path: '/dashboard' },
+        ...(role === "ROLE_ADMIN"
+            ? [{ icon: <FiUsers className="text-lg" />, label: "Division Officer", path: "/zonal" }]
+            : []), { icon: <FiUserCheck className="text-lg" />, label: 'City Officer', path: '/circle-officer' },
+        { icon: <FiUser className="text-lg" />, label: 'Agent', path: '/agent' },
+        { icon: <FaMapMarkerAlt className="text-lg" />, label: 'Curo Map', path: '/curo_map' },
+        { icon: <IoMdSettings className="text-lg" />, label: 'Settings', path: '/setting' },
+    ];
 
 
     return (

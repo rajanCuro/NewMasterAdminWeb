@@ -5,7 +5,7 @@ import leaf from '../assets/doc.png';
 import axiosInstance from './axiosInstance';
 import { useAuth } from './AuthContext';
 
-function Login({ onLogin }) {
+function Login() {
     const { setToken, setUser, setRole } = useAuth()
     const [otp, setOtp] = useState(Array(6).fill(""));
     const [showPassword, setShowPassword] = useState(false);
