@@ -1,9 +1,15 @@
 import React, { useState } from 'react';
 import { FaUserTie, FaPhone, FaEnvelope, FaMapMarkerAlt, FaCalendarAlt, FaSyncAlt, FaChartLine, FaCheckCircle, FaExclamationTriangle, FaUsers, FaSave, FaTimes } from 'react-icons/fa';
+import Transfer from './Transfer';
+import { IoMdSwap } from "react-icons/io";
+import { MdSwapHorizontalCircle } from "react-icons/md";
+
+
 
 const VIewZonal = ({ ViewData: initialData, onSave, onClose }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState('details');
+  const [transferModal, setTransferModal] = useState(false);
   const [formData, setFormData] = useState({
     ...initialData,
     joiningDate: initialData.joiningDate || '2023-05-15',
@@ -102,6 +108,11 @@ const VIewZonal = ({ ViewData: initialData, onSave, onClose }) => {
     );
   };
 
+  const handleTransferModal = (name) => {
+    setTransferModal(true)
+  }
+
+
   return (
     <div className=" min-h-[400px]">
       <div className="max-w-7xl mx-auto">
@@ -110,6 +121,7 @@ const VIewZonal = ({ ViewData: initialData, onSave, onClose }) => {
           <div className="flex flex-col lg:flex-row">
             {/* Profile Sidebar */}
             <div className="lg:w-1/3 p-6 bg-gradient-to-br from-indigo-50 to-blue-50 flex flex-col items-center justify-start">
+
               <div className="w-24 h-24 sm:w-32 sm:h-32 bg-indigo-100 rounded-full flex items-center justify-center mb-4 border-4 border-white shadow-md">
                 <FaUserTie className="text-indigo-500 text-3xl sm:text-5xl" aria-hidden="true" />
               </div>
@@ -130,7 +142,7 @@ const VIewZonal = ({ ViewData: initialData, onSave, onClose }) => {
                   {errors.name && <p id="name-error" className="text-red-500 text-xs mt-1">{errors.name}</p>}
                 </div>
               ) : (
-                <h2 className="text-lg sm:text-xl font-semibold text-gray-800 text-center">{formData.name}</h2>
+                <h2 className="text-lg sm:text-xl font-semibold text-gray-800 text-center">{formData.name} </h2>
               )}
 
               {isEditing ? (
@@ -151,55 +163,56 @@ const VIewZonal = ({ ViewData: initialData, onSave, onClose }) => {
               ) : (
                 <p className="text-indigo-600 font-medium text-sm sm:text-base mt-2">{formData.zoneName}</p>
               )}
+              <div className={`flex w-full ${isEditing ? "flex-col" : "flex-row"}  justify-center items-center gap-4`}>
+                {/* Status Badge */}
+                {isEditing ? (
+                  <div className="w-full mb-4 relative">
+                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="status">Status</label>
+                    <select
+                      id="status"
+                      name="status"
+                      value={formData.status}
+                      onChange={handleInputChange}
+                      className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-sm sm:text-base transition-all duration-200"
+                      aria-label="Status"
+                    >
+                      <option value="Active">Active</option>
+                      <option value="Inactive">Inactive</option>
+                      <option value="On Leave">On Leave</option>
+                    </select>
+                  </div>
+                ) : (
+                  <div className="mt-4 px-3 py-1.5 bg-green-100 text-green-800 rounded-full text-sm font-medium inline-flex items-center animate-pulse-short">
+                    <FaCheckCircle className="mr-2" aria-hidden="true" />
+                    {formData.status}
+                  </div>
+                )}
 
-              {/* Status Badge */}
-              {isEditing ? (
-                <div className="w-full mb-4 relative">
-                  <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="status">Status</label>
-                  <select
-                    id="status"
-                    name="status"
-                    value={formData.status}
-                    onChange={handleInputChange}
-                    className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-sm sm:text-base transition-all duration-200"
-                    aria-label="Status"
-                  >
-                    <option value="Active">Active</option>
-                    <option value="Inactive">Inactive</option>
-                    <option value="On Leave">On Leave</option>
-                  </select>
-                </div>
-              ) : (
-                <div className="mt-4 px-3 py-1.5 bg-green-100 text-green-800 rounded-full text-sm font-medium inline-flex items-center animate-pulse-short">
-                  <FaCheckCircle className="mr-2" aria-hidden="true" />
-                  {formData.status}
-                </div>
-              )}
-
-              {/* Performance Indicator */}
-              {isEditing ? (
-                <div className="w-full mt-4 relative">
-                  <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="performance">Performance</label>
-                  <select
-                    id="performance"
-                    name="performance"
-                    value={formData.performance}
-                    onChange={handleInputChange}
-                    className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-sm sm:text-base transition-all duration-200"
-                    aria-label="Performance"
-                  >
-                    <option value="Excellent">Excellent</option>
-                    <option value="Good">Good</option>
-                    <option value="Needs Improvement">Needs Improvement</option>
-                    <option value="Poor">Poor</option>
-                  </select>
-                </div>
-              ) : (
-                <div className="mt-4">
-                  <PerformanceIndicator performance={formData.performance} />
-                </div>
-              )}
-
+                {/* Performance Indicator */}
+                {isEditing ? (
+                  <div className="w-full mt-4 relative">
+                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="performance">Performance</label>
+                    <select
+                      id="performance"
+                      name="performance"
+                      value={formData.performance}
+                      onChange={handleInputChange}
+                      className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-sm sm:text-base transition-all duration-200"
+                      aria-label="Performance"
+                    >
+                      <option value="Excellent">Excellent</option>
+                      <option value="Good">Good</option>
+                      <option value="Needs Improvement">Needs Improvement</option>
+                      <option value="Poor">Poor</option>
+                    </select>
+                  </div>
+                ) : (
+                  <div className="mt-4">
+                    <PerformanceIndicator performance={formData.performance} />
+                  </div>
+                )}
+                <button onClick={handleTransferModal} className='mt-4 py-0.5  bg-amber-200 text-amber-900 px-3 cursor-pointer hover:bg-amber-300 rounded-xl flex justify-center items-center '> <MdSwapHorizontalCircle />Transfer</button>
+              </div>
               {/* Stats Section */}
               <div className="mt-6 w-full space-y-3">
                 <div className="flex items-center bg-white p-3 rounded-lg shadow-sm">
@@ -251,21 +264,26 @@ const VIewZonal = ({ ViewData: initialData, onSave, onClose }) => {
             <div className="lg:w-2/3 p-4 sm:p-6">
               {/* Tabs */}
               <div className="flex flex-col sm:flex-row border-b border-gray-200 mb-6 space-y-2 sm:space-y-0 sm:space-x-4">
-                {['details', 'activity', 'agents', 'co'].map(tab => (
+                {['details', 'activity', 'agents', 'co',].map(tab => (
                   <button
                     key={tab}
                     className={`py-2 px-3 sm:px-4 cursor-pointer font-medium text-sm rounded-t-lg transition-all duration-200 ${activeTab === tab
-                        ? 'text-indigo-600 border-b-2 border-indigo-600 bg-indigo-50'
-                        : 'text-gray-500 hover:text-indigo-600 hover:bg-gray-100'
+                      ? 'text-indigo-600 border-b-2 border-indigo-600 bg-indigo-50'
+                      : 'text-gray-500 hover:text-indigo-600 hover:bg-gray-100'
                       }`}
-                    onClick={() => { setActiveTab(tab), setIsEditing(false) }}
-                    aria-current={activeTab === tab ? 'page' : undefined}
+                    onClick={() => {
+                      setActiveTab(tab);
+                      setIsEditing(false);
+                    }}
+                    aria-current={activeTab === tab ? "page" : undefined}
                   >
-                    {tab === 'details' && 'Details'}
-                    {tab === 'activity' && 'Activity'}
-                    {tab === 'agents' && `Agents (${formData.agentsCount})`}
-                    {tab === 'co' && `CO (${formData.coCounts})`}
+                    {tab === "details" && "Details"}
+                    {tab === "activity" && "Activity"}
+                    {tab === "agents" && `Agents (${formData.agentsCount})`}
+                    {tab === "co" && `CO (${formData.coCounts})`}
+
                   </button>
+
                 ))}
               </div>
 
@@ -519,6 +537,32 @@ const VIewZonal = ({ ViewData: initialData, onSave, onClose }) => {
           </div>
         </div>
       </div>
+      {/* transfer modal */}
+
+      {transferModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-70 p-4">
+          <div className="bg-gray-100 rounded-lg max-h-[90vh] w-full max-w-7xl p-4 flex flex-col">
+
+            {/* Fixed Header */}
+            <div className="flex flex-row justify-between items-center mb-4 border-b pb-2">
+              <h1 className="text-lg font-semibold">Transfer</h1>
+              <button
+                className="w-8 h-8 flex items-center justify-center  text-red-500 rounded-full hover:bg-red-200 duration-300 cursor-pointer"
+                onClick={() => setTransferModal(false)}
+              >
+                ✕
+              </button>
+
+            </div>
+
+            {/* Scrollable Content */}
+            <div className="flex-1 overflow-y-auto">
+              <Transfer />
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

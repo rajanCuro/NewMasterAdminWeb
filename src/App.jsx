@@ -1,49 +1,52 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import Sidebar from './components/sidebar';
+
 import Login from './auth/Login';
 import Zonal from './pages/ZonalHead/ZonalHeadList';
 import AgentList from './pages/Agent/AgentList';
 import CircleOfficerList from './pages/CircleOfficer/CircleOfficerList';
 import DashBoard from './pages/dashboard/DashBoard';
 import Map from './pages/Map/Map';
+import {  useAuth } from './auth/AuthContext.jsx'
+import Setting from './pages/Setting/Setting.jsx';
+import Sidebar from './components/sidebar.jsx';
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [collapsed, setCollapsed] = useState(false); // Manage sidebar collapsed state
-
-  // Function to toggle sidebar collapse state
+  const { token,role } = useAuth(); 
+  console.log('rolee:', role);  
   const toggleSidebar = () => setCollapsed(!collapsed);
+  return ( 
+      <Router>
+        <div className="flex">
+          {/* Pass collapsed state and toggle function to Sidebar */}
+          {token && <Sidebar collapsed={collapsed} toggleSidebar={toggleSidebar} />}
 
-  return (
-    <Router>
-      <div className="flex">
-        {/* Pass collapsed state and toggle function to Sidebar */}
-        {isLoggedIn && <Sidebar collapsed={collapsed} toggleSidebar={toggleSidebar} />}
-
-        {/* Main content area with dynamic margin */}
-        <main
-          className={`flex-1 transition-all duration-300 ease-in-out  ${isLoggedIn ? (collapsed ? 'md:ml-20' : 'md:ml-64') : ''
-            } ${isLoggedIn ? 'ml-0' : ''}`}
-        >
-          <Routes>
-            <Route
-              path="/"
-              element={isLoggedIn ? <Navigate to="/dashboard" /> : <Login onLogin={() => setIsLoggedIn(true)} />}
-            />
-            <Route path="/dashboard" element={isLoggedIn ? <DashBoard/> : <Navigate to="/" />} />
-            <Route path="/report" element={isLoggedIn ? <h1 className="p-4">Report Page</h1> : <Navigate to="/" />} />
-            <Route path="/zonal" element={isLoggedIn ? <Zonal /> : <Navigate to="/" />} />
-            <Route path="/agent" element={isLoggedIn ? <AgentList /> : <Navigate to="/" />} />
-            <Route
-              path="/circle-officer"
-              element={isLoggedIn ? <CircleOfficerList /> : <Navigate to="/" />}
-            />
-            <Route path="/curo_map" element={isLoggedIn ? <Map/> : <Navigate to="/" />} />
-          </Routes>
-        </main>
-      </div>
-    </Router>
+          {/* Main content area with dynamic margin */}
+          <main
+            className={`flex-1 transition-all duration-300 ease-in-out  ${token ? (collapsed ? 'md:ml-20' : 'md:ml-64') : ''
+              } ${token ? 'ml-0' : ''}`}
+          >
+            <Routes>
+              <Route
+                path="/"
+                element={token ? <Navigate to="/dashboard" /> : <Login  />}
+              />
+              <Route path="/dashboard" element={token ? <DashBoard /> : <Navigate to="/" />} />
+              <Route path="/report" element={token ? <h1 className="p-4">Report Page</h1> : <Navigate to="/" />} />
+              <Route path="/zonal" element={token ? <Zonal /> : <Navigate to="/" />} />
+              <Route path="/agent" element={token ? <AgentList /> : <Navigate to="/" />} />
+              <Route
+                path="/circle-officer"
+                element={token ? <CircleOfficerList /> : <Navigate to="/" />}
+              />
+              <Route path="/curo_map" element={token ? <Map /> : <Navigate to="/" />} />
+              <Route path="/setting" element={token ? <Setting /> : <Navigate to="/" />} />
+            </Routes>
+          </main>
+        </div>
+      </Router>
+   
   );
 }
 

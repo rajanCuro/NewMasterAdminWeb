@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { FcPrevious } from "react-icons/fc";
+import { MdOutlineNavigateBefore, MdOutlineNavigateNext } from "react-icons/md";
 
 function Pagination({ currentPage, totalItems, itemsPerPage, onPageChange, onItemsPerPageChange }) {
     const [localItemsPerPage, setLocalItemsPerPage] = useState(itemsPerPage);
@@ -69,7 +71,7 @@ function Pagination({ currentPage, totalItems, itemsPerPage, onPageChange, onIte
     };
 
     return (
-        <div className="mt-6 pb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="mt-1 pb-1 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex justify-start items-center gap-4">
                 <label htmlFor="itemsPerPage" className="text-sm text-gray-600">Items Per Page:</label>
                 <select
@@ -100,48 +102,55 @@ function Pagination({ currentPage, totalItems, itemsPerPage, onPageChange, onIte
                 <button
                     onClick={() => paginate(currentPage - 1)}
                     disabled={currentPage === 1}
-                    className={`px-3 py-1 rounded-md text-sm font-medium transition-colors duration-200 ${currentPage === 1
+                    className={`w-8 h-8 cursor-pointer flex items-center justify-center rounded-full transition-colors duration-200 
+                        ${currentPage === 1
                             ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                            : "bg-blue-600 hover:bg-blue-700 text-white cursor-pointer"
+                            : "bg-blue-600 hover:bg-blue-700 text-white"
                         }`}
                 >
-                    Previous
+                    <MdOutlineNavigateBefore  size={18} />
                 </button>
 
                 {/* Page Numbers */}
                 <div className="flex gap-1">
-                    {getPageNumbers().map((page, index) => (
-                        page === '...' ? (
-                            <span key={`ellipsis-${index}`} className="w-10 h-10 flex items-center justify-center">
+                    {getPageNumbers().map((page, index) =>
+                        page === "..." ? (
+                            <span
+                                key={`ellipsis-${index}`}
+                                className="w-8 h-8 flex items-center justify-center text-gray-500"
+                            >
                                 ...
                             </span>
                         ) : (
                             <button
                                 key={page}
                                 onClick={() => paginate(page)}
-                                className={`w-10 h-10 rounded-md text-sm font-medium transition-colors duration-200 cursor-pointer ${currentPage === page
-                                        ? "bg-blue-600 text-white"
+                                className={`w-8 h-8 flex items-center justify-center rounded-full text-sm font-medium transition-colors duration-200
+                                     ${currentPage === page
+                                        ? "bg-blue-600 text-white shadow-md"
                                         : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                                     }`}
                             >
                                 {page}
                             </button>
                         )
-                    ))}
+                    )}
                 </div>
 
                 {/* Next */}
                 <button
                     onClick={() => paginate(currentPage + 1)}
                     disabled={currentPage === totalPages || totalPages === 0}
-                    className={`px-3 py-1 rounded-md text-sm font-medium transition-colors duration-200 ${currentPage === totalPages || totalPages === 0
+                    className={`w-8 h-8 flex cursor-pointer items-center justify-center rounded-full transition-colors duration-200
+                         ${currentPage === totalPages || totalPages === 0
                             ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                            : "bg-blue-600 hover:bg-blue-700 text-white cursor-pointer"
+                            : "bg-blue-600 hover:bg-blue-700 text-white"
                         }`}
                 >
-                    Next
+                    <MdOutlineNavigateNext size={18} />
                 </button>
             </div>
+
         </div>
     );
 }

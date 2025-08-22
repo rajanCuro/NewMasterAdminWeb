@@ -1,13 +1,37 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
-import leaf from '../assets/doc.png'
+import leaf from '../assets/doc.png';
+import axiosInstance from './axiosInstance';
+import { useAuth } from './AuthContext';
 
 function Login({ onLogin }) {
+    const { setToken, setUser, setRole } = useAuth()
     const [otp, setOtp] = useState(Array(6).fill(""));
     const [showPassword, setShowPassword] = useState(false);
+    const [username, setUsername] = useState('ravi@curo24.com');
+    const [password, setPassword] = useState('1234');
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
     const inputsRef = useRef([]);
     const navigate = useNavigate();
+    const [countdown, setCountdown] = useState(null);
+
+
+
+    useEffect(() => {
+        let timer;
+        if (success && countdown !== null) {
+            if (countdown > 0) {
+                timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+            } else {
+                setSuccess("");   // hide message
+                setCountdown(null);
+            }
+        }
+        return () => clearTimeout(timer);
+    }, [success, countdown]);
 
     const handleChange = (value, index) => {
         if (/^\d*$/.test(value)) {
@@ -40,13 +64,40 @@ function Login({ onLogin }) {
         }
     };
 
-    const handleLogin = () => {
-        onLogin(); // Set login true in App.js
-        navigate("/dashboard"); // Redirect to dashboard
+    const handleLogin = async () => {
+        setIsLoading(true);
+        setError('');
+        try {
+            const response = await axiosInstance.post('/auth/signin', {
+                username: username,
+                password: password,
+            });
+
+            console.log("Login successful:", response);
+            setSuccess("Login successful!");
+            setCountdown(3)
+            setTimeout(() => {
+                localStorage.setItem("user", JSON.stringify(response.data.user));
+                setUser(JSON.stringify(response.data.user));
+                setToken(response.data.token)
+                setRole(response.data.user.role)
+                localStorage.setItem('token', response.data.token);
+            }, 2000);
+        } catch (error) {
+            console.log("Login failed:", error);
+            setError(error.response.data.message || error.message);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const togglePasswordVisibility = () => {
         setShowPassword(!showPassword);
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        handleLogin();
     };
 
     return (
@@ -130,11 +181,32 @@ function Login({ onLogin }) {
                         className="h-58 w-40 rotate-45 opacity-70 "
                     />
                 </div>
-                <div className="w-full max-w-md border px-14 py-8 border-gray-200 shadow rounded-xl ">
+                <form onSubmit={handleSubmit} className="w-full max-w-md border px-14 py-8 border-gray-200 shadow rounded-xl">
                     <h2 className="text-2xl font-bold text-gray-800 mb-6">Sign in securely</h2>
+
+                    {error && (
+                        <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                            {error}
+                        </div>
+                    )}
+                    {success && (
+                        <div className="mt-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded">
+                            ✅ {success} (Hiding in {countdown})
+                        </div>
+                    )}
+
                     <div className="space-y-6">
                         <div className="float-container">
-                            <input type="email" id="email" placeholder=" " className="float-input" required />
+                            <input
+                                value={username}
+                                onChange={(e) => setUsername(e.target.value)}
+                                type="email"
+                                id="email"
+                                placeholder=" "
+                                className="float-input"
+                                required
+                                disabled={isLoading}
+                            />
                             <label htmlFor="email" className="float-label">Email Address</label>
                         </div>
                         <div className="float-container relative">
@@ -142,44 +214,41 @@ function Login({ onLogin }) {
                                 type={showPassword ? "text" : "password"}
                                 id="password"
                                 placeholder=" "
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
                                 className="float-input pr-10"
                                 required
+                                disabled={isLoading}
                             />
                             <label htmlFor="password" className="float-label">Password</label>
                             <button
                                 type="button"
                                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
                                 onClick={togglePasswordVisibility}
+                                disabled={isLoading}
                             >
                                 {showPassword ? <FaEyeSlash /> : <FaEye />}
                             </button>
                         </div>
-                        <div className="pt-2">
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Verification Code</label>
-                            <div className="flex justify-between space-x-2">
-                                {otp.map((digit, index) => (
-                                    <input
-                                        key={index}
-                                        type="text"
-                                        inputMode="numeric"
-                                        pattern="[0-9]*"
-                                        maxLength={1}
-                                        value={digit}
-                                        ref={(el) => (inputsRef.current[index] = el)}
-                                        onChange={(e) => handleChange(e.target.value, index)}
-                                        onKeyDown={(e) => handleKeyDown(e, index)}
-                                        onPaste={handlePaste}
-                                        className="w-12 h-12 text-center text-xl border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all"
-                                    />
-                                ))}
-                            </div>
-                            <p className="mt-2 text-xs text-gray-500">We've sent a 6-digit code to your email</p>
-                        </div>
                         <div className="pt-4">
-                            <button onClick={handleLogin} className="submit-btn w-full">Sign In</button>
+                            <button
+                                type="submit"
+                                className="submit-btn w-full flex items-center justify-center"
+                                disabled={isLoading}
+                            >
+                                {isLoading ? (
+                                    <>
+                                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        Signing In...
+                                    </>
+                                ) : "Sign In"}
+                            </button>
                         </div>
                     </div>
-                </div>
+                </form>
             </div>
         </div>
     );
