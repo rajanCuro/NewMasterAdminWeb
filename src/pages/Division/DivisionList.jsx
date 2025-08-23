@@ -1,13 +1,15 @@
+// ZonalHeadList.js
 import React, { useState, useEffect } from 'react';
-import { RiSearchLine, RiFilterLine, RiCloseLine } from 'react-icons/ri';
+import { RiSearchLine } from 'react-icons/ri';
 import Pagination from '../Pagination';
 import ViewDivision from './ViewDivision';
 import AddUpdateDivision from './AddUpdateDivision';
 import axiosInstance from '../../auth/axiosInstance';
 import { useAuth } from '../../auth/AuthContext';
+import Swal from 'sweetalert2';
 
 function ZonalHeadList() {
-  const { getALLState } = useAuth()
+  const { getALLState } = useAuth();
   const [zonalHeads, setZonalHeads] = useState([]);
   const [filteredZonalHeads, setFilteredZonalHeads] = useState([]);
   const [addZonalModal, setAddZonalModal] = useState(false);
@@ -23,21 +25,33 @@ function ZonalHeadList() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [selectedZonal, setSelectedZonal] = useState(null);
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
 
   // Fetch data from API
   useEffect(() => {
     getAllDivisions();
-    getALLState()
-  }, []);
+    getALLState();
+  }, [currentPage, itemsPerPage]);
 
   const getAllDivisions = async () => {
     setIsLoading(true);
     try {
-      const response = await axiosInstance.get(`/head_admin/getAllDivisionAdmins`);
+      const response = await axiosInstance.get(`/head_admin/getAllDivisionAdmins?page=${currentPage}&pageSize=${itemsPerPage}`
+      );
+      
       console.log("All divisions:", response.data);
-      const reversed = [...(response.data.dtoList || [])].reverse();
-      setZonalHeads(reversed);
-      setFilteredZonalHeads(reversed);
+      
+      if (response.data && response.data.code === "200") {
+        setTotalItems(response.data.totalItems);
+        setTotalPages(response.data.totalPages);
+        
+        // Use the data directly without reversing to maintain proper pagination order
+        setZonalHeads(response.data.dtoList || []);
+        setFilteredZonalHeads(response.data.dtoList || []);
+      } else {
+        throw new Error("Invalid response format");
+      }
     } catch (error) {
       console.log("Error getting all divisions:", error);
       Swal.fire("Error", "Failed to load division admins", "error");
@@ -45,7 +59,6 @@ function ZonalHeadList() {
       setIsLoading(false);
     }
   };
-
 
   // Apply filters
   useEffect(() => {
@@ -62,7 +75,7 @@ function ZonalHeadList() {
         const fullName = `${firstName} ${lastName}`;
         const email = item.email?.toLowerCase() || "";
         const id = item.id?.toString().toLowerCase() || "";
-        
+
         return (
           divisionName.includes(term) ||
           id.includes(term) ||
@@ -93,7 +106,6 @@ function ZonalHeadList() {
     }
 
     setFilteredZonalHeads(result);
-    setCurrentPage(1);
   }, [filters, zonalHeads]);
 
   const handleFilterChange = (e) => {
@@ -164,42 +176,6 @@ function ZonalHeadList() {
     };
   }, []);
 
-  // Pagination logic
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentZonalHead = filteredZonalHeads.slice(indexOfFirstItem, indexOfLastItem);
-  const totalItems = filteredZonalHeads.length;
-
-  // Status badge color
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "Verified":
-        return "bg-green-100 text-green-800 border-green-200";
-      case "Pending":
-        return "bg-yellow-100 text-yellow-800 border-yellow-200";
-      case "Rejected":
-        return "bg-red-100 text-red-800 border-red-200";
-      default:
-        return "bg-gray-100 text-gray-800 border-gray-200";
-    }
-  };
-
-  // Performance indicator
-  const getPerformanceColor = (performance) => {
-    switch (performance) {
-      case "Excellent":
-        return "text-green-600 bg-green-50 border-green-200";
-      case "Good":
-        return "text-blue-600 bg-blue-50 border-blue-200";
-      case "Average":
-        return "text-yellow-600 bg-yellow-50 border-yellow-200";
-      case "Needs Improvement":
-        return "text-red-600 bg-red-50 border-red-200";
-      default:
-        return "text-gray-600 bg-gray-50 border-gray-200";
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -265,7 +241,7 @@ function ZonalHeadList() {
                       </div>
                     </td>
                   </tr>
-                ) : currentZonalHead.length === 0 ? (
+                ) : filteredZonalHeads.length === 0 ? (
                   <tr>
                     <td colSpan="7" className="px-6 py-8 text-center">
                       <div className="flex flex-col items-center justify-center text-gray-500">
@@ -278,7 +254,7 @@ function ZonalHeadList() {
                     </td>
                   </tr>
                 ) : (
-                  currentZonalHead.map((zonal, index) => (
+                  filteredZonalHeads.map((zonal, index) => (
 
                     <tr onDoubleClick={() => handleViewZonal(zonal)} key={zonal.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#{zonal.id}</td>
@@ -358,6 +334,7 @@ function ZonalHeadList() {
             <Pagination
               currentPage={currentPage}
               totalItems={totalItems}
+              totalPages={totalPages}
               itemsPerPage={itemsPerPage}
               onPageChange={setCurrentPage}
               onItemsPerPageChange={setItemsPerPage}

@@ -1,10 +1,9 @@
+// Pagination.js
 import React, { useState, useEffect } from "react";
-import { FcPrevious } from "react-icons/fc";
 import { MdOutlineNavigateBefore, MdOutlineNavigateNext } from "react-icons/md";
 
-function Pagination({ currentPage, totalItems, itemsPerPage, onPageChange, onItemsPerPageChange }) {
+function Pagination({ currentPage, totalItems, totalPages, itemsPerPage, onPageChange, onItemsPerPageChange }) {
     const [localItemsPerPage, setLocalItemsPerPage] = useState(itemsPerPage);
-    const totalPages = Math.ceil(totalItems / localItemsPerPage);
 
     // Sync local state with props
     useEffect(() => {
@@ -81,6 +80,7 @@ function Pagination({ currentPage, totalItems, itemsPerPage, onPageChange, onIte
                     id="itemsPerPage"
                     className="border border-gray-300 cursor-pointer rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
+                    <option value="5">5</option>
                     <option value="10">10</option>
                     <option value="25">25</option>
                     <option value="50">50</option>

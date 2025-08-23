@@ -31,7 +31,7 @@ function AddUpdateDivision({ EditData, onClose }) {
         divisionId: EditData.division?.id || '', // Fixed: get division ID from division object
         profilePicture: EditData.profilePicture || '',
       });
-      
+
       // Set the state if available (you might need to get state from division data)
       if (EditData.division) {
         // You may need to determine the state from the division data
@@ -164,7 +164,7 @@ function AddUpdateDivision({ EditData, onClose }) {
                 id="state"
                 value={selectedState}
                 onChange={handleStateChange}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2  border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 required
               >
                 <option value="">-- Select State --</option>
@@ -185,7 +185,7 @@ function AddUpdateDivision({ EditData, onClose }) {
                 id="divisionId"
                 value={formData.divisionId}
                 onChange={handleChange}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
                 disabled={!selectedState || isDivisionsLoading}
                 required
               >
@@ -206,86 +206,86 @@ function AddUpdateDivision({ EditData, onClose }) {
           </div>
 
           {/* First + Last Name */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="firstName" className="block mb-2 font-medium text-gray-700">
-                First Name <span className="text-red-500">*</span>
-              </label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">           
+            <div className='float-container'>
               <input
                 type="text"
                 id="firstName"
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="float-input"
                 required
                 value={formData.firstName}
                 onChange={handleChange}
-                placeholder="Enter first name"
+                placeholder=""
               />
+              <label htmlFor="firstName" className="float-label">
+                First Name <span className="text-red-500">*</span>
+              </label>
             </div>
 
-            <div>
-              <label htmlFor="lastName" className="block mb-2 font-medium text-gray-700">
-                Last Name <span className="text-red-500">*</span>
-              </label>
+            <div className='float-container'>
               <input
                 type="text"
                 id="lastName"
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="float-input"
                 required
                 value={formData.lastName}
                 onChange={handleChange}
-                placeholder="Enter last name"
+                placeholder=""
               />
+              <label htmlFor="lastName" className="float-label">
+                Last Name <span className="text-red-500">*</span>
+              </label>
             </div>
           </div>
 
           {/* Phone + Email */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="mobileNumber" className="block mb-2 font-medium text-gray-700">
-                Phone Number <span className="text-red-500">*</span>
-              </label>
+            <div className='float-container'>
               <input
                 type="tel"
                 id="mobileNumber"
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="float-input"
                 required
                 value={formData.mobileNumber}
                 onChange={handleChange}
                 maxLength="10"
                 pattern="[0-9]{10}"
-                placeholder="10-digit phone number"
+                placeholder=""
               />
+              <label htmlFor="mobileNumber" className="float-label">
+                Phone Number <span className="text-red-500">*</span>
+              </label>
             </div>
 
-            <div>
-              <label htmlFor="email" className="block mb-2 font-medium text-gray-700">
-                Email Address <span className="text-red-500">*</span>
-              </label>
+            <div className='float-container'>
               <input
                 type="email"
                 id="email"
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="float-input"
                 required
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="Enter email address"
+                placeholder=""
               />
+              <label htmlFor="email" className="float-label">
+                Email Address <span className="text-red-500">*</span>
+              </label>
             </div>
           </div>
 
           {/* Profile Picture */}
-          <div>
-            <label htmlFor="profilePicture" className="block mb-2 font-medium text-gray-700">
-              Profile Picture URL
-            </label>
+          <div className='float-container'>
             <input
               type="text"
               id="profilePicture"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="float-input"
               value={formData.profilePicture}
               onChange={handleChange}
-              placeholder="Enter image URL (optional)"
+              placeholder=""
             />
+            <label htmlFor="profilePicture" className="float-label">
+              Profile Picture URL
+            </label>
           </div>
 
           <div className="flex justify-end gap-3 pt-4">
@@ -300,8 +300,8 @@ function AddUpdateDivision({ EditData, onClose }) {
               type="submit"
               disabled={isLoading}
               className={`px-5 py-2 rounded-lg transition-colors font-medium cursor-pointer ${isLoading
-                  ? "bg-gray-400 text-gray-200 cursor-not-allowed"
-                  : "bg-blue-600 text-white hover:bg-blue-700"
+                ? "bg-gray-400 text-gray-200 cursor-not-allowed"
+                : "bg-blue-600 text-white hover:bg-blue-700"
                 }`}
             >
               {isLoading ? "Processing..." : EditData ? "Update Division" : "Add Division"}
