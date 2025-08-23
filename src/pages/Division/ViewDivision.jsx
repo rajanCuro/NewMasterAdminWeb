@@ -1,26 +1,57 @@
-import React, { useState } from 'react';
-import { FaUserTie, FaPhone, FaEnvelope, FaMapMarkerAlt, FaCalendarAlt, FaSyncAlt, FaChartLine, FaCheckCircle, FaExclamationTriangle, FaUsers, FaSave, FaTimes } from 'react-icons/fa';
+import React, { useState, useEffect } from 'react';
+import { FaUserTie, FaPhone, FaEnvelope, FaMapMarkerAlt, FaCalendarAlt, FaSyncAlt, FaChartLine, FaCheckCircle, FaExclamationTriangle, FaUsers, FaSave, FaTimes, FaList } from 'react-icons/fa';
 import Transfer from './Transfer';
 import { IoMdSwap } from "react-icons/io";
 import { MdSwapHorizontalCircle } from "react-icons/md";
-
-
+import axiosInstance from '../../auth/axiosInstance';
 
 const ViewDivision = ({ ViewData: initialData, onSave, onClose }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState('details');
   const [transferModal, setTransferModal] = useState(false);
-  const [formData, setFormData] = useState({
-    ...initialData,
-    joiningDate: initialData.joiningDate || '2023-05-15',
-    additionalInfo: initialData.additionalInfo || `This zonal head manages the ${initialData.zoneName} region and oversees a team of ${initialData.agentsCount} agents and ${initialData.coCounts} COs.`
-  });
+  const [divisions, setDivisions] = useState([]);
+  const [isLoadingDivisions, setIsLoadingDivisions] = useState(false);
+  console.log(initialData);
+  // Transform API data to match component structure
+  const transformData = (data) => {
+    return {
+      id: data.id,
+      name: `${data.firstName} ${data.lastName}`,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      email: data.email,
+      mobileNumber: data.mobileNumber,
+      zoneName: data.division?.zoneName || 'N/A',
+      zoneId: data.division?.id || 'N/A',
+      status: data.enabled ? 'Active' : 'Inactive',
+      performance: 'Good', // Default value
+      agentsCount: 24, // Default value since not in API
+      coCounts: 5, // Default value since not in API
+      profilePicture: data.profilePicture,
+      createdAt: data.createdAt,
+      updatedAt: data.updatedAt,
+      lastLogin: data.lastLogin,
+      joiningDate: data.createdAt?.split('T')[0] || '2023-05-15',
+      additionalInfo: `This division admin manages the ${data.division?.zoneName || 'N/A'} region.`,
+      // Include all original properties
+      ...data
+    };
+  };
+
+  const [formData, setFormData] = useState(transformData(initialData));
   const [errors, setErrors] = useState({});
 
   // Format phone number
   const formatPhoneNumber = (phone) => {
+    if (!phone) return 'N/A';
     try {
-      return phone.replace(/(\+\d{1,2})(\d{3})(\d{3})(\d{4})/, '$1 ($2) $3-$4');
+      // Remove any non-digit characters
+      const cleaned = phone.replace(/\D/g, '');
+      // Format as (XXX) XXX-XXXX for 10-digit numbers
+      if (cleaned.length === 10) {
+        return `(${cleaned.substring(0, 3)}) ${cleaned.substring(3, 6)}-${cleaned.substring(6)}`;
+      }
+      return phone;
     } catch {
       return phone;
     }
@@ -28,6 +59,7 @@ const ViewDivision = ({ ViewData: initialData, onSave, onClose }) => {
 
   // Format date
   const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
     try {
       const options = { year: 'numeric', month: 'long', day: 'numeric' };
       return new Date(dateString).toLocaleDateString(undefined, options);
@@ -39,12 +71,12 @@ const ViewDivision = ({ ViewData: initialData, onSave, onClose }) => {
   // Validate form data
   const validateForm = () => {
     const newErrors = {};
-    if (!formData.name.trim()) newErrors.name = 'Name is required';
+    if (!formData.firstName.trim()) newErrors.firstName = 'First name is required';
+    if (!formData.lastName.trim()) newErrors.lastName = 'Last name is required';
     if (!formData.email || !/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Valid email is required';
-    if (!formData.phone || !/^\+\d{1,2}\d{10}$/.test(formData.phone.replace(/\D/g, ''))) newErrors.phone = 'Valid phone number is required';
-    if (!formData.zoneName.trim()) newErrors.zoneName = 'Zone name is required';
-    if (!formData.zoneId.trim()) newErrors.zoneId = 'Zone ID is required';
-    if (!formData.joiningDate) newErrors.joiningDate = 'Joining date is required';
+    if (!formData.mobileNumber || !/^\d{10}$/.test(formData.mobileNumber.replace(/\D/g, ''))) {
+      newErrors.mobileNumber = 'Valid 10-digit phone number is required';
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -66,7 +98,7 @@ const ViewDivision = ({ ViewData: initialData, onSave, onClose }) => {
 
   // Handle cancel
   const handleCancel = () => {
-    setFormData(initialData);
+    setFormData(transformData(initialData));
     setErrors({});
     setIsEditing(false);
   };
@@ -108,62 +140,69 @@ const ViewDivision = ({ ViewData: initialData, onSave, onClose }) => {
     );
   };
 
-  const handleTransferModal = (name) => {
-    setTransferModal(true)
-  }
-
+  const handleTransferModal = () => {
+    setTransferModal(true);
+  };
 
   return (
-    <div className=" min-h-[400px]">
+    <div className="min-h-[400px]">
       <div className="max-w-7xl mx-auto">
         {/* Profile Card */}
         <div className="bg-white rounded-2xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl">
           <div className="flex flex-col lg:flex-row">
             {/* Profile Sidebar */}
             <div className="lg:w-1/3 p-6 bg-gradient-to-br from-indigo-50 to-blue-50 flex flex-col items-center justify-start">
-
               <div className="w-24 h-24 sm:w-32 sm:h-32 bg-indigo-100 rounded-full flex items-center justify-center mb-4 border-4 border-white shadow-md">
-                <FaUserTie className="text-indigo-500 text-3xl sm:text-5xl" aria-hidden="true" />
+                {formData.profilePicture && formData.profilePicture !== 'NA' ? (
+                  <img
+                    src={formData.profilePicture}
+                    alt={formData.name}
+                    className="w-full h-full rounded-full object-cover"
+                  />
+                ) : (
+                  <FaUserTie className="text-indigo-500 text-3xl sm:text-5xl" aria-hidden="true" />
+                )}
               </div>
 
               {isEditing ? (
-                <div className="w-full mb-4 relative">
-                  <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="name">Name</label>
-                  <input
-                    type="text"
-                    id="name"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    className={`w-full p-2.5 border ${errors.name ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-sm sm:text-base transition-all duration-200`}
-                    aria-invalid={!!errors.name}
-                    aria-describedby={errors.name ? 'name-error' : undefined}
-                  />
-                  {errors.name && <p id="name-error" className="text-red-500 text-xs mt-1">{errors.name}</p>}
-                </div>
+                <>
+                  <div className="w-full mb-4 relative">
+                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="firstName">First Name</label>
+                    <input
+                      type="text"
+                      id="firstName"
+                      name="firstName"
+                      value={formData.firstName}
+                      onChange={handleInputChange}
+                      className={`w-full p-2.5 border ${errors.firstName ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-sm sm:text-base transition-all duration-200`}
+                      aria-invalid={!!errors.firstName}
+                      aria-describedby={errors.firstName ? 'firstName-error' : undefined}
+                    />
+                    {errors.firstName && <p id="firstName-error" className="text-red-500 text-xs mt-1">{errors.firstName}</p>}
+                  </div>
+                  <div className="w-full mb-4 relative">
+                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="lastName">Last Name</label>
+                    <input
+                      type="text"
+                      id="lastName"
+                      name="lastName"
+                      value={formData.lastName}
+                      onChange={handleInputChange}
+                      className={`w-full p-2.5 border ${errors.lastName ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-sm sm:text-base transition-all duration-200`}
+                      aria-invalid={!!errors.lastName}
+                      aria-describedby={errors.lastName ? 'lastName-error' : undefined}
+                    />
+                    {errors.lastName && <p id="lastName-error" className="text-red-500 text-xs mt-1">{errors.lastName}</p>}
+                  </div>
+                </>
               ) : (
-                <h2 className="text-lg sm:text-xl font-semibold text-gray-800 text-center">{formData.name} </h2>
+                <>
+                  <h2 className="text-lg sm:text-xl font-semibold uppercase text-gray-800 text-center">{formData.name}</h2>
+                  <p className="text-indigo-600 font-medium text-sm sm:text-base mt-2">{formData.zoneName}</p>
+                </>
               )}
 
-              {isEditing ? (
-                <div className="w-full mb-4 relative">
-                  <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="zoneName">Zone Name</label>
-                  <input
-                    type="text"
-                    id="zoneName"
-                    name="zoneName"
-                    value={formData.zoneName}
-                    onChange={handleInputChange}
-                    className={`w-full p-2.5 border ${errors.zoneName ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-sm sm:text-base transition-all duration-200`}
-                    aria-invalid={!!errors.zoneName}
-                    aria-describedby={errors.zoneName ? 'zoneName-error' : undefined}
-                  />
-                  {errors.zoneName && <p id="zoneName-error" className="text-red-500 text-xs mt-1">{errors.zoneName}</p>}
-                </div>
-              ) : (
-                <p className="text-indigo-600 font-medium text-sm sm:text-base mt-2">{formData.zoneName}</p>
-              )}
-              <div className={`flex w-full ${isEditing ? "flex-col" : "flex-row"}  justify-center items-center gap-4`}>
+              <div className={`flex w-full ${isEditing ? "flex-col" : "flex-row"} justify-center items-center gap-4 mt-4`}>
                 {/* Status Badge */}
                 {isEditing ? (
                   <div className="w-full mb-4 relative">
@@ -178,11 +217,11 @@ const ViewDivision = ({ ViewData: initialData, onSave, onClose }) => {
                     >
                       <option value="Active">Active</option>
                       <option value="Inactive">Inactive</option>
-                      <option value="On Leave">On Leave</option>
                     </select>
                   </div>
                 ) : (
-                  <div className="mt-4 px-3 py-1.5 bg-green-100 text-green-800 rounded-full text-sm font-medium inline-flex items-center animate-pulse-short">
+                  <div className={`px-3 py-1.5 rounded-full text-sm font-medium inline-flex items-center animate-pulse-short ${formData.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                    }`}>
                     <FaCheckCircle className="mr-2" aria-hidden="true" />
                     {formData.status}
                   </div>
@@ -207,12 +246,19 @@ const ViewDivision = ({ ViewData: initialData, onSave, onClose }) => {
                     </select>
                   </div>
                 ) : (
-                  <div className="mt-4">
+                  <div className="">
                     <PerformanceIndicator performance={formData.performance} />
                   </div>
                 )}
-                <button onClick={handleTransferModal} className='mt-4 py-0.5  bg-amber-200 text-amber-900 px-3 cursor-pointer hover:bg-amber-300 rounded-xl flex justify-center items-center '> <MdSwapHorizontalCircle />Transfer</button>
+                <button
+                  onClick={handleTransferModal}
+                  className=' py-0.5 bg-amber-200 text-amber-900 px-3 cursor-pointer hover:bg-amber-300 rounded-xl flex justify-center items-center'
+                >
+                  <MdSwapHorizontalCircle className="mr-1" />
+                  Transfer
+                </button>
               </div>
+
               {/* Stats Section */}
               <div className="mt-6 w-full space-y-3">
                 <div className="flex items-center bg-white p-3 rounded-lg shadow-sm">
@@ -220,41 +266,19 @@ const ViewDivision = ({ ViewData: initialData, onSave, onClose }) => {
                     <FaUsers className="text-blue-500" aria-hidden="true" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm text-gray-500">Agents</p>
-                    {isEditing ? (
-                      <input
-                        type="number"
-                        name="agentsCount"
-                        value={formData.agentsCount}
-                        onChange={handleInputChange}
-                        className="w-20 p-1.5 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-sm transition-all duration-200"
-                        min="0"
-                        aria-label="Agents Count"
-                      />
-                    ) : (
-                      <p className="font-semibold text-gray-800">{formData.agentsCount}</p>
-                    )}
+                    <p className="text-sm text-gray-500">Last Login</p>
+                    <p className="font-semibold text-gray-800">
+                      {formData.lastLogin ? formatDate(formData.lastLogin) : 'Never'}
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center bg-white p-3 rounded-lg shadow-sm">
                   <div className="bg-purple-100 p-2 rounded-lg mr-3">
-                    <FaUserTie className="text-purple-500" aria-hidden="true" />
+                    <FaCalendarAlt className="text-purple-500" aria-hidden="true" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm text-gray-500">CO Count</p>
-                    {isEditing ? (
-                      <input
-                        type="number"
-                        name="coCounts"
-                        value={formData.coCounts}
-                        onChange={handleInputChange}
-                        className="w-20 p-1.5 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-sm transition-all duration-200"
-                        min="0"
-                        aria-label="CO Count"
-                      />
-                    ) : (
-                      <p className="font-semibold text-gray-800">{formData.coCounts}</p>
-                    )}
+                    <p className="text-sm text-gray-500">Member Since</p>
+                    <p className="font-semibold text-gray-800">{formatDate(formData.createdAt)}</p>
                   </div>
                 </div>
               </div>
@@ -264,7 +288,7 @@ const ViewDivision = ({ ViewData: initialData, onSave, onClose }) => {
             <div className="lg:w-2/3 p-4 sm:p-6">
               {/* Tabs */}
               <div className="flex flex-col sm:flex-row border-b border-gray-200 mb-6 space-y-2 sm:space-y-0 sm:space-x-4">
-                {['details', 'activity', 'agents', 'co',].map(tab => (
+                {['details', 'activity', 'divisions'].map(tab => (
                   <button
                     key={tab}
                     className={`py-2 px-3 sm:px-4 cursor-pointer font-medium text-sm rounded-t-lg transition-all duration-200 ${activeTab === tab
@@ -279,11 +303,8 @@ const ViewDivision = ({ ViewData: initialData, onSave, onClose }) => {
                   >
                     {tab === "details" && "Details"}
                     {tab === "activity" && "Activity"}
-                    {tab === "agents" && `Agents (${formData.agentsCount})`}
-                    {tab === "co" && `CO (${formData.coCounts})`}
-
+                    {tab === "divisions" && `Divisions (${divisions.length + 1})`}
                   </button>
-
                 ))}
               </div>
 
@@ -312,7 +333,7 @@ const ViewDivision = ({ ViewData: initialData, onSave, onClose }) => {
                             {errors.email && <p id="email-error" className="text-red-500 text-xs mt-1">{errors.email}</p>}
                           </div>
                         ) : (
-                          <p className="text-gray-800 text-sm sm:text-base">{formData.email}</p>
+                          <p className="text-gray-800 text-sm sm:text-base break-all">{formData.email}</p>
                         )}
                       </div>
                     </div>
@@ -327,18 +348,18 @@ const ViewDivision = ({ ViewData: initialData, onSave, onClose }) => {
                           <div className="relative">
                             <input
                               type="tel"
-                              id="phone"
-                              name="phone"
-                              value={formData.phone}
+                              id="mobileNumber"
+                              name="mobileNumber"
+                              value={formData.mobileNumber}
                               onChange={handleInputChange}
-                              className={`w-full p-2.5 border ${errors.phone ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-sm sm:text-base transition-all duration-200`}
-                              aria-invalid={!!errors.phone}
-                              aria-describedby={errors.phone ? 'phone-error' : undefined}
+                              className={`w-full p-2.5 border ${errors.mobileNumber ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-sm sm:text-base transition-all duration-200`}
+                              aria-invalid={!!errors.mobileNumber}
+                              aria-describedby={errors.mobileNumber ? 'mobileNumber-error' : undefined}
                             />
-                            {errors.phone && <p id="phone-error" className="text-red-500 text-xs mt-1">{errors.phone}</p>}
+                            {errors.mobileNumber && <p id="mobileNumber-error" className="text-red-500 text-xs mt-1">{errors.mobileNumber}</p>}
                           </div>
                         ) : (
-                          <p className="text-gray-800 text-sm sm:text-base">{formatPhoneNumber(formData.phone)}</p>
+                          <p className="text-gray-800 text-sm sm:text-base">{formatPhoneNumber(formData.mobileNumber)}</p>
                         )}
                       </div>
                     </div>
@@ -348,50 +369,18 @@ const ViewDivision = ({ ViewData: initialData, onSave, onClose }) => {
                         <FaMapMarkerAlt className="text-purple-500" aria-hidden="true" />
                       </div>
                       <div className="flex-1">
-                        <p className="text-sm text-gray-500">Zone ID</p>
-                        {isEditing ? (
-                          <div className="relative">
-                            <input
-                              type="text"
-                              id="zoneId"
-                              name="zoneId"
-                              value={formData.zoneId}
-                              onChange={handleInputChange}
-                              className={`w-full p-2.5 border ${errors.zoneId ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-sm sm:text-base transition-all duration-200`}
-                              aria-invalid={!!errors.zoneId}
-                              aria-describedby={errors.zoneId ? 'zoneId-error' : undefined}
-                            />
-                            {errors.zoneId && <p id="zoneId-error" className="text-red-500 text-xs mt-1">{errors.zoneId}</p>}
-                          </div>
-                        ) : (
-                          <p className="text-gray-800 text-sm sm:text-base">{formData.zoneId}</p>
-                        )}
+                        <p className="text-sm text-gray-500">Division</p>
+                        <p className="text-gray-800 text-sm sm:text-base">{formData.zoneName}</p>
                       </div>
                     </div>
 
                     <div className="flex items-center">
                       <div className="bg-yellow-100 p-2.5 rounded-lg mr-3 sm:mr-4">
-                        <FaCalendarAlt className="text-yellow-500" aria-hidden="true" />
+                        <FaMapMarkerAlt className="text-yellow-500" aria-hidden="true" />
                       </div>
                       <div className="flex-1">
-                        <p className="text-sm text-gray-500">Joining Date</p>
-                        {isEditing ? (
-                          <div className="relative">
-                            <input
-                              type="date"
-                              id="joiningDate"
-                              name="joiningDate"
-                              value={formData.joiningDate}
-                              onChange={handleInputChange}
-                              className={`w-full p-2.5 border ${errors.joiningDate ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-sm sm:text-base transition-all duration-200`}
-                              aria-invalid={!!errors.joiningDate}
-                              aria-describedby={errors.joiningDate ? 'joiningDate-error' : undefined}
-                            />
-                            {errors.joiningDate && <p id="joiningDate-error" className="text-red-500 text-xs mt-1">{errors.joiningDate}</p>}
-                          </div>
-                        ) : (
-                          <p className="text-gray-800 text-sm sm:text-base">{formatDate(formData.joiningDate)}</p>
-                        )}
+                        <p className="text-sm text-gray-500">Division ID</p>
+                        <p className="text-gray-800 text-sm sm:text-base">{formData.zoneId}</p>
                       </div>
                     </div>
                   </div>
@@ -417,64 +406,104 @@ const ViewDivision = ({ ViewData: initialData, onSave, onClose }) => {
               {/* Activity Tab Content */}
               {activeTab === 'activity' && (
                 <div className="space-y-4 animate-fade-in">
-                  {[
-                    { title: 'Performance Review', date: 'August 15, 2025', status: 'Needs Attention', statusColor: 'bg-yellow-100 text-yellow-800' },
-                    { title: 'Team Meeting', date: 'August 20, 2025', status: 'Upcoming', statusColor: 'bg-blue-100 text-blue-800' },
-                    { title: 'Quarterly Report', date: 'July 30, 2025', status: 'Completed', statusColor: 'bg-green-100 text-green-800' }
-                  ].map((activity, index) => (
-                    <div key={index} className="flex justify-between items-center p-3 sm:p-4 bg-gray-50 rounded-lg shadow-sm transition-all duration-200 hover:bg-gray-100">
-                      <div>
-                        <p className="font-medium text-sm sm:text-base">{activity.title}</p>
-                        <p className="text-xs sm:text-sm text-gray-500">{activity.date}</p>
-                      </div>
-                      <span className={`px-3 py-1 rounded-full text-xs sm:text-sm font-medium ${activity.statusColor}`}>
-                        {activity.status}
-                      </span>
+                  <div className="flex justify-between items-center p-3 sm:p-4 bg-gray-50 rounded-lg shadow-sm">
+                    <div>
+                      <p className="font-medium text-sm sm:text-base">Account Created</p>
+                      <p className="text-xs sm:text-sm text-gray-500">{formatDate(formData.createdAt)}</p>
                     </div>
-                  ))}
-                </div>
-              )}
+                    <span className="px-3 py-1 rounded-full text-xs sm:text-sm font-medium bg-green-100 text-green-800">
+                      Completed
+                    </span>
+                  </div>
 
-              {/* Agents Tab Content */}
-              {activeTab === 'agents' && (
-                <div className="animate-fade-in">
-                  <p className="text-gray-600 text-sm sm:text-base mb-4">
-                    This zonal head manages a team of {formData.agentsCount} agents in the {formData.zoneName} region.
-                  </p>
-                  <div className="bg-blue-50 p-3 sm:p-4 rounded-lg shadow-sm">
-                    <div className="flex items-center">
-                      <div className="bg-blue-100 p-2 rounded-lg mr-3">
-                        <FaUsers className="text-blue-500" aria-hidden="true" />
-                      </div>
-                      <div>
-                        <p className="text-sm text-blue-700">
-                          Agent details are managed in the dedicated agents section.{' '}
-                          <a href="#agents" className="font-medium text-blue-600 hover:underline">View full agent list</a>
-                        </p>
-                      </div>
+                  <div className="flex justify-between items-center p-3 sm:p-4 bg-gray-50 rounded-lg shadow-sm">
+                    <div>
+                      <p className="font-medium text-sm sm:text-base">Last Login</p>
+                      <p className="text-xs sm:text-sm text-gray-500">
+                        {formData.lastLogin ? formatDate(formData.lastLogin) : 'Never logged in'}
+                      </p>
                     </div>
+                    <span className={`px-3 py-1 rounded-full text-xs sm:text-sm font-medium ${formData.lastLogin ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'
+                      }`}>
+                      {formData.lastLogin ? 'Active' : 'Pending'}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center p-3 sm:p-4 bg-gray-50 rounded-lg shadow-sm">
+                    <div>
+                      <p className="font-medium text-sm sm:text-base">Profile Updated</p>
+                      <p className="text-xs sm:text-sm text-gray-500">{formatDate(formData.updatedAt)}</p>
+                    </div>
+                    <span className="px-3 py-1 rounded-full text-xs sm:text-sm font-medium bg-purple-100 text-purple-800">
+                      Updated
+                    </span>
                   </div>
                 </div>
               )}
 
-              {/* CO Tab Content */}
-              {activeTab === 'co' && (
-                <div className="animate-fade-in">
-                  <p className="text-gray-600 text-sm sm:text-base mb-4">
-                    This zonal head oversees {formData.coCounts} COs in the {formData.zoneName} region.
-                  </p>
-                  <div className="bg-purple-50 p-3 sm:p-4 rounded-lg shadow-sm">
-                    <div className="flex items-center">
-                      <div className="bg-purple-100 p-2 rounded-lg mr-3">
-                        <FaUserTie className="text-purple-500" aria-hidden="true" />
-                      </div>
-                      <div>
-                        <p className="text-sm text-purple-700">
-                          CO details are managed in the dedicated CO management section.{' '}
-                          <a href="#co" className="font-medium text-purple-600 hover:underline">View full CO list</a>
-                        </p>
-                      </div>
-                    </div>
+              {/* Divisions Tab Content */}
+              {/* Divisions Tab Content */}
+              {activeTab === 'divisions' && (
+                <div className="space-y-4 animate-fade-in">
+                  <div className="bg-blue-50 p-4 rounded-lg mb-4">
+                    <h3 className="font-semibold text-blue-800 flex items-center">
+                      <FaList className="mr-2" />
+                      Division Details
+                    </h3>
+                    <p className="text-sm text-blue-600 mt-1">
+                      This shows the details of the division managed by this admin.
+                    </p>
+                  </div>
+
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full border border-gray-300">
+                      <thead className="bg-gray-100 border-b border-gray-300">
+                        <tr>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider border border-gray-300">
+                            ID
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider border border-gray-300">
+                            Division Name
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider border border-gray-300">
+                            Population
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider border border-gray-300">
+                            Zone Code
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider border border-gray-300">
+                            Area
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider border border-gray-300">
+                            Districts
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white text-start">
+                        <tr>
+                          <td className="px-4 py-2 border border-gray-300 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {initialData.division?.id || 'N/A'}
+                          </td>
+                          <td className="px-4 py-2 border border-gray-300 whitespace-nowrap text-sm text-gray-900">
+                            {initialData.division?.zoneName || 'N/A'}
+                          </td>
+                          <td className="px-4 py-2 border border-gray-300 whitespace-nowrap text-sm text-gray-500">
+                            {initialData.division?.populationInMillion ? `${initialData.division.populationInMillion}M` : 'N/A'}
+                          </td>
+                          <td className="px-4 py-2 border border-gray-300 whitespace-nowrap text-sm text-gray-500">
+                            {initialData.division?.zoneCode || 'N/A'}
+                          </td>
+                          <td className="px-4 py-2 border border-gray-300 whitespace-nowrap text-sm text-gray-500">
+                            {initialData.division?.area
+                              ? `${initialData.division.area.replace(/[^0-9.]/g, '')} Sq.Km`
+                              : 'N/A'}
+                          </td>
+                          <td className="px-4 py-2 border border-gray-300 whitespace-nowrap text-sm text-gray-500">
+                            {initialData.division?.noOfDistricts || 'N/A'}
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               )}
@@ -485,7 +514,7 @@ const ViewDivision = ({ ViewData: initialData, onSave, onClose }) => {
           <div className="bg-gray-50 px-4 sm:px-6 py-4 border-t border-gray-200">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <p className="text-sm text-gray-500">
-                Last updated: {formatDate(formData.lastUpdated)}
+                Last updated: {formatDate(formData.updatedAt)}
               </p>
               <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                 {isEditing ? (
@@ -517,12 +546,6 @@ const ViewDivision = ({ ViewData: initialData, onSave, onClose }) => {
                       Edit Profile
                     </button>
                     <button
-                      className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 transition-all duration-200"
-                      aria-label="Message Zonal Head"
-                    >
-                      Message
-                    </button>
-                    <button
                       onClick={onClose}
                       className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-all duration-200 flex items-center justify-center"
                       aria-label="Close"
@@ -537,55 +560,31 @@ const ViewDivision = ({ ViewData: initialData, onSave, onClose }) => {
           </div>
         </div>
       </div>
-      {/* transfer modal */}
 
+      {/* Transfer Modal */}
       {transferModal && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-70 p-4">
           <div className="bg-gray-100 rounded-lg max-h-[90vh] w-full max-w-7xl p-4 flex flex-col">
-
             {/* Fixed Header */}
             <div className="flex flex-row justify-between items-center mb-4 border-b pb-2">
-              <h1 className="text-lg font-semibold">Transfer</h1>
+              <h1 className="text-lg font-semibold">Transfer Division Admin</h1>
               <button
-                className="w-8 h-8 flex items-center justify-center  text-red-500 rounded-full hover:bg-red-200 duration-300 cursor-pointer"
+                className="w-8 h-8 flex items-center justify-center text-red-500 rounded-full hover:bg-red-200 duration-300 cursor-pointer"
                 onClick={() => setTransferModal(false)}
               >
                 ✕
               </button>
-
             </div>
 
             {/* Scrollable Content */}
             <div className="flex-1 overflow-y-auto">
-              <Transfer />
+              <Transfer divisionAdmin={formData} />
             </div>
           </div>
         </div>
       )}
-
     </div>
   );
-};
-
-// Default props with dummy data
-ViewDivision.defaultProps = {
-  ViewData: {
-    name: "John Doe",
-    zoneName: "North Region",
-    status: "Active",
-    performance: "Good",
-    agentsCount: 24,
-    coCounts: 5,
-    email: "john.doe@example.com",
-    phone: "+1234567890",
-    zoneId: "ZONE-1234",
-    createdDate: "2023-05-15T00:00:00.000Z",
-    lastUpdated: new Date().toISOString(),
-    joiningDate: "2023-05-15",
-    additionalInfo: "This zonal head manages the North Region and oversees a team of 24 agents and 5 COs."
-  },
-  onSave: (data) => console.log("Saving data:", data),
-  onClose: () => console.log("Closing modal")
 };
 
 export default ViewDivision;

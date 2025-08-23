@@ -1,4 +1,4 @@
-// src/api/axiosInstance.js
+
 import axios from "axios";
 
 const axiosInstance = axios.create({
@@ -8,8 +8,7 @@ const axiosInstance = axios.create({
 
 // Optional: Add request interceptor
 axiosInstance.interceptors.request.use(
-  (config) => {
-    // Example: Attach token if available
+  (config) => {    // Example: Attach token if available
     const token = localStorage.getItem("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;

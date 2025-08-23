@@ -1,184 +1,315 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../../auth/AuthContext';
+import axiosInstance from '../../auth/axiosInstance';
+import Swal from 'sweetalert2';
 
 function AddUpdateDivision({ EditData, onClose }) {
   console.log('EditData:', EditData);
+  const { stateList } = useAuth();
+  const [selectedState, setSelectedState] = useState('');
+  const [divisions, setDivisions] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isDivisionsLoading, setIsDivisionsLoading] = useState(false);
+
   const [formData, setFormData] = useState({
-    name: '',
+    firstName: '',
+    lastName: '',
     email: '',
-    phone: '',
-    role: ''
+    mobileNumber: '',
+    divisionId: '',
+    profilePicture: '',
   });
 
   // Initialize form with edit data if available
   useEffect(() => {
     if (EditData) {
       setFormData({
-        name: EditData.zoneName || '',
+        firstName: EditData.firstName || '',
+        lastName: EditData.lastName || '',
         email: EditData.email || '',
-        phone: EditData.phone || '',
-        role: EditData.role || ''
+        mobileNumber: EditData.mobileNumber || '',
+        divisionId: EditData.division?.id || '', // Fixed: get division ID from division object
+        profilePicture: EditData.profilePicture || '',
       });
-    } else {
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        role: ''
-      });
+      
+      // Set the state if available (you might need to get state from division data)
+      if (EditData.division) {
+        // You may need to determine the state from the division data
+        // This depends on your API structure - you might need to add stateId to division object
+        setSelectedState(EditData.division.stateId || '');
+        if (EditData.division.stateId) {
+          getALLdivisions(EditData.division.stateId);
+        }
+      }
     }
   }, [EditData]);
 
+  // Fetch divisions
+  const getALLdivisions = async (stateId) => {
+    setIsDivisionsLoading(true);
+    try {
+      const res = await axiosInstance.get(`/area/getAllDivisions?stateId=${stateId}`);
+      console.log("Divisions payload:", res.data);
+      const divisionsData = res.data.divisionList;
+      if (Array.isArray(divisionsData)) {
+        setDivisions(divisionsData);
+      } else if (divisionsData) {
+        setDivisions([divisionsData]);
+      } else {
+        setDivisions([]);
+      }
+    } catch (error) {
+      console.error("Error fetching divisions:", error);
+      setDivisions([]);
+      Swal.fire("Error", "Failed to load divisions. Please try again.", "error");
+    } finally {
+      setIsDivisionsLoading(false);
+    }
+  };
+
+  // Handle input changes
   const handleChange = (e) => {
     const { id, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [id]: value
+      [id]: value,
     }));
+  };
+
+  // Handle state change -> load divisions
+  const handleStateChange = (e) => {
+    const stateId = e.target.value;
+    setSelectedState(stateId);
+    setFormData((prev) => ({ ...prev, divisionId: '' })); // Reset division when state changes
+
+    if (stateId) {
+      getALLdivisions(stateId);
+    } else {
+      setDivisions([]);
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+    setIsLoading(true);
+
     // Basic validation
-    if (!formData.name || !formData.email || !formData.phone || !formData.role) {
-      alert('Please fill all required fields');
+    if (!formData.firstName || !formData.lastName || !formData.email || !formData.mobileNumber || !selectedState || !formData.divisionId) {
+      Swal.fire("Validation Error", "Please fill all required fields", "warning");
+      setIsLoading(false);
       return;
     }
 
-    // Phone number validation
-    if (!/^\d{10}$/.test(formData.phone)) {
-      alert('Please enter a valid 10-digit phone number');
+    if (!/^\d{10}$/.test(formData.mobileNumber)) {
+      Swal.fire("Validation Error", "Please enter a valid 10-digit phone number", "warning");
+      setIsLoading(false);
       return;
     }
 
-    // Email validation
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      alert('Please enter a valid email address');
+      Swal.fire("Validation Error", "Please enter a valid email address", "warning");
+      setIsLoading(false);
       return;
     }
+
+    // Build payload
+    const payload = {
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      email: formData.email,
+      mobileNumber: formData.mobileNumber,
+      divisionId: formData.divisionId,
+      profilePicture: formData.profilePicture,
+    };
 
     try {
       if (EditData) {
-        // Call API to update zonal head
-        const response = await updateZonalHeadAPI(EditData.id, formData);
-        if (response.success) {
-          alert('Zonal head updated successfully!');
-          onClose();
-        } else {
-          alert('Failed to update zonal head');
-        }
+        const res = await axiosInstance.put(
+          `/head_admin/updateDivisionAdmin/${EditData.id}`,
+          payload
+        );
+        console.log("Update response:", res.data);
+        Swal.fire("Success", "Division Admin updated successfully!", "success");
+        onClose();
       } else {
-        // Call API to add new zonal head
-        const response = await addZonalHeadAPI(formData);
-        if (response.success) {
-          alert('Zonal head added successfully!');
-          onClose();
-        } else {
-          alert('Failed to add zonal head');
-        }
+        const res = await axiosInstance.post(
+          `/head_admin/createNewDivisionAdmin`,
+          payload
+        );
+        console.log("Create response:", res.data);
+        Swal.fire("Success", "Division Admin created successfully!", "success");
+        onClose();
       }
     } catch (error) {
-      console.error('Error:', error);
-      alert('An error occurred. Please try again.');
+      console.error("Error:", error);
+      const errorMessage = error.response?.data?.message || "An error occurred. Please try again.";
+      Swal.fire("Error", errorMessage, "error");
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // Mock API functions (replace with actual API calls)
-  const addZonalHeadAPI = async (data) => {
-    console.log('Adding zonal head:', data);
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    return { success: true, data };
-  };
-
-  const updateZonalHeadAPI = async (id, data) => {
-    console.log(`Updating zonal head ${id}:`, data);
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    return { success: true, data };
-  };
-
   return (
-    <div className="p-4">
-      <form onSubmit={handleSubmit}>
-        {/* Name Field */}
-        <div className="float-container mb-4">
-          <input
-            type="text"
-            id="name"
-            placeholder=" "
-            className="float-input w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
-            value={formData.name}
-            onChange={handleChange}
-          />
-          <label htmlFor="name" className="float-label">Zone Name</label>
-        </div>
+    <>
+      <div className="w-full">
+        <form onSubmit={handleSubmit} className="p-6 space-y-1 max-h-[80vh] overflow-y-auto">
+          {/* State + Division Select */}
+          <div className="flex gap-4">
+            {/* State */}
+            <div className='w-full'>
+              <label htmlFor="state" className="block mb-2 font-medium text-gray-700">
+                Select State <span className="text-red-500">*</span>
+              </label>
+              <select
+                id="state"
+                value={selectedState}
+                onChange={handleStateChange}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
+              >
+                <option value="">-- Select State --</option>
+                {stateList.map((state) => (
+                  <option key={state.id} value={state.id}>
+                    {state.stateName}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-        {/* Email Field */}
-        <div className="float-container mb-4">
-          <input
-            type="email"
-            id="email"
-            placeholder=" "
-            className="float-input w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
-            value={formData.email}
-            onChange={handleChange}
-          />
-          <label htmlFor="email" className="float-label">Email Address</label>
-        </div>
+            {/* Division */}
+            <div className='w-full'>
+              <label htmlFor="divisionId" className="block mb-2 font-medium text-gray-700">
+                Select Division <span className="text-red-500">*</span>
+              </label>
+              <select
+                id="divisionId"
+                value={formData.divisionId}
+                onChange={handleChange}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                disabled={!selectedState || isDivisionsLoading}
+                required
+              >
+                <option value="">-- Select Division --</option>
+                {isDivisionsLoading ? (
+                  <option value="" disabled>Loading divisions...</option>
+                ) : divisions.length === 0 ? (
+                  <option value="" disabled>No divisions available</option>
+                ) : (
+                  divisions.map((div) => (
+                    <option key={div.id} value={div.id}>
+                      {div.zoneName}
+                    </option>
+                  ))
+                )}
+              </select>
+            </div>
+          </div>
 
-        {/* Phone Field */}
-        <div className="float-container mb-4">
-          <input
-            type="tel"
-            id="phone"
-            placeholder=" "
-            className="float-input w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
-            value={formData.phone}
-            onChange={handleChange}
-            maxLength="10"
-            pattern="[0-9]{10}"
-          />
-          <label htmlFor="phone" className="float-label">Phone Number (10 digits)</label>
-        </div>
+          {/* First + Last Name */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="firstName" className="block mb-2 font-medium text-gray-700">
+                First Name <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                id="firstName"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
+                value={formData.firstName}
+                onChange={handleChange}
+                placeholder="Enter first name"
+              />
+            </div>
 
-        {/* Role Field */}
-        <div className="float-container mb-6">
-          <select
-            id="role"
-            className="float-input w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
-            value={formData.role}
-            onChange={handleChange}
-          >
-            <option value="" disabled>Select a role</option>
-            <option value="zonal_head">Zonal Head</option>
-            <option value="admin">Admin</option>
-            <option value="manager">Manager</option>
-          </select>
-          <label htmlFor="role" className="float-label">Role</label>
-        </div>
+            <div>
+              <label htmlFor="lastName" className="block mb-2 font-medium text-gray-700">
+                Last Name <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                id="lastName"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
+                value={formData.lastName}
+                onChange={handleChange}
+                placeholder="Enter last name"
+              />
+            </div>
+          </div>
 
-        <div className="flex justify-end gap-4">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-          >
-            {EditData ? 'Update' : 'Add'} Zonal Head
-          </button>
-        </div>
-      </form>
-    </div>
+          {/* Phone + Email */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="mobileNumber" className="block mb-2 font-medium text-gray-700">
+                Phone Number <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="tel"
+                id="mobileNumber"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
+                value={formData.mobileNumber}
+                onChange={handleChange}
+                maxLength="10"
+                pattern="[0-9]{10}"
+                placeholder="10-digit phone number"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="email" className="block mb-2 font-medium text-gray-700">
+                Email Address <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="email"
+                id="email"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="Enter email address"
+              />
+            </div>
+          </div>
+
+          {/* Profile Picture */}
+          <div>
+            <label htmlFor="profilePicture" className="block mb-2 font-medium text-gray-700">
+              Profile Picture URL
+            </label>
+            <input
+              type="text"
+              id="profilePicture"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              value={formData.profilePicture}
+              onChange={handleChange}
+              placeholder="Enter image URL (optional)"
+            />
+          </div>
+
+          <div className="flex justify-end gap-3 pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-5 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isLoading}
+              className={`px-5 py-2 rounded-lg transition-colors font-medium cursor-pointer ${isLoading
+                  ? "bg-gray-400 text-gray-200 cursor-not-allowed"
+                  : "bg-blue-600 text-white hover:bg-blue-700"
+                }`}
+            >
+              {isLoading ? "Processing..." : EditData ? "Update Division" : "Add Division"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </>
   );
 }
 
