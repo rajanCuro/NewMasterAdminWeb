@@ -2,13 +2,13 @@
 import React, { useState, useEffect } from 'react';
 import { RiSearchLine } from 'react-icons/ri';
 import Pagination from '../Pagination';
-import ViewDivision from './ViewDivision';
+import ViewDivisionDetails from './ViewDivisionDetails';
 import AddUpdateDivision from './AddUpdateDivision';
 import axiosInstance from '../../auth/axiosInstance';
 import { useAuth } from '../../auth/AuthContext';
 import Swal from 'sweetalert2';
 
-function ZonalHeadList() {
+function DivisionList() {
   const { getALLState } = useAuth();
   const [zonalHeads, setZonalHeads] = useState([]);
   const [filteredZonalHeads, setFilteredZonalHeads] = useState([]);
@@ -39,13 +39,13 @@ function ZonalHeadList() {
     try {
       const response = await axiosInstance.get(`/head_admin/getAllDivisionAdmins?page=${currentPage}&pageSize=${itemsPerPage}`
       );
-      
+
       console.log("All divisions:", response.data);
-      
+
       if (response.data && response.data.code === "200") {
         setTotalItems(response.data.totalItems);
         setTotalPages(response.data.totalPages);
-        
+
         // Use the data directly without reversing to maintain proper pagination order
         setZonalHeads(response.data.dtoList || []);
         setFilteredZonalHeads(response.data.dtoList || []);
@@ -378,15 +378,15 @@ function ZonalHeadList() {
         </div>
       )}
 
-      {/* View Division Admin Modal */}
+      {/* View Division Modal */}
       {viewZonalModal && (
         <div
-          className="fixed inset-0 backdrop-brightness-50 flex items-center justify-center z-70 p-4"
+          className="fixed inset-0 backdrop-brightness-50 flex items-center justify-center z-70"
           onClick={() => { setViewZonalModal(false); setViewZonalModalData(null); }}
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-xl shadow-2xl w-full max-h-[95vh] overflow-y-auto hide-scrollbar transform transition-all duration-300 scale-100"
+            className="bg-white rounded-xl shadow-2xl max-w-6xl w-full max-h-[95vh] overflow-y-auto hide-scrollbar transform transition-all duration-300 scale-100"
           >
             <div className="flex justify-between items-center border-b border-gray-200 p-6 sticky top-0 bg-blue-700 text-white z-10">
               <h2 className="text-xl font-semibold">Division Admin Details</h2>
@@ -398,7 +398,7 @@ function ZonalHeadList() {
               </button>
             </div>
             <div className="p-6">
-              <ViewDivision ViewData={viewZonalData} onClose={() => setViewZonalModal(false)} />
+              <ViewDivisionDetails ViewData={viewZonalData} onClose={() => setViewZonalModal(false)} />
             </div>
           </div>
         </div>
@@ -407,4 +407,4 @@ function ZonalHeadList() {
   );
 }
 
-export default ZonalHeadList;
+export default DivisionList;

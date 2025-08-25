@@ -1,6 +1,6 @@
 import React from 'react'
 
-function AddAgent({editData}) {
+function AddUpdateAgent({editData}) {
   console.log('editeData',editData);
   return (
     <div>
@@ -25,4 +25,4 @@ function AddAgent({editData}) {
   )
 }
 
-export default AddAgent
+export default AddUpdateAgent;

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { RiDeleteBin6Line, RiFilterLine, RiSearchLine } from "react-icons/ri";
 import { FiEdit, FiPlus } from "react-icons/fi";
+import { FaEye } from "react-icons/fa";
 import Add_Update_Agent from "./AddUpdateAgent";
 import Pagination from "../Pagination";
-import { FaEye } from "react-icons/fa";
 import ViewAgentDetails from "./ViewAgentDetails";
 
 const AgentList = () => {
@@ -139,8 +139,6 @@ const AgentList = () => {
     }));
   };
 
-
-
   // Pagination logic
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -151,16 +149,18 @@ const AgentList = () => {
     setAddAgentModal(true);
     setEditData(agent);
   };
+
   const handleViewAgent = (agent) => {
     setViewAgentModal(true);
-    setViewAgentModalData(agent)
-  }
+    setViewAgentModalData(agent);
+  };
+
   const handleCloseModal = () => {
-    setViewAgentModalData(null)
+    setViewAgentModalData(null);
     setAddAgentModal(false);
     setViewAgentModal(false);
     setEditData(null);
-  }
+  };
 
   const handleDelete = (agentId) => {
     setAgents(agents.filter(agent => agent.id !== agentId));
@@ -230,8 +230,6 @@ const AgentList = () => {
         </div>
       </div>
 
-
-
       {/* Agents Table */}
       <div className="px-6 py-4">
         <div className="bg-white rounded-lg shadow-xs border border-gray-200 overflow-hidden">
@@ -274,11 +272,10 @@ const AgentList = () => {
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{agent.createdAt}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex items-center gap-2">
-
                             <button
                               onClick={() => handleViewAgent(agent)}
                               className="text-blue-600 cursor-pointer hover:text-blue-800 p-1.5 rounded-md hover:bg-blue-100 transition-colors"
-                              title="Edit agent"
+                              title="View agent"
                             >
                               <FaEye className="w-4 h-4" />
                             </button>
@@ -371,10 +368,35 @@ const AgentList = () => {
         </div>
       )}
 
-      {/* viewAgent Modal */}
+      {/* View Agent Modal */}
       {viewAgentModal && (
-        <div className="p-6">
-          <ViewAgentDetails onClose={handleCloseModal} data={viewAgentModalData} />
+        <div
+          className="fixed inset-0 backdrop-brightness-50 flex items-center justify-center z-70"
+          onClick={() => {
+            setViewAgentModal(false);
+            setViewAgentModalData(null);
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white rounded-xl shadow-2xl max-w-6xl w-full max-h-[95vh] overflow-y-auto hide-scrollbar transform transition-all duration-300 scale-100"
+          >
+            <div className="flex justify-between items-center border-b border-gray-200 p-6 sticky top-0 bg-blue-700 text-white z-10">
+              <h2 className="text-xl font-semibold">Agent Details</h2>
+              <button
+                onClick={() => {
+                  setViewAgentModal(false);
+                  setViewAgentModalData(null);
+                }}
+                className="text-white hover:text-red-300 text-2xl font-bold cursor-pointer transition-colors"
+              >
+                &times;
+              </button>
+            </div>
+            <div className="p-6">
+              <ViewAgentDetails ViewData={viewAgentModalData} onClose={() => setViewAgentModal(false)} />
+            </div>
+          </div>
         </div>
       )}
     </div>

@@ -5,7 +5,7 @@ import { IoMdSwap } from "react-icons/io";
 import { MdSwapHorizontalCircle } from "react-icons/md";
 import axiosInstance from '../../auth/axiosInstance';
 
-const ViewDivision = ({ ViewData: initialData, onSave, onClose }) => {
+const ViewDivisionDetails = ({ ViewData: initialData, onSave, onClose }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState('details');
   const [transferModal, setTransferModal] = useState(false);
@@ -442,7 +442,6 @@ const ViewDivision = ({ ViewData: initialData, onSave, onClose }) => {
               )}
 
               {/* Divisions Tab Content */}
-              {/* Divisions Tab Content */}
               {activeTab === 'divisions' && (
                 <div className="space-y-4 animate-fade-in">
                   <div className="bg-blue-50 p-4 rounded-lg mb-4">
@@ -587,4 +586,4 @@ const ViewDivision = ({ ViewData: initialData, onSave, onClose }) => {
   );
 };
 
-export default ViewDivision;
+export default ViewDivisionDetails;
