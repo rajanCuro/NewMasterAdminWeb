@@ -379,7 +379,7 @@ function Dashboard() {
 
             <button
               onClick={closeModals}
-              className="absolute cursor-pointer top-4 right-4 flex items-center justify-center w-8 h-8 rounded-full bg-gray-200 text-gray-600 hover:bg-gray-300 hover:text-gray-800 transition"
+              className="absolute z-70 cursor-pointer top-4 right-4 flex items-center justify-center w-8 h-8 rounded-full bg-gray-200 text-gray-600 hover:bg-gray-300 hover:text-gray-800 transition"
             >
               ✕
             </button>
