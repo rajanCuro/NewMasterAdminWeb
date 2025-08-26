@@ -2,12 +2,12 @@ import React, { useState, useEffect } from "react";
 import { RiSearchLine } from "react-icons/ri";
 import { FiEdit } from "react-icons/fi";
 import { FaEye } from "react-icons/fa";
-import AddUpdateAgent from "./AddUpdateAgent";
+import AddUpdateFeildExecutive from "./AddUpdateFeildExecutive";
 import Pagination from "../Pagination";
-import ViewAgentDetails from "./ViewAgentDetails";
+import ViewFeildExecutiveDetails from "./ViewFeildExecutiveDetails";
 import axiosInstance from "../../auth/axiosInstance";
 
-const AgentList = () => {
+const FeildExecutiveList = () => {
   const [agents, setAgents] = useState([]);
   const [filteredAgents, setFilteredAgents] = useState([]);
   const [addAgentModal, setAddAgentModal] = useState(false);
@@ -121,9 +121,7 @@ const getAllFieldExecutives = async () => {
   };
 
   const handleAgentSaved = () => {
-    // Refresh the agent list after adding/editing
     getAllFieldExecutives();
-    setAddAgentModal(false);
     setEditData(null);
   };
 
@@ -173,7 +171,7 @@ const getAllFieldExecutives = async () => {
               onClick={handleAddAgent}
               className="submit-btn"
             >
-              Add Agent
+              Add FeildExecutive
             </button>
           </div>
         </div>
@@ -197,7 +195,7 @@ const getAllFieldExecutives = async () => {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {currentAgents.length > 0 ? (
-                    currentAgents.map((agent) => (
+                    currentAgents.reverse().map((agent) => (
                       <tr onDoubleClick={() => handleViewAgent(agent)} key={agent.id} className="hover:bg-gray-50 transition-colors">
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#{agent.id}</td>
                         <td className="px-6 py-4 whitespace-nowrap">
@@ -268,7 +266,7 @@ const getAllFieldExecutives = async () => {
       {addAgentModal && (
         <div
           className="fixed inset-0 backdrop-brightness-50 flex items-center justify-center z-50 p-4"
-          onClick={handleCloseModal}
+          onClick={() => {setAddAgentModal(false)}}
         >
           <div
             onClick={(e) => e.stopPropagation()}
@@ -280,7 +278,7 @@ const getAllFieldExecutives = async () => {
                 {editData ? "Edit Agent Details" : "Add New Agent"}
               </h2>
               <button
-                onClick={handleCloseModal}
+                onClick={() => {setAddAgentModal(false);}}
                 className="text-gray-400 hover:text-gray-500 text-2xl font-bold cursor-pointer"
               >
                 &times;
@@ -289,9 +287,9 @@ const getAllFieldExecutives = async () => {
 
             {/* Agent Form */}
             <div className="p-6">
-              <AddUpdateAgent
+              <AddUpdateFeildExecutive
                 editData={editData}
-                onClose={handleCloseModal}
+                onClose={() => setAddAgentModal(false)}
                 onSave={handleAgentSaved}
               />
             </div>
@@ -302,7 +300,7 @@ const getAllFieldExecutives = async () => {
       {/* View Agent Modal */}
       {viewAgentModal && viewAgentModalData && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-70"
+          className="fixed inset-0 backdrop-brightness-50 flex items-center justify-center z-70"
           onClick={() => {
             setViewAgentModal(false);
             setViewAgentModalData(null);
@@ -313,7 +311,7 @@ const getAllFieldExecutives = async () => {
             className="bg-white rounded-xl shadow-2xl max-w-6xl w-full max-h-[95vh] overflow-y-auto"
           >
             <div className="flex justify-between items-center border-b border-gray-200 p-6 sticky top-0 bg-blue-700 text-white z-10">
-              <h2 className="text-xl font-semibold">Agent Details</h2>
+              <h2 className="text-xl font-semibold">Field Executive Details</h2>
               <button
                 onClick={() => {
                   setViewAgentModal(false);
@@ -325,7 +323,7 @@ const getAllFieldExecutives = async () => {
               </button>
             </div>
             <div className="p-6">
-              <ViewAgentDetails 
+              <ViewFeildExecutiveDetails 
                 ViewData={viewAgentModalData} 
                 onClose={() => setViewAgentModal(false)} 
               />
@@ -337,4 +335,4 @@ const getAllFieldExecutives = async () => {
   );
 };
 
-export default AgentList;
+export default FeildExecutiveList;

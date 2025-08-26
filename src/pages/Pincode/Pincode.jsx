@@ -104,7 +104,7 @@ setEditData(data)
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
                             {pincodes.length > 0 ? (
-                                pincodes.map((pincode, index) => (
+                               [...pincodes].reverse().map((pincode, index) => (
                                     <tr key={pincode.id} className="hover:bg-gray-50">
                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                             {index + 1}
