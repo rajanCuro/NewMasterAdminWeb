@@ -4,12 +4,13 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Login from './auth/Login';
 import Zonal from './pages/Division/DivisionList.jsx';
 import AgentList from './pages/Agent/AgentList';
-import CircleOfficerList from './pages/CircleOfficer/CircleOfficerList.jsx';
+import CityOfficerList from './pages/CityOfficer/CityOfficerList.jsx';
 import DashBoard from './pages/dashboard/DashBoard';
 import Map from './pages/Map/Map';
 import {  useAuth } from './auth/AuthContext.jsx'
 import Setting from './pages/Setting/Setting.jsx';
 import Sidebar from './components/sidebar.jsx';
+import Pincode from './pages/Pincode/Pincode.jsx';
 
 function App() {
   const [collapsed, setCollapsed] = useState(false); // Manage sidebar collapsed state
@@ -36,9 +37,10 @@ function App() {
               <Route path="/report" element={token ? <h1 className="p-4">Report Page</h1> : <Navigate to="/" />} />
               <Route path="/zonal" element={token ? <Zonal /> : <Navigate to="/" />} />
               <Route path="/agent" element={token ? <AgentList /> : <Navigate to="/" />} />
+              <Route path='/pincode' element={token ? <Pincode/> : <Navigate to ='/'/>}/>
               <Route
                 path="/circle-officer"
-                element={token ? <CircleOfficerList /> : <Navigate to="/" />}
+                element={token ? <CityOfficerList /> : <Navigate to="/" />}
               />
               <Route path="/curo_map" element={token ? <Map /> : <Navigate to="/" />} />
               <Route path="/setting" element={token ? <Setting /> : <Navigate to="/" />} />
