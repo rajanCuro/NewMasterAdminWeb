@@ -3,12 +3,14 @@ import AddUpdatePincode from './AddUpdatePincode';
 import { FiEdit } from "react-icons/fi";
 import { FaEye } from "react-icons/fa";
 import axiosInstance from '../../auth/axiosInstance';
+import Swal from 'sweetalert2';
 
 function Pincode() {
     const [pincodeAddModal, setPincodeAddModal] = useState(false);
     const [pincodes, setPincodes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [editData,setEditData] = useState();
 
     const getAllPincode = async () => {
         try {
@@ -37,53 +39,34 @@ function Pincode() {
         getAllPincode();
     }, []);
 
+    const handleEdit = (data) =>{
+setPincodeAddModal(true);
+setEditData(data)
+    }
+
     const handleDeletePincode = async (id) => {
-        if (window.confirm('Are you sure you want to delete this pincode?')) {
             try {
-                // Call your delete API here
-                // await axiosInstance.delete(`/city-admin/deletePincode/${id}`);
-                
-                // For now, just update the local state
-                setPincodes(pincodes.filter(pincode => pincode.id !== id));
-                
-                alert('Pincode deleted successfully');
+                const response = await axiosInstance.delete(`/city-admin/deletePinCode?id=${id}`)
+                Swal.fire({
+                    icon: 'success',
+                    title: 'delete',
+                    text: 'Pincode delete successfully'
+                })
             } catch (error) {
                 console.error('Error deleting pincode:', error);
-                alert('Failed to delete pincode');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Field to delete pincode'
+                })
             }
-        }
     };
-
-    // if (loading) {
-    //     return (
-    //         <div className="w-full px-4 py-6 md:px-10 flex justify-center items-center h-64">
-    //             <div className="text-lg text-gray-600">Loading pincodes...</div>
-    //         </div>
-    //     );
-    // }
-
-    // if (error) {
-    //     return (
-    //         <div className="w-full px-4 py-6 md:px-10">
-    //             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-    //                 {error}
-    //             </div>
-    //             <button 
-    //                 onClick={getAllPincode}
-    //                 className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-    //             >
-    //                 Retry
-    //             </button>
-    //         </div>
-    //     );
-    // }
 
     return (
         <div className='w-full px-4 py-6 md:px-10'>
             <div className='flex flex-col sm:flex-row justify-between items-center mb-6'>
                 <h1 className='text-2xl font-bold text-gray-800 mb-4 sm:mb-0'>Pincode Management</h1>
                 <button
-                    onClick={() => setPincodeAddModal(true)}
+                    onClick={() => {setPincodeAddModal(true); setEditData(null)}}
                     className='bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors flex items-center'
                 >
                     <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -147,6 +130,7 @@ function Pincode() {
                                                     <FaEye className="w-4 h-4" />
                                                 </button>
                                                 <button
+                                                onClick={() => handleEdit(pincode)}
                                                     className="text-green-600 cursor-pointer hover:text-green-800 p-1.5 rounded-md hover:bg-green-100 transition-colors"
                                                     title="Edit pincode"
                                                 >
@@ -189,7 +173,7 @@ function Pincode() {
                     >
                         <div className="flex justify-between items-center border-b p-4 sticky top-0 bg-white z-10">
                             <h2 className="text-xl font-semibold text-gray-800">
-                                Add New Pincode
+                                {editData ? 'Edit Pincode' : 'Add New Pincode'}
                             </h2>
                             <button
                                 onClick={() => { setPincodeAddModal(false); }}
@@ -201,7 +185,8 @@ function Pincode() {
                         <div className="p-4">
                             <AddUpdatePincode 
                                 onClose={() => setPincodeAddModal(false)} 
-                                onPincodeAdded={getAllPincode} // Refresh the list after adding
+                                refresh={getAllPincode} 
+                                editData={editData}
                             />
                         </div>
                     </div>
