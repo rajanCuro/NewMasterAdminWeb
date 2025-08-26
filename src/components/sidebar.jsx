@@ -21,7 +21,7 @@ import Time from '../Time';
 
 
 const Sidebar = ({ collapsed, toggleSidebar }) => {
-    const { logout, role } = useAuth(); // 👈 get logout from context
+    const { logout, role, user } = useAuth(); // 👈 get logout from context
     const [mobileOpen, setMobileOpen] = useState(false);
     const [showLogoutModal, setShowLogoutModal] = useState(false);
     const location = useLocation();
@@ -46,7 +46,7 @@ const Sidebar = ({ collapsed, toggleSidebar }) => {
         { icon: <FiHome className="text-lg" />, label: 'Dashboard', path: '/dashboard' },
         { icon: <FiUsers className="text-lg" />, label: 'Division Officer', path: '/zonal' },
         { icon: <FiUserCheck className="text-lg" />, label: 'City Officer', path: '/circle-officer' },
-        { icon: <FiUser className="text-lg" />, label: 'Agent', path: '/agent' },
+        { icon: <FiUser className="text-lg" />, label: 'Field Executive', path: '/agent' },
         { icon: <TbMapPinCode className="text-lg" />, label: 'Pincode', path: '/pincode' },
         { icon: <FaMapMarkerAlt className="text-lg" />, label: 'Curo Map', path: '/curo_map' },
         { icon: <IoMdSettings className="text-lg" />, label: 'Settings', path: '/setting' },
@@ -112,9 +112,9 @@ const Sidebar = ({ collapsed, toggleSidebar }) => {
                         {!collapsed && (
                             <div className="ml-3 flex items-center justify-between">
                                 <div>
-                                    <p className="font-medium">Admin User</p>
-                                    <p className="text-xs text-gray-400">admin@example.com</p>
-                                    <p className="text-xs text-gray-400">{role}</p>
+                                    <p className="text-xs">{role}</p>
+                                    <p className="text-xs text-gray-400">{user.email}</p>
+                                    <p className="text-xs text-gray-400"></p>
                                 </div>
                                 <div className='cursor-pointer' onClick={handleLogoutClick}>
                                     <CiLogin className='text-red-500 rounded-md hover:bg-red-300 transition-300 ease-in-out' size={30} />

@@ -3,7 +3,7 @@ import axiosInstance from '../../auth/axiosInstance';
 import Swal from 'sweetalert2';
 import { useAuth } from '../../auth/AuthContext';
 
-function AddUpdateAgent({ editData }) {
+function AddUpdateAgent({ editData,onClose,onSave }) {
   const { user } = useAuth();
   const id = user.city.id;
 
@@ -48,10 +48,9 @@ function AddUpdateAgent({ editData }) {
 
       if (Array.isArray(dtoList)) {
         setPincodeByCity(dtoList);
-      } else {
-        console.error('dtoList is not an array:', dtoList);
-        setPincodeByCity([]);
-      }
+      } 
+      
+
     } catch (error) {
       console.error('Error fetching pincodes:', error);
       setPincodeByCity([]);
@@ -134,7 +133,8 @@ function AddUpdateAgent({ editData }) {
         title: 'Success',
         text: 'Agent added successfully',
       });
-
+onClose();
+onSave();
       if (!editData) {
         setFormData({
           firstName: '',
