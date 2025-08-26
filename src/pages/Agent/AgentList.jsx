@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { RiSearchLine } from "react-icons/ri";
-import { FiEdit, FiPlus } from "react-icons/fi";
+import { FiEdit } from "react-icons/fi";
 import { FaEye } from "react-icons/fa";
 import AddUpdateAgent from "./AddUpdateAgent";
 import Pagination from "../Pagination";
@@ -31,19 +31,15 @@ const getAllFieldExecutives = async () => {
   try {
     setLoading(true);
     const response = await axiosInstance.get('/city-admin/getAllFieldExecutiveAddedByCityAdmin');
-    console.log('response', response);
-    
-    // Check if response.data exists and has dtoList property which is an array
+
     if (response.data && Array.isArray(response.data.dtoList)) {
       setAgents(response.data.dtoList);
       setFilteredAgents(response.data.dtoList);
-    } else {
-      console.error('Unexpected API response format:', response.data);
-      setError('Failed to load agents. Invalid response format.');
+      
     }
+
   } catch (error) {
     console.error('Error fetching agents:', error);
-    setError('Failed to load agents. Please try again later.');
   } finally {
     setLoading(false);
   }
@@ -175,9 +171,8 @@ const getAllFieldExecutives = async () => {
           <div className="mt-4 md:mt-0">
             <button
               onClick={handleAddAgent}
-              className="bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2"
+              className="submit-btn"
             >
-              <FiPlus className="w-4 h-4" />
               Add Agent
             </button>
           </div>
@@ -229,7 +224,7 @@ const getAllFieldExecutives = async () => {
                             </button>
                             <button
                               onClick={() => handleEdit(agent)}
-                              className="text-blue-600 cursor-pointer hover:text-blue-800 p-1.5 rounded-md hover:bg-blue-100 transition-colors"
+                              className="text-green-600 cursor-pointer hover:text-green-800 p-1.5 rounded-md hover:bg-blue-100 transition-colors"
                               title="Edit agent"
                             >
                               <FiEdit className="w-4 h-4" />
