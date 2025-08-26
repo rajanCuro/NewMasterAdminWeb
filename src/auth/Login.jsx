@@ -9,8 +9,8 @@ function Login() {
     const { setToken, setUser, setRole } = useAuth()
     const [otp, setOtp] = useState(Array(6).fill(""));
     const [showPassword, setShowPassword] = useState(false);
-    const [username, setUsername] = useState('rajan@curo24.com');
-    const [password, setPassword] = useState('raj38232644');
+    const [username, setUsername] = useState();
+    const [password, setPassword] = useState();
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [isLoading, setIsLoading] = useState(false);

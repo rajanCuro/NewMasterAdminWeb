@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import AddUpdate_CircleOfficer from './AddUpdateCircleOfficer';
+import AddUpdateCityOfficer from './AddUpdateCityOfficer';
 import Pagination from '../Pagination';
 import { RiSearchLine } from 'react-icons/ri';
 import { GrFormView } from "react-icons/gr";
-import CircleOfficerDetail from './CircleOfficerDetail';
+import CityOfficerDetail from './CityOfficerDetail';
+import axiosInstance from '../../auth/axiosInstance';
+import { useAuth } from '../../auth/AuthContext';
 
 function CircleOfficerList() {
+  const { stateList } = useAuth();  
   const [circleOfficers, setCircleOfficers] = useState([]);
   const [filteredCircleOfficers, setFilteredCircleOfficers] = useState([]);
   const [addCircleModal, setAddCircleModal] = useState(false);
@@ -20,30 +23,7 @@ function CircleOfficerList() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [detailModal, setDetailModal] = useState(false);
-  const [viewCricleData, setViewCircleData] = useState(null);
-
-  // Generate mock data
-  useEffect(() => {
-    setIsLoading(true);
-    const mockData = Array.from({ length: 50 }, (_, i) => ({
-      id: `CO-${1000 + i}`,
-      circleName: `Circle ${i + 1}`,
-      circleId: `CID-${2000 + i}`,
-      created: new Date(Date.now() - Math.floor(Math.random() * 1000 * 60 * 60 * 24 * 30)).toLocaleDateString(),
-      createdDate: new Date(Date.now() - Math.floor(Math.random() * 1000 * 60 * 60 * 24 * 30)),
-      lastUpdated: new Date(Date.now() - Math.floor(Math.random() * 1000 * 60 * 60 * 24 * 7)).toLocaleDateString(),
-      status: ['Pending', 'Verified', 'Rejected'][Math.floor(Math.random() * 3)],
-      email: `officer${i + 1}@example.com`,
-      phone: `+1${Math.floor(1000000000 + Math.random() * 9000000000)}`,
-      role: ['admin', 'officer', 'manager'][Math.floor(Math.random() * 3)]
-    }));
-
-    setTimeout(() => {
-      setCircleOfficers(mockData);
-      setFilteredCircleOfficers(mockData);
-      setIsLoading(false);
-    }, 1000);
-  }, []);
+  const [viewCircleData, setViewCircleData] = useState(null);
 
   // Apply filters
   useEffect(() => {
@@ -52,20 +32,28 @@ function CircleOfficerList() {
     if (filters.searchTerm) {
       const term = filters.searchTerm.toLowerCase();
       result = result.filter(item =>
-        item.circleName.toLowerCase().includes(term) ||
-        item.circleId.toLowerCase().includes(term) ||
-        item.email.toLowerCase().includes(term)
+        (item.firstName && item.firstName.toLowerCase().includes(term)) ||
+        (item.lastName && item.lastName.toLowerCase().includes(term)) ||
+        (item.email && item.email.toLowerCase().includes(term)) ||
+        (item.mobileNumber && item.mobileNumber.toLowerCase().includes(term))
       );
     }
 
     if (filters.statusFilter !== 'all') {
-      result = result.filter(item => item.status === filters.statusFilter);
+      result = result.filter(item => {
+        if (filters.statusFilter === 'active') {
+          return item.enabled === true;
+        } else if (filters.statusFilter === 'inactive') {
+          return item.enabled === false;
+        }
+        return false;
+      });
     }
 
     if (filters.dateFilter) {
       const filterDate = new Date(filters.dateFilter);
       result = result.filter(item => {
-        const itemDate = new Date(item.createdDate);
+        const itemDate = new Date(item.createdAt);
         return (
           itemDate.getFullYear() === filterDate.getFullYear() &&
           itemDate.getMonth() === filterDate.getMonth() &&
@@ -85,7 +73,7 @@ function CircleOfficerList() {
 
   const handleVerify = (id) => {
     setCircleOfficers(prev => prev.map(item =>
-      item.id === id ? { ...item, status: 'Verified' } : item
+      item.id === id ? { ...item, enabled: true } : item
     ));
   };
 
@@ -120,15 +108,52 @@ function CircleOfficerList() {
     setEditData(null);
   };
 
+  const getAllCityAdmin = async () => {
+    try {
+      setIsLoading(true);
+      const response = await axiosInstance.get(`/division_admin/getAllCityAdmins`);
+      console.log('API response:', response);
+      
+      if (response.data && response.data.dtoList) {
+        setCircleOfficers(response.data.dtoList);
+      } else {
+        setCircleOfficers([]);
+      }
+    } catch (error) {
+      console.log('Error fetching city admins:', error);
+      setCircleOfficers([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    getAllCityAdmin();
+  }, []);
+
   // Pagination logic
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentCircleOfficers = filteredCircleOfficers.slice(indexOfFirstItem, indexOfLastItem);
 
-  const handelOpen = (data) => {
-    setDetailModal(true)
-    setViewCircleData(data)
-  }
+  const handleOpen = (data) => {
+    setDetailModal(true);
+    setViewCircleData(data);
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  const getStatusText = (enabled) => {
+    return enabled ? 'Active' : 'Inactive';
+  };
 
   return (
     <div className="min-h-screen main_bg">
@@ -144,7 +169,7 @@ function CircleOfficerList() {
               </div>
               <input
                 type="search"
-                placeholder="Search agents by name, ID, email or zone..."
+                placeholder="Search officers by name, email or phone..."
                 className="w-full border border-gray-300 rounded-lg pl-10 pr-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 name="searchTerm"
                 value={filters.searchTerm}
@@ -152,10 +177,24 @@ function CircleOfficerList() {
               />
             </div>
 
+            {/* Status Filter */}
+            <div className="w-full md:w-auto">
+              <select
+                name="statusFilter"
+                value={filters.statusFilter}
+                onChange={handleFilterChange}
+                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="all">All Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+
             {/* Action */}
             <button
               onClick={handleAddCircle}
-              className="submit-btn "
+              className="submit-btn"
             >
               + Circle Officer
             </button>
@@ -169,7 +208,7 @@ function CircleOfficerList() {
               <table className="min-w-full divide-y divide-gray-700">
                 <thead className="bg-gray-300 sticky top-0 z-10">
                   <tr>
-                    {['Circle Name', 'Circle ID', 'EmailId', 'Phone', 'Created Date', 'Last Updated', 'Status', 'Actions'].map((header) => (
+                    {['Sr.No','City Admin', 'Phone', 'City', 'Created Date', 'Status', 'Actions'].map((header) => (
                       <th
                         key={header}
                         scope="col"
@@ -183,7 +222,7 @@ function CircleOfficerList() {
                 <tbody className="divide-y divide-gray-300 overflow-y-auto flex-grow">
                   {isLoading ? (
                     <tr>
-                      <td colSpan="6" className="px-6 py-4 text-center">
+                      <td colSpan="7" className="px-6 py-4 text-center">
                         <div className="flex justify-center items-center">
                           <svg
                             className="animate-spin h-5 w-5 mr-3 text-blue-500"
@@ -198,56 +237,67 @@ function CircleOfficerList() {
                     </tr>
                   ) : currentCircleOfficers.length === 0 ? (
                     <tr>
-                      <td colSpan="6" className="px-6 py-4 text-center">
+                      <td colSpan="7" className="px-6 py-4 text-center">
                         No data available
                       </td>
                     </tr>
                   ) : (
-                    currentCircleOfficers.map((circle) => (
-                      <tr onDoubleClick={() => handelOpen(circle)}
-                        key={circle.id}
+                    currentCircleOfficers.map((officer, index) => (
+                      <tr onDoubleClick={() => handleOpen(officer)}
+                        key={officer.id}
                         className="hover:bg-gray-300/50 transition-colors duration-200"
                       >
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          {circle.circleName}
+                        <td className="px-6 py-4 whitespace-nowrap">{index+1}</td>
+                         <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          {officer.profilePicture && officer.profilePicture !== 'NA' ? (
+                            <img
+                              src={officer.profilePicture}
+                              alt={officer.name}
+                              className="h-10 w-10 rounded-full object-cover mr-3"
+                            />
+                          ) : (
+                            <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center mr-3">
+                              <span className="text-blue-600 font-medium">
+                                {zonal.firstName?.charAt(0)}{zonal.lastName?.charAt(0)}
+                              </span>
+                            </div>
+                          )}
+                          <div>
+                            <div className="text-sm font-medium text-gray-900">{officer.firstName} {officer.lastName}</div>
+                            <div className="text-xs text-gray-500">{officer.email}</div>
+                          </div>
+                        </div>
+                      </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm">
+                          {officer.mobileNumber}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          {circle.circleId}
+                          {officer.city?.cityName || '-'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          {circle.circleId}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          {circle.circleId}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          {circle.created}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          {circle.lastUpdated}
+                          {formatDate(officer.createdAt)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span
-                            className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${circle.status === 'Verified'
+                            className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${officer.enabled
                               ? 'bg-green-900/20 text-green-900'
-                              : circle.status === 'Rejected'
-                                ? 'bg-red-900/20 text-red-900'
-                                : 'bg-yellow-900/20 text-yellow-900'
+                              : 'bg-red-900/20 text-red-900'
                               }`}
                           >
-                            {circle.status}
+                            {getStatusText(officer.enabled)}
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex gap-2">
                           <button
-                            onClick={() => handelOpen(circle)}
+                            onClick={() => handleOpen(officer)}
                             className="text-blue-400 hover:text-blue-300 transition-colors duration-200"
                             title="View Details"
                           >
                             <GrFormView size={28} />
                           </button>
                           <button
-                            onClick={() => handleEditCircle(circle)}
+                            onClick={() => handleEditCircle(officer)}
                             className="cursor-pointer text-green-400 hover:text-green-300 transition-colors duration-200"
                             title="Edit"
                           >
@@ -296,7 +346,7 @@ function CircleOfficerList() {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="main_bg rounded-lg shadow-lg w-full max-w-4xl transform transition-all duration-300 scale-100 animate-modalFade p-6"
+            className="main_bg rounded-lg shadow-lg w-full max-w-2xl transform transition-all duration-300 scale-100 animate-modalFade p-4"
           >
             <div className="flex justify-between items-center border-b pb-3 mb-4">
               <h2 className="text-lg font-semibold">
@@ -309,11 +359,12 @@ function CircleOfficerList() {
                 &times;
               </button>
             </div>
-            <AddUpdate_CircleOfficer
+            <AddUpdateCityOfficer
               Editdata={editData}
               onClose={() => { setAddCircleModal(false); setEditData(null); }}
               onAdd={handleAddNewOfficer}
               onUpdate={handleUpdateOfficer}
+              refresh={getAllCityAdmin}
             />
           </div>
         </div>
@@ -340,7 +391,7 @@ function CircleOfficerList() {
                 </button>
               </div>
               <div className="p-6">
-                <CircleOfficerDetail ViewData={viewCricleData} onClose={() => setDetailModal(false)} />
+                <CityOfficerDetail ViewData={viewCircleData} onClose={() => setDetailModal(false)} />
               </div>
             </div>
           </div>

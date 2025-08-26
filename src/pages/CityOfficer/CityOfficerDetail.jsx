@@ -3,15 +3,39 @@ import { FaUserTie, FaPhone, FaEnvelope, FaMapMarkerAlt, FaCalendarAlt, FaChartL
 import { MdLocalPharmacy } from "react-icons/md";
 
 const VIewZonal = ({ ViewData: initialData, onSave, onClose }) => {
+  console.log('view ',initialData);
+  console.log('data',onSave);
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState('details');
-  const [formData, setFormData] = useState({
-    ...initialData,
-    joiningDate: initialData.joiningDate || '2023-05-15',
-    additionalInfo: initialData.additionalInfo || `This zonal head manages the ${initialData.circleName} region and oversees a team of ${initialData.agentsCount} agents and ${initialData.coCounts} COs.`
-  });
   const [errors, setErrors] = useState({});
 
+  const transformData = (data) =>{
+    return {
+      id: data.id,
+      name: `${data.firstName} ${data.lastName}`,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      email: data.email,
+      mobileNumber: data.mobileNumber,
+      cityName: data.city?.cityName || 'N/A',
+      cityId: data.city?.id || 'N/A',
+      status: data.enabled ? 'Active' : 'Inactive',
+      performance: 'Good', // Default value
+      agentsCount: 24, // Default value since not in API
+      PhCounts: 5, // Default value since not in API
+      LbCounts: 10,
+      profilePicture: data.profilePicture,
+      createdAt: data.createdAt,
+      updatedAt: data.updatedAt,
+      lastLogin: data.lastLogin,
+      joiningDate: data.createdAt?.split('T')[0] || '2023-05-15',
+      additionalInfo: `This division admin manages the ${data.division?.zoneName || 'N/A'} region.`,
+      // Include all original properties
+      ...data
+    };
+
+  }
+const [formData, setFormData] = useState(transformData(initialData));
   // Format phone number
   const formatPhoneNumber = (phone) => {
     try {
@@ -61,7 +85,7 @@ const VIewZonal = ({ ViewData: initialData, onSave, onClose }) => {
 
   // Handle cancel
   const handleCancel = () => {
-    setFormData(initialData);
+    setFormData(transformData(initialData));
     setErrors({});
     setIsEditing(false);
   };
@@ -131,17 +155,20 @@ const VIewZonal = ({ ViewData: initialData, onSave, onClose }) => {
                   {errors.name && <p id="name-error" className="text-red-500 text-xs mt-1">{errors.name}</p>}
                 </div>
               ) : (
+                <>
                 <h2 className="text-lg sm:text-xl font-semibold text-gray-800 text-center">{formData.name}</h2>
+                <p>{formData.cityName}</p>
+                </>
               )}
 
               {isEditing ? (
                 <div className="w-full mb-4 relative">
-                  <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="circleName">Circle Name</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="circleName">City Name</label>
                   <input
                     type="text"
                     id="circleName"
                     name="circleName"
-                    value={formData.circleName}
+                    value={formData.cityName}
                     onChange={handleInputChange}
                     className={`w-full p-2.5 border ${errors.circleName ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-sm sm:text-base transition-all duration-200`}
                     aria-invalid={!!errors.circleName}
@@ -234,14 +261,14 @@ const VIewZonal = ({ ViewData: initialData, onSave, onClose }) => {
                       <input
                         type="number"
                         name="coCounts"
-                        value={formData.coCounts}
+                        value={formData.PhCounts}
                         onChange={handleInputChange}
                         className="w-20 p-1.5 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-sm transition-all duration-200"
                         min="0"
                         aria-label="CO Count"
                       />
                     ) : (
-                      <p className="font-semibold text-gray-800">{formData.coCounts}</p>
+                      <p className="font-semibold text-gray-800">{formData.PhCounts}</p>
                     )}
                   </div>
                 </div>
@@ -265,8 +292,8 @@ const VIewZonal = ({ ViewData: initialData, onSave, onClose }) => {
                     {tab === 'details' && 'Details'}
                     {tab === 'activity' && 'Activity'}
                     {tab === 'agents' && `Agents (${formData.agentsCount})`}
-                    {tab === 'Pharmacy' && `Pharmacy (${formData.coCounts})`}
-                    {tab === 'Labs' && `Labs (${formData.coCounts})`}
+                    {tab === 'Pharmacy' && `Pharmacy (${formData.PhCounts})`}
+                    {tab === 'Labs' && `Labs (${formData.LbCounts})`}
                   </button>
                 ))}
               </div>
@@ -313,16 +340,16 @@ const VIewZonal = ({ ViewData: initialData, onSave, onClose }) => {
                               type="tel"
                               id="phone"
                               name="phone"
-                              value={formData.phone}
+                              value={formData.mobileNumber}
                               onChange={handleInputChange}
-                              className={`w-full p-2.5 border ${errors.phone ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-sm sm:text-base transition-all duration-200`}
-                              aria-invalid={!!errors.phone}
-                              aria-describedby={errors.phone ? 'phone-error' : undefined}
+                              className={`w-full p-2.5 border ${errors.mobileNumber ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-sm sm:text-base transition-all duration-200`}
+                              aria-invalid={!!errors.mobileNumber}
+                              aria-describedby={errors.mobileNumber ? 'phone-error' : undefined}
                             />
-                            {errors.phone && <p id="phone-error" className="text-red-500 text-xs mt-1">{errors.phone}</p>}
+                            {errors.phone && <p id="phone-error" className="text-red-500 text-xs mt-1">{errors.mobileNumber}</p>}
                           </div>
                         ) : (
-                          <p className="text-gray-800 text-sm sm:text-base">{formatPhoneNumber(formData.phone)}</p>
+                          <p className="text-gray-800 text-sm sm:text-base">{formatPhoneNumber(formData.mobileNumber)}</p>
                         )}
                       </div>
                     </div>
@@ -332,23 +359,23 @@ const VIewZonal = ({ ViewData: initialData, onSave, onClose }) => {
                         <FaMapMarkerAlt className="text-purple-500" aria-hidden="true" />
                       </div>
                       <div className="flex-1">
-                        <p className="text-sm text-gray-500">Circle ID</p>
+                        <p className="text-sm text-gray-500">City ID</p>
                         {isEditing ? (
                           <div className="relative">
                             <input
                               type="text"
                               id="circleId"
                               name="circleId"
-                              value={formData.circleId}
+                              value={formData.cityId}
                               onChange={handleInputChange}
-                              className={`w-full p-2.5 border ${errors.circleId ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-sm sm:text-base transition-all duration-200`}
-                              aria-invalid={!!errors.circleId}
-                              aria-describedby={errors.circleId ? 'circleId-error' : undefined}
+                              className={`w-full p-2.5 border ${errors.cityId ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-sm sm:text-base transition-all duration-200`}
+                              aria-invalid={!!errors.cityId}
+                              aria-describedby={errors.cityId ? 'circleId-error' : undefined}
                             />
-                            {errors.circleId && <p id="circleId-error" className="text-red-500 text-xs mt-1">{errors.circleId}</p>}
+                            {errors.cityId && <p id="circleId-error" className="text-red-500 text-xs mt-1">{errors.cityId}</p>}
                           </div>
                         ) : (
-                          <p className="text-gray-800 text-sm sm:text-base">{formData.circleId}</p>
+                          <p className="text-gray-800 text-sm sm:text-base">{formData.cityId}</p>
                         )}
                       </div>
                     </div>

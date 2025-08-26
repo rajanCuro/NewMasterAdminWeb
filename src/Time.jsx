@@ -39,7 +39,7 @@ function Time() {
         <>
             <div className='flex justify-start items-center gap-2' >
                 <span className="text-sm font-mono font-bold text-blue-600" > {formatTime(currentTime)}</span>
-                <div className="text-xs font-semibold text-gray-700 flex items-center gap-1 mb-1">
+                <div className="text-xs font-semibold text-gray-700 flex items-center gap-1">
                     <span>{formatDate(currentTime)}</span>
                     <span className="text-gray-400">•</span>
                     <span>{getDayName(currentTime)}</span>

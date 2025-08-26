@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { RiDeleteBin6Line, RiFilterLine, RiSearchLine } from "react-icons/ri";
+import { RiSearchLine } from "react-icons/ri";
 import { FiEdit, FiPlus } from "react-icons/fi";
 import { FaEye } from "react-icons/fa";
-import Add_Update_Agent from "./AddUpdateAgent";
+import AddUpdateAgent from "./AddUpdateAgent";
 import Pagination from "../Pagination";
 import ViewAgentDetails from "./ViewAgentDetails";
+import axiosInstance from "../../auth/axiosInstance";
 
 const AgentList = () => {
   const [agents, setAgents] = useState([]);
@@ -15,90 +16,39 @@ const AgentList = () => {
   const [editData, setEditData] = useState(null);
   const [viewAgentModal, setViewAgentModal] = useState(false);
   const [viewAgentModalData, setViewAgentModalData] = useState(null);
-  const [showFilters, setShowFilters] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // Filter state
   const [filters, setFilters] = useState({
     searchTerm: "",
     statusFilter: "all",
-    dateFilter: ""
   });
 
-  // Initialize with sample data
-  useEffect(() => {
-    const baseAgents = [
-      {
-        id: 1,
-        name: "John Doe",
-        email: "john.doe@example.com",
-        phone: "(123) 456-7890",
-        status: "Verified",
-        zone: "North Zone",
-        performance: "Excellent",
-        createdAt: "2023-05-15"
-      },
-      {
-        id: 2,
-        name: "Jane Smith",
-        email: "jane.smith@example.com",
-        phone: "(234) 567-8901",
-        status: "Pending",
-        zone: "South Zone",
-        performance: "Good",
-        createdAt: "2023-06-20"
-      },
-      {
-        id: 3,
-        name: "Robert Johnson",
-        email: "robert.j@example.com",
-        phone: "(345) 678-9012",
-        status: "Rejected",
-        zone: "East Zone",
-        performance: "Average",
-        createdAt: "2023-07-10"
-      },
-      {
-        id: 4,
-        name: "Emily Davis",
-        email: "emily.davis@example.com",
-        phone: "(456) 789-0123",
-        status: "Verified",
-        zone: "West Zone",
-        performance: "Excellent",
-        createdAt: "2023-08-05"
-      },
-    ];
-
-    // Generate 50 agents by repeating and modifying the pattern
-    const fiftyAgents = Array.from({ length: 50 }, (_, i) => {
-      const baseAgent = baseAgents[i % 4];
-      const id = i + 1;
-      const statusOptions = ["Pending", "Verified", "Rejected"];
-      const performanceOptions = ["Excellent", "Good", "Average", "Needs Improvement"];
-      const zoneOptions = ["North Zone", "South Zone", "East Zone", "West Zone", "Central Zone"];
-
-      const randomStatus = statusOptions[Math.floor(Math.random() * statusOptions.length)];
-      const randomPerformance = performanceOptions[Math.floor(Math.random() * performanceOptions.length)];
-      const randomZone = zoneOptions[Math.floor(Math.random() * zoneOptions.length)];
-
-      // Generate a random date within the past year
-      const randomDate = new Date();
-      randomDate.setDate(randomDate.getDate() - Math.floor(Math.random() * 365));
-
-      return {
-        id,
-        name: `${baseAgent.name.split(' ')[0]} ${baseAgent.name.split(' ')[1]}${i < 4 ? '' : id}`,
-        email: `${baseAgent.email.split('@')[0]}${i < 4 ? '' : id}@${baseAgent.email.split('@')[1]}`,
-        phone: i < 4 ? baseAgent.phone : `(${Math.floor(100 + Math.random() * 900)}) ${Math.floor(100 + Math.random() * 900)}-${Math.floor(1000 + Math.random() * 9000)}`,
-        status: i < 4 ? baseAgent.status : randomStatus,
-        performance: i < 4 ? baseAgent.performance : randomPerformance,
-        zone: i < 4 ? baseAgent.zone : randomZone,
-        createdAt: i < 4 ? baseAgent.createdAt : randomDate.toISOString().split('T')[0]
-      };
-    });
-
-    setAgents(fiftyAgents);
-    setFilteredAgents(fiftyAgents);
+  // Fetch agents from API
+// Fetch agents from API
+const getAllFieldExecutives = async () => {
+  try {
+    setLoading(true);
+    const response = await axiosInstance.get('/city-admin/getAllFieldExecutiveAddedByCityAdmin');
+    console.log('response', response);
+    
+    // Check if response.data exists and has dtoList property which is an array
+    if (response.data && Array.isArray(response.data.dtoList)) {
+      setAgents(response.data.dtoList);
+      setFilteredAgents(response.data.dtoList);
+    } else {
+      console.error('Unexpected API response format:', response.data);
+      setError('Failed to load agents. Invalid response format.');
+    }
+  } catch (error) {
+    console.error('Error fetching agents:', error);
+    setError('Failed to load agents. Please try again later.');
+  } finally {
+    setLoading(false);
+  }
+};  useEffect(() => {
+    getAllFieldExecutives();
   }, []);
 
   // Filter agents based on filter criteria
@@ -109,21 +59,17 @@ const AgentList = () => {
     if (filters.searchTerm) {
       const searchTerm = filters.searchTerm.toLowerCase();
       result = result.filter(agent =>
-        agent.name.toLowerCase().includes(searchTerm) ||
-        agent.email.toLowerCase().includes(searchTerm) ||
-        agent.id.toString().includes(searchTerm) ||
-        agent.zone.toLowerCase().includes(searchTerm)
+        agent.firstName?.toLowerCase().includes(searchTerm) ||
+        agent.lastName?.toLowerCase().includes(searchTerm) ||
+        agent.email?.toLowerCase().includes(searchTerm) ||
+        agent.id?.toString().includes(searchTerm) ||
+        agent.phoneNumber?.includes(searchTerm)
       );
     }
 
     // Status filter
     if (filters.statusFilter !== "all") {
       result = result.filter(agent => agent.status === filters.statusFilter);
-    }
-
-    // Date filter
-    if (filters.dateFilter) {
-      result = result.filter(agent => agent.createdAt === filters.dateFilter);
     }
 
     setFilteredAgents(result);
@@ -162,38 +108,49 @@ const AgentList = () => {
     setEditData(null);
   };
 
-  const handleDelete = (agentId) => {
-    setAgents(agents.filter(agent => agent.id !== agentId));
+  const handleDelete = async (agentId) => {
+    try {
+      await axiosInstance.delete(`/city-admin/deleteFieldExecutive/${agentId}`);
+      // Remove from local state
+      setAgents(agents.filter(agent => agent.id !== agentId));
+    } catch (error) {
+      console.error('Error deleting agent:', error);
+      setError('Failed to delete agent. Please try again.');
+    }
+  };
+
+  const handleAddAgent = () => {
+    setEditData(null);
+    setAddAgentModal(true);
+  };
+
+  const handleAgentSaved = () => {
+    // Refresh the agent list after adding/editing
+    getAllFieldExecutives();
+    setAddAgentModal(false);
+    setEditData(null);
   };
 
   // Status badge color
   const getStatusColor = (status) => {
     switch (status) {
       case "Verified":
+      case "ACTIVE":
         return "bg-green-100 text-green-800 border-green-200";
       case "Pending":
+      case "INACTIVE":
         return "bg-yellow-100 text-yellow-800 border-yellow-200";
       case "Rejected":
+      case "REJECTED":
         return "bg-red-100 text-red-800 border-red-200";
       default:
         return "bg-gray-100 text-gray-800 border-gray-200";
     }
   };
 
-  // Performance indicator
-  const getPerformanceColor = (performance) => {
-    switch (performance) {
-      case "Excellent":
-        return "text-green-600 bg-green-50 border-green-200";
-      case "Good":
-        return "text-blue-600 bg-blue-50 border-blue-200";
-      case "Average":
-        return "text-yellow-600 bg-yellow-50 border-yellow-200";
-      case "Needs Improvement":
-        return "text-red-600 bg-red-50 border-red-200";
-      default:
-        return "text-gray-600 bg-gray-50 border-gray-200";
-    }
+  // Format agent name
+  const formatAgentName = (agent) => {
+    return `${agent.firstName || ''} ${agent.lastName || ''}`.trim() || 'Unknown Agent';
   };
 
   return (
@@ -207,7 +164,7 @@ const AgentList = () => {
             </div>
             <input
               type="search"
-              placeholder="Search agents by name, ID, email or zone..."
+              placeholder="Search agents by name, ID, email or phone..."
               className="w-full border border-gray-300 rounded-lg pl-10 pr-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               name="searchTerm"
               value={filters.searchTerm}
@@ -217,14 +174,11 @@ const AgentList = () => {
 
           <div className="mt-4 md:mt-0">
             <button
-              onClick={() => {
-                setEditData(null);
-                setAddAgentModal(true);
-              }}
-              className="submit-btn flex justify-center items-center"
+              onClick={handleAddAgent}
+              className="bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2"
             >
               <FiPlus className="w-4 h-4" />
-              Agent
+              Add Agent
             </button>
           </div>
         </div>
@@ -241,9 +195,7 @@ const AgentList = () => {
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">ID</th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Agent</th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Contact</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Zone</th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Status</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Performance</th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Created</th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Actions</th>
                   </tr>
@@ -254,22 +206,18 @@ const AgentList = () => {
                       <tr onDoubleClick={() => handleViewAgent(agent)} key={agent.id} className="hover:bg-gray-50 transition-colors">
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#{agent.id}</td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">{agent.name}</div>
+                          <div className="text-sm font-medium text-gray-900">{formatAgentName(agent)}</div>
                           <div className="text-xs text-gray-500">{agent.email}</div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{agent.phone}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{agent.zone}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{agent.phoneNumber}</td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className={`px-2.5 py-1 text-xs font-medium rounded-full border ${getStatusColor(agent.status)}`}>
-                            {agent.status}
+                            {agent.status || 'Unknown'}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`px-2.5 py-1 text-xs font-medium rounded-full border ${getPerformanceColor(agent.performance)}`}>
-                            {agent.performance}
-                          </span>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                          {agent.createdAt ? new Date(agent.createdAt).toLocaleDateString() : 'N/A'}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{agent.createdAt}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex items-center gap-2">
                             <button
@@ -292,7 +240,7 @@ const AgentList = () => {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="8" className="px-6 py-8 text-center">
+                      <td colSpan="6" className="px-6 py-8 text-center">
                         <div className="flex flex-col items-center justify-center text-gray-500">
                           <svg className="w-16 h-16 mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -325,11 +273,11 @@ const AgentList = () => {
       {addAgentModal && (
         <div
           className="fixed inset-0 backdrop-brightness-50 flex items-center justify-center z-50 p-4"
-          onClick={() => setAddAgentModal(false)}
+          onClick={handleCloseModal}
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-xl shadow-2xl w-full max-w-2xl transform transition-all duration-300 scale-100 max-h-[90vh] overflow-y-auto"
+            className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
           >
             {/* Header */}
             <div className="flex justify-between items-center border-b border-gray-200 p-6 sticky top-0 bg-white">
@@ -337,7 +285,7 @@ const AgentList = () => {
                 {editData ? "Edit Agent Details" : "Add New Agent"}
               </h2>
               <button
-                onClick={() => setAddAgentModal(false)}
+                onClick={handleCloseModal}
                 className="text-gray-400 hover:text-gray-500 text-2xl font-bold cursor-pointer"
               >
                 &times;
@@ -346,22 +294,10 @@ const AgentList = () => {
 
             {/* Agent Form */}
             <div className="p-6">
-              <Add_Update_Agent
-                onClose={() => setAddAgentModal(false)}
+              <AddUpdateAgent
                 editData={editData}
-                onSave={(newAgent) => {
-                  if (editData) {
-                    // Update existing agent
-                    setAgents(agents.map(agent =>
-                      agent.id === editData.id ? { ...agent, ...newAgent } : agent
-                    ));
-                  } else {
-                    // Add new agent
-                    const newId = Math.max(...agents.map(a => a.id)) + 1;
-                    setAgents([...agents, { ...newAgent, id: newId }]);
-                  }
-                  setAddAgentModal(false);
-                }}
+                onClose={handleCloseModal}
+                onSave={handleAgentSaved}
               />
             </div>
           </div>
@@ -369,9 +305,9 @@ const AgentList = () => {
       )}
 
       {/* View Agent Modal */}
-      {viewAgentModal && (
+      {viewAgentModal && viewAgentModalData && (
         <div
-          className="fixed inset-0 backdrop-brightness-50 flex items-center justify-center z-70"
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-70"
           onClick={() => {
             setViewAgentModal(false);
             setViewAgentModalData(null);
@@ -379,7 +315,7 @@ const AgentList = () => {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-xl shadow-2xl max-w-6xl w-full max-h-[95vh] overflow-y-auto hide-scrollbar transform transition-all duration-300 scale-100"
+            className="bg-white rounded-xl shadow-2xl max-w-6xl w-full max-h-[95vh] overflow-y-auto"
           >
             <div className="flex justify-between items-center border-b border-gray-200 p-6 sticky top-0 bg-blue-700 text-white z-10">
               <h2 className="text-xl font-semibold">Agent Details</h2>
@@ -394,7 +330,10 @@ const AgentList = () => {
               </button>
             </div>
             <div className="p-6">
-              <ViewAgentDetails ViewData={viewAgentModalData} onClose={() => setViewAgentModal(false)} />
+              <ViewAgentDetails 
+                ViewData={viewAgentModalData} 
+                onClose={() => setViewAgentModal(false)} 
+              />
             </div>
           </div>
         </div>

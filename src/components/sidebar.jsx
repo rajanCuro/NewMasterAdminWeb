@@ -11,6 +11,7 @@ import {
     FiChevronRight,
     FiMenu,
 } from 'react-icons/fi';
+import { TbMapPinCode } from "react-icons/tb";
 import { CiLogin } from "react-icons/ci";
 import { FaMapMarkerAlt } from "react-icons/fa";
 import { useAuth } from '../auth/AuthContext';
@@ -46,8 +47,10 @@ const Sidebar = ({ collapsed, toggleSidebar }) => {
         { icon: <FiUsers className="text-lg" />, label: 'Division Officer', path: '/zonal' },
         { icon: <FiUserCheck className="text-lg" />, label: 'City Officer', path: '/circle-officer' },
         { icon: <FiUser className="text-lg" />, label: 'Agent', path: '/agent' },
+        { icon: <TbMapPinCode className="text-lg" />, label: 'Pincode', path: '/pincode' },
         { icon: <FaMapMarkerAlt className="text-lg" />, label: 'Curo Map', path: '/curo_map' },
         { icon: <IoMdSettings className="text-lg" />, label: 'Settings', path: '/setting' },
+        
     ];
 
 
@@ -76,7 +79,7 @@ const Sidebar = ({ collapsed, toggleSidebar }) => {
                             {collapsed ? <FiChevronRight /> : <FiChevronLeft />}
                         </button>
                     </div>
-                    <div className={`${collapsed ? "hidden" : "block"}`}>
+                    <div className={`${collapsed ? "hidden" : "block"} p-4`}>
                         <Time />
                     </div>
 
