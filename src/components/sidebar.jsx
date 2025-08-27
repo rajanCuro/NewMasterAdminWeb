@@ -17,6 +17,8 @@ import { FaMapMarkerAlt } from "react-icons/fa";
 import { useAuth } from '../auth/AuthContext';
 import { IoMdSettings } from "react-icons/io";
 import Time from '../Time';
+import { SiPrivatedivision } from 'react-icons/si';
+import { FaMountainCity } from 'react-icons/fa6';
 
 
 
@@ -50,6 +52,8 @@ const Sidebar = ({ collapsed, toggleSidebar }) => {
         { icon: <TbMapPinCode className="text-lg" />, label: 'Pincode', path: '/pincode' },
         { icon: <FaMapMarkerAlt className="text-lg" />, label: 'Curo Map', path: '/curo_map' },
         { icon: <IoMdSettings className="text-lg" />, label: 'Settings', path: '/setting' },
+        { icon: <SiPrivatedivision  className="text-lg" />, label: 'Division', path: '/division' },
+        { icon: <FaMountainCity  className="text-lg" />, label: 'City', path: '/city' },
         
     ];
 
