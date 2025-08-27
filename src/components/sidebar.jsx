@@ -52,8 +52,8 @@ const Sidebar = ({ collapsed, toggleSidebar }) => {
         { icon: <TbMapPinCode className="text-lg" />, label: 'Pincode', path: '/pincode' },
         { icon: <FaMapMarkerAlt className="text-lg" />, label: 'Curo Map', path: '/curo_map' },
         { icon: <IoMdSettings className="text-lg" />, label: 'Settings', path: '/setting' },
-        { icon: <SiPrivatedivision  className="text-lg" />, label: 'Division', path: '/division' },
-        { icon: <FaMountainCity  className="text-lg" />, label: 'City', path: '/city' },
+        { icon: <SiPrivatedivision  className="text-lg" />, label: 'All Divisions', path: '/all_division' },
+        { icon: <FaMountainCity  className="text-lg" />, label: 'All Cities', path: '/all_cities' },
         
     ];
 

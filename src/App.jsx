@@ -1,8 +1,5 @@
-// src/App.jsx
-
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-
 import Login from './auth/Login';
 import Zonal from './pages/Division/DivisionList.jsx';
 import CityOfficerList from './pages/CityOfficer/CityOfficerList.jsx';
@@ -10,12 +7,12 @@ import DashBoard from './pages/dashboard/DashBoard';
 import Map from './pages/Map/Map';
 import { useAuth } from './auth/AuthContext.jsx';
 import Setting from './pages/Setting/Setting.jsx';
-import Sidebar from './components/sidebar.jsx';
 import Pincode from './pages/Pincode/Pincode.jsx';
 import FeildExecutiveList from './pages/FeildExecutive/FeildExecutiveList.jsx';
-import City from './pages/CIty.jsx';
-import Division from './pages/Division.jsx';
+import City from './pages/AllCity.jsx';
+import Division from './pages/AllDivision.jsx';
 import PrivateRoute from './auth/PrivateRoute';
+import Sidebar from './components/Sidebar.jsx';
 
 function App() {
   const [collapsed, setCollapsed] = useState(false);
@@ -113,7 +110,7 @@ function App() {
             />
 
             <Route
-              path="/city"
+              path="/all_cities"
               element={
                 <PrivateRoute>
                   <City />
@@ -122,7 +119,7 @@ function App() {
             />
 
             <Route
-              path="/division"
+              path="/all_division"
               element={
                 <PrivateRoute>
                   <Division />

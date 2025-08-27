@@ -8,7 +8,7 @@ import axiosInstance from '../../auth/axiosInstance';
 import { useAuth } from '../../auth/AuthContext';
 
 function CircleOfficerList() {
-  const { stateList } = useAuth();  
+  const { stateList } = useAuth();
   const [circleOfficers, setCircleOfficers] = useState([]);
   const [filteredCircleOfficers, setFilteredCircleOfficers] = useState([]);
   const [addCircleModal, setAddCircleModal] = useState(false);
@@ -24,6 +24,8 @@ function CircleOfficerList() {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [detailModal, setDetailModal] = useState(false);
   const [viewCircleData, setViewCircleData] = useState(null);
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
 
   // Apply filters
   useEffect(() => {
@@ -111,11 +113,12 @@ function CircleOfficerList() {
   const getAllCityAdmin = async () => {
     try {
       setIsLoading(true);
-      const response = await axiosInstance.get(`/division_admin/getAllCityAdmins`);
-      console.log('API response:', response);
-      
+      const response = await axiosInstance.get(`/division_admin/getAllCityAdmins?page=${currentPage}&pageSize=${itemsPerPage}`);
+      console.log('All city admins:', response.data);
       if (response.data && response.data.dtoList) {
         setCircleOfficers(response.data.dtoList);
+        setTotalItems(response.data.totalItems);
+        setTotalPages(response.data.totalPages);
       } else {
         setCircleOfficers([]);
       }
@@ -129,7 +132,7 @@ function CircleOfficerList() {
 
   useEffect(() => {
     getAllCityAdmin();
-  }, []);
+  }, [currentPage, itemsPerPage]);
 
   // Pagination logic
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -208,7 +211,7 @@ function CircleOfficerList() {
               <table className="min-w-full divide-y divide-gray-700">
                 <thead className="bg-gray-300 sticky top-0 z-10">
                   <tr>
-                    {['Sr.No','City Admin', 'Phone', 'City', 'Created Date', 'Status', 'Actions'].map((header) => (
+                    {['Sr.No', 'City Admin', 'Phone', 'City', 'Created Date', 'Status', 'Actions'].map((header) => (
                       <th
                         key={header}
                         scope="col"
@@ -247,28 +250,28 @@ function CircleOfficerList() {
                         key={officer.id}
                         className="hover:bg-gray-300/50 transition-colors duration-200"
                       >
-                        <td className="px-6 py-4 whitespace-nowrap">{index+1}</td>
-                         <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          {officer.profilePicture && officer.profilePicture !== 'NA' ? (
-                            <img
-                              src={officer.profilePicture}
-                              alt={officer.name}
-                              className="h-10 w-10 rounded-full object-cover mr-3"
-                            />
-                          ) : (
-                            <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center mr-3">
-                              <span className="text-blue-600 font-medium">
-                                {zonal.firstName?.charAt(0)}{zonal.lastName?.charAt(0)}
-                              </span>
+                        <td className="px-6 py-4 whitespace-nowrap">{index + 1}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            {officer.profilePicture && officer.profilePicture !== 'NA' ? (
+                              <img
+                                src={officer.profilePicture}
+                                alt={officer.name}
+                                className="h-10 w-10 rounded-full object-cover mr-3"
+                              />
+                            ) : (
+                              <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center mr-3">
+                                <span className="text-blue-600 font-medium">
+                                  {zonal.firstName?.charAt(0)}{zonal.lastName?.charAt(0)}
+                                </span>
+                              </div>
+                            )}
+                            <div>
+                              <div className="text-sm font-medium text-gray-900">{officer.firstName} {officer.lastName}</div>
+                              <div className="text-xs text-gray-500">{officer.email}</div>
                             </div>
-                          )}
-                          <div>
-                            <div className="text-sm font-medium text-gray-900">{officer.firstName} {officer.lastName}</div>
-                            <div className="text-xs text-gray-500">{officer.email}</div>
                           </div>
-                        </div>
-                      </td>
+                        </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm">
                           {officer.mobileNumber}
                         </td>
@@ -325,10 +328,11 @@ function CircleOfficerList() {
             </div>
 
             {/* Fixed Pagination at Bottom */}
-            <div className="sticky bottom-0 bg-white border-t border-gray-200 px-4 py-3">
+            <div className="sticky bottom-0 bg-white border-t border-gray-200 px-4 py-3">             
               <Pagination
                 currentPage={currentPage}
-                totalItems={filteredCircleOfficers.length}
+                totalItems={totalItems}
+                totalPages={totalPages}
                 itemsPerPage={itemsPerPage}
                 onPageChange={setCurrentPage}
                 onItemsPerPageChange={setItemsPerPage}
