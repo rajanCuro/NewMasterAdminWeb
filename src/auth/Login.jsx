@@ -93,40 +93,37 @@ function Login() {
 
 
     const handleSignIn = async () => {
-  setIsLoading(true);
-  setError('');
+        setIsLoading(true);
+        setError('');
 
-  try {
-    const otpString = otp.join('');
-    const response = await axiosInstance.post('/auth/signin', {
-      email: username,
-      password: password,
-      logInOtp: otpString
-    });
+        try {
+            const otpString = otp.join('');
+            const response = await axiosInstance.post('/auth/signin', {
+                email: username,
+                password: password,
+                logInOtp: otpString
+            });
 
-    console.log("Login successful:", response.data);
+            console.log("Login successful:", response.data);
 
-    const { message, dto } = response.data;
-    const { jwtToken,  user } = dto;
-    setSuccess(message);
-    setCountdown(2);
-    localStorage.setItem("token", jwtToken);
-    localStorage.setItem("user", JSON.stringify(user));
-    localStorage.setItem('role', JSON.stringify(user.roles.roleName));
-    setUser(user);
-    setToken(jwtToken);
-    setRole(user.roles.roleName);
-    setTimeout(() => {
-      navigate('/dashboard');
-    }, 2000);
-
-  } catch (error) {
-    console.log("Login failed:", error);
-    setError(error.response?.data?.message || error.message || "Login failed");
-  } finally {
-    setIsLoading(false);
-  }
-};
+            const { message, dto } = response.data;
+            const { jwtToken, user } = dto;
+            setSuccess(message);
+            setCountdown(2);
+            localStorage.setItem("token", jwtToken);
+            localStorage.setItem("user", JSON.stringify(user));
+            localStorage.setItem('role', JSON.stringify(user.roles.roleName));
+            setUser(user);
+            setToken(jwtToken);
+            setRole(user.roles.roleName);
+            navigate('/dashboard');
+        } catch (error) {
+            console.log("Login failed:", error);
+            setError(error.response?.data?.message || error.message || "Login failed");
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
 
     const togglePasswordVisibility = () => {
@@ -237,7 +234,7 @@ function Login() {
                     )}
                     {success && (
                         <div className="mt-1 p-3 mb-3 bg-green-100 border border-green-400 text-green-700 rounded">
-                            ✅ {success} 
+                            ✅ {success}
                         </div>
                     )}
 
