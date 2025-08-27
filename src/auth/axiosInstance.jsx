@@ -3,7 +3,6 @@ import axios from "axios";
 
 const axiosInstance = axios.create({
   baseURL: "http://192.168.1.32:8081", 
-  timeout: 10000, // 10 seconds
 });
 
 // Optional: Add request interceptor

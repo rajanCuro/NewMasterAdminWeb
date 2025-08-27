@@ -186,7 +186,7 @@ function AddUpdate_CircleOfficer({ Editdata, onClose, refresh }) {
             >
               <option value="">-- Select Division --</option>
 
-              <option key={user.division.id} value={user.division.id} selected>
+              <option key={user.division.id } value={user.division.id} selected>
                 {user.division.zoneName}
               </option>
             </select>
