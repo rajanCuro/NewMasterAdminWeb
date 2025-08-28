@@ -216,7 +216,7 @@ function DivisionList() {
             <table className="min-w-full divide-y divide-gray-700">
               <thead className="bg-gray-50 sticky top-0 z-10">
                 <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sr.No</th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Division Admin</th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Division</th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
@@ -257,7 +257,7 @@ function DivisionList() {
                   filteredZonalHeads.map((zonal, index) => (
 
                     <tr onDoubleClick={() => handleViewZonal(zonal)} key={zonal.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#{zonal.id}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{index+1}</td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           {zonal.profilePicture && zonal.profilePicture !== 'NA' ? (

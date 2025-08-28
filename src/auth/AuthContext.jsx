@@ -11,6 +11,30 @@ export const AuthProvider = ({ children }) => {
   const [role, setRole] = useState(null);
   const [stateList, setStateList] = useState([]);
   const [loading, setLoading] = useState(true); // important
+  const [latitude, setLatitude] = useState({
+    lat: 25.356917,
+    lng: 83.007167,
+  });
+  const [longitude, setLongitude] = useState(null);
+
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const newPos = {
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude,
+          };
+          setLatitude(newPos);
+          setLongitude(newPos);
+        },
+        (err) => {
+          console.error("Location error:", err);
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      );
+    }
+  }, []);
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -62,6 +86,9 @@ export const AuthProvider = ({ children }) => {
         getALLState,
         stateList,
         loading,
+        longitude, setLongitude,
+        latitude, setLatitude
+
       }}
     >
       {children}

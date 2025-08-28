@@ -1,45 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { GoogleMap, Marker, useJsApiLoader } from "@react-google-maps/api";
 import AddAddress from "./AddAddress"; // Make sure this path is correct
+import { useAuth } from "../../auth/AuthContext";
 
 export default function MyLocationMap() {
+  const {latitude,longitude, setLongitude} = useAuth();
   const { isLoaded, loadError } = useJsApiLoader({
     googleMapsApiKey: "AIzaSyDQhTx-hV6s2j1v9YL9ewHJwJpTiFhdj00",
   });
-
-  const [currentPosition, setCurrentPosition] = useState({
-    lat: 25.356917,
-    lng: 83.007167,
-  });
-  const [showAddressModal, setShowAddressModal] = useState(false);
-  const [selectedPosition, setSelectedPosition] = useState(null);
-
-  useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const newPos = {
-            lat: pos.coords.latitude,
-            lng: pos.coords.longitude,
-          };
-          setCurrentPosition(newPos);
-          setSelectedPosition(newPos);
-        },
-        (err) => {
-          console.error("Location error:", err);
-          alert("Location access denied. Showing default location.");
-        },
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-      );
-    }
-  }, []);
+   const [showAddressModal, setShowAddressModal] = useState(false);
 
   const handleMapClick = (e) => {
     const newPos = {
       lat: e.latLng.lat(),
       lng: e.latLng.lng(),
     };
-    setSelectedPosition(newPos);
+    setLongitude(newPos);
   };
 
   const handleAddAddress = () => {
@@ -59,11 +35,11 @@ export default function MyLocationMap() {
       <div className="w-full h-screen rounded-2xl shadow-lg overflow-hidden">
         <GoogleMap
           mapContainerClassName="w-full h-full"
-          center={currentPosition}
+          center={latitude}
           zoom={15}
           onClick={handleMapClick}
         >
-          <Marker position={selectedPosition || currentPosition} />
+          <Marker position={longitude || latitude} />
         </GoogleMap>
       </div>
 
@@ -84,7 +60,7 @@ export default function MyLocationMap() {
       {showAddressModal && (
         <div>
           <AddAddress
-            initialPosition={selectedPosition || currentPosition}
+            initialPosition={longitude || latitude}
             onClose={handleCloseModal}
           />
         </div>

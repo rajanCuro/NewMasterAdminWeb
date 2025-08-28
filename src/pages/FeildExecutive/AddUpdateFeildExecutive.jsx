@@ -3,7 +3,7 @@ import axiosInstance from '../../auth/axiosInstance';
 import Swal from 'sweetalert2';
 import { useAuth } from '../../auth/AuthContext';
 
-function AddUpdateAgent({ editData,onClose,onSave }) {
+function AddUpdateAgent({ editData, onClose, onSave }) {
   const { user } = useAuth();
   const id = user.city.id;
 
@@ -48,8 +48,8 @@ function AddUpdateAgent({ editData,onClose,onSave }) {
 
       if (Array.isArray(dtoList)) {
         setPincodeByCity(dtoList);
-      } 
-      
+      }
+
 
     } catch (error) {
       console.error('Error fetching pincodes:', error);
@@ -73,13 +73,13 @@ function AddUpdateAgent({ editData,onClose,onSave }) {
   // Pincode selection
   const togglePincodeSelection = (pincodeId) => {
     let updatedPincodeIds;
-    
+
     if (selectedPincodeIds.includes(pincodeId)) {
       updatedPincodeIds = selectedPincodeIds.filter(id => id !== pincodeId);
     } else {
       updatedPincodeIds = [...selectedPincodeIds, pincodeId];
     }
-    
+
     setSelectedPincodeIds(updatedPincodeIds);
   };
 
@@ -95,7 +95,7 @@ function AddUpdateAgent({ editData,onClose,onSave }) {
   };
 
   // Filter pincodes based on search term
-  const filteredPincodes = pincodeByCity.filter(pin => 
+  const filteredPincodes = pincodeByCity.filter(pin =>
     pin.pinCode.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -108,7 +108,7 @@ function AddUpdateAgent({ editData,onClose,onSave }) {
   // Submit
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (selectedPincodeIds.length === 0) {
       Swal.fire({
         icon: 'warning',
@@ -117,7 +117,7 @@ function AddUpdateAgent({ editData,onClose,onSave }) {
       });
       return;
     }
-    
+
     setLoading(true);
 
     try {
@@ -131,28 +131,17 @@ function AddUpdateAgent({ editData,onClose,onSave }) {
       Swal.fire({
         icon: 'success',
         title: 'Success',
-        text: 'Agent added successfully',
+        text: response.data.message || 'Agent added successfully!',
       });
-onClose();
-onSave();
-      if (!editData) {
-        setFormData({
-          firstName: '',
-          lastName: '',
-          phoneNumber: '',
-          email: '',
-          password: '',
-          dlno: '',
-          adhar: ''
-        });
-        setSelectedPincodeIds([]);
-      }
+      onClose();
+      onSave();
+
     } catch (error) {
       console.error('Error adding agent:', error);
       Swal.fire({
         icon: 'error',
         title: 'Error',
-        text: error.response?.data?.message || 'Failed to add agent',
+        text: error.response?.data.error || '',
       });
     } finally {
       setLoading(false);
@@ -266,14 +255,14 @@ onSave();
                 Select Pincode(s) <span className="text-red-500">*</span>
               </label>
               <div className="flex flex-wrap gap-2 mb-2">
-                <button 
+                <button
                   type="button"
                   onClick={selectAllPincodes}
                   className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200"
                 >
                   Select All
                 </button>
-                <button 
+                <button
                   type="button"
                   onClick={clearAllPincodes}
                   className="px-3 py-1 text-xs bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
@@ -284,25 +273,25 @@ onSave();
                   {selectedPincodeIds.length} pincode(s) selected
                 </span>
               </div>
-              
+
               {/* Custom select dropdown */}
               <div className="relative">
-                <div 
+                <div
                   className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white cursor-pointer flex items-center justify-between"
                   onClick={() => setShowDropdown(!showDropdown)}
                 >
                   <span className="text-gray-500">Select pincodes</span>
-                  <svg 
-                    className={`w-4 h-4 transition-transform ${showDropdown ? 'rotate-180' : ''}`} 
-                    fill="none" 
-                    stroke="currentColor" 
-                    viewBox="0 0 24 24" 
+                  <svg
+                    className={`w-4 h-4 transition-transform ${showDropdown ? 'rotate-180' : ''}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
                   </svg>
                 </div>
-                
+
                 {showDropdown && (
                   <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
                     {/* Search input inside dropdown */}
@@ -316,24 +305,23 @@ onSave();
                         onClick={(e) => e.stopPropagation()}
                       />
                     </div>
-                    
+
                     {/* Pincode options */}
                     <div className="p-2">
                       {filteredPincodes.length > 0 ? (
                         filteredPincodes.map((pin) => (
                           <div
                             key={pin.id}
-                            className={`p-2 rounded-md cursor-pointer flex items-center ${
-                              selectedPincodeIds.includes(pin.id)
+                            className={`p-2 rounded-md cursor-pointer flex items-center ${selectedPincodeIds.includes(pin.id)
                                 ? 'bg-blue-100 text-blue-700'
                                 : 'hover:bg-gray-100'
-                            }`}
+                              }`}
                             onClick={() => togglePincodeSelection(pin.id)}
                           >
                             <input
                               type="checkbox"
                               checked={selectedPincodeIds.includes(pin.id)}
-                              onChange={() => {}}
+                              onChange={() => { }}
                               className="mr-2"
                             />
                             {pin.pinCode}
@@ -349,14 +337,14 @@ onSave();
                 )}
               </div>
             </div>
-            
+
             {/* Selected pincodes preview */}
             {selectedPincodeIds.length > 0 && (
               <div className="mt-3">
                 <p className="text-sm font-medium text-gray-700 mb-1">Selected Pincodes:</p>
                 <div className="flex flex-wrap gap-2">
                   {selectedPincodeIds.map((pincodeId) => (
-                    <span 
+                    <span
                       key={pincodeId}
                       className="px-2 py-1 bg-blue-100 text-blue-700 rounded-md text-sm flex items-center"
                     >
@@ -378,8 +366,8 @@ onSave();
 
         {/* Submit Button */}
         <div className="pt-6">
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-400"
             disabled={loading}
           >

@@ -85,7 +85,7 @@ function Login() {
             setShowOtpSection(true);
         } catch (error) {
             console.log("OTP generation failed:", error);
-            setError(error.response?.data?.message || error.message || "Failed to generate OTP");
+            setError(error.response?.data?.error || "Failed to generate OTP");
         } finally {
             setIsLoading(false);
         }
@@ -112,7 +112,7 @@ function Login() {
             setCountdown(2);
             localStorage.setItem("token", jwtToken);
             localStorage.setItem("user", JSON.stringify(user));
-            localStorage.setItem('role', JSON.stringify(user.roles.roleName));
+            localStorage.setItem('role', user.roles.roleName);
             setUser(user);
             setToken(jwtToken);
             setRole(user.roles.roleName);

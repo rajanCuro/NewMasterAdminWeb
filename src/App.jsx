@@ -9,8 +9,8 @@ import { useAuth } from './auth/AuthContext.jsx';
 import Setting from './pages/Setting/Setting.jsx';
 import Pincode from './pages/Pincode/Pincode.jsx';
 import FeildExecutiveList from './pages/FeildExecutive/FeildExecutiveList.jsx';
-import City from './pages/AllCity.jsx';
-import Division from './pages/AllDivision.jsx';
+import City from './pages/CreatCity/AllCity.jsx';
+import Division from './pages/CreatDivision/AllDivision.jsx';
 import PrivateRoute from './auth/PrivateRoute';
 import Sidebar from './components/Sidebar.jsx';
 

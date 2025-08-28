@@ -19,31 +19,28 @@ const FeildExecutiveList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Filter state
   const [filters, setFilters] = useState({
     searchTerm: "",
     statusFilter: "all",
   });
 
-  // Fetch agents from API
-// Fetch agents from API
-const getAllFieldExecutives = async () => {
-  try {
-    setLoading(true);
-    const response = await axiosInstance.get('/city-admin/getAllFieldExecutiveAddedByCityAdmin');
+  const getAllFieldExecutives = async () => {
+    try {
+      setLoading(true);
+      const response = await axiosInstance.get(`/city-admin/getAllFieldExecutiveAddedByCityAdmin?page=${currentPage}&pageSize=${itemsPerPage}`);
 
-    if (response.data && Array.isArray(response.data.dtoList)) {
-      setAgents(response.data.dtoList);
-      setFilteredAgents(response.data.dtoList);
-      
+      if (response.data && Array.isArray(response.data.dtoList)) {
+        setAgents(response.data.dtoList);
+        setFilteredAgents(response.data.dtoList);
+
+      }
+
+    } catch (error) {
+      console.error('Error fetching agents:', error);
+    } finally {
+      setLoading(false);
     }
-
-  } catch (error) {
-    console.error('Error fetching agents:', error);
-  } finally {
-    setLoading(false);
-  }
-};  useEffect(() => {
+  }; useEffect(() => {
     getAllFieldExecutives();
   }, []);
 
@@ -80,11 +77,6 @@ const getAllFieldExecutives = async () => {
       [name]: value
     }));
   };
-
-  // Pagination logic
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentAgents = filteredAgents.slice(indexOfFirstItem, indexOfLastItem);
 
   // Action handlers
   const handleEdit = (agent) => {
@@ -141,6 +133,12 @@ const getAllFieldExecutives = async () => {
         return "bg-gray-100 text-gray-800 border-gray-200";
     }
   };
+  const totalItems = filteredAgents.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentAgents = filteredAgents.slice(indexOfFirstItem, indexOfLastItem);
 
   // Format agent name
   const formatAgentName = (agent) => {
@@ -178,95 +176,93 @@ const getAllFieldExecutives = async () => {
       </div>
 
       {/* Agents Table */}
-      <div className="px-6 py-4">
-        <div className="bg-white rounded-lg shadow-xs border border-gray-200 overflow-hidden">
-          <div className="overflow-x-auto">
-            <div className="min-w-full max-w-screen overflow-x-auto">
-              <table className="w-full divide-y divide-gray-200" style={{ minWidth: 'max-content' }}>
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">ID</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Agent</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Contact</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Status</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Created</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {currentAgents.length > 0 ? (
-                    currentAgents.reverse().map((agent) => (
-                      <tr onDoubleClick={() => handleViewAgent(agent)} key={agent.id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#{agent.id}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">{formatAgentName(agent)}</div>
-                          <div className="text-xs text-gray-500">{agent.email}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{agent.phoneNumber}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`px-2.5 py-1 text-xs font-medium rounded-full border ${getStatusColor(agent.status)}`}>
-                            {agent.status || 'Unknown'}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                          {agent.createdAt ? new Date(agent.createdAt).toLocaleDateString() : 'N/A'}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          <div className="flex items-center gap-2">
-                            <button
-                              onClick={() => handleViewAgent(agent)}
-                              className="text-blue-600 cursor-pointer hover:text-blue-800 p-1.5 rounded-md hover:bg-blue-100 transition-colors"
-                              title="View agent"
-                            >
-                              <FaEye className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => handleEdit(agent)}
-                              className="text-green-600 cursor-pointer hover:text-green-800 p-1.5 rounded-md hover:bg-blue-100 transition-colors"
-                              title="Edit agent"
-                            >
-                              <FiEdit className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan="6" className="px-6 py-8 text-center">
-                        <div className="flex flex-col items-center justify-center text-gray-500">
-                          <svg className="w-16 h-16 mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                          </svg>
-                          <p className="text-lg font-medium">No agents found</p>
-                          <p className="text-sm mt-1">Try adjusting your search or filter criteria</p>
+      <div className="px-6 py-4 flex flex-col" style={{ height: 'calc(106vh - 110px)' }}>
+        <div className="bg-white rounded-lg shadow-xs border border-gray-200 overflow-hidden flex flex-col flex-grow">
+          <div className="overflow-x-auto border border-gray-100 flex flex-col flex-grow">
+            <table className="min-w-full divide-y divide-gray-700">
+              <thead className="bg-gray-50 sticky top-0 z-10">
+                <tr>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Sr.No</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Agent</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Contact</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Status</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Created</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {currentAgents.length > 0 ? (
+                  currentAgents.reverse().map((agent,index) => (
+                    <tr onDoubleClick={() => handleViewAgent(agent)} key={agent.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{index+1}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">{formatAgentName(agent)}</div>
+                        <div className="text-xs text-gray-500">{agent.email}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{agent.phoneNumber}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2.5 py-1 text-xs font-medium rounded-full border ${getStatusColor(agent.status)}`}>
+                          {agent.status || 'Unknown'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                        {agent.createdAt ? new Date(agent.createdAt).toLocaleDateString() : 'N/A'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleViewAgent(agent)}
+                            className="text-blue-600 cursor-pointer hover:text-blue-800 p-1.5 rounded-md hover:bg-blue-100 transition-colors"
+                            title="View agent"
+                          >
+                            <FaEye className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleEdit(agent)}
+                            className="text-green-600 cursor-pointer hover:text-green-800 p-1.5 rounded-md hover:bg-blue-100 transition-colors"
+                            title="Edit agent"
+                          >
+                            <FiEdit className="w-4 h-4" />
+                          </button>
                         </div>
                       </td>
                     </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="6" className="px-6 py-8 text-center">
+                      <div className="flex flex-col items-center justify-center text-gray-500">
+                        <svg className="w-16 h-16 mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <p className="text-lg font-medium">No agents found</p>
+                        <p className="text-sm mt-1">Try adjusting your search or filter criteria</p>
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+          <div className="px-6 py-4 bg-white border-t border-gray-200">
+            <Pagination
+              currentPage={currentPage}
+              totalItems={totalItems}
+              totalPages={totalPages}
+              itemsPerPage={itemsPerPage}
+              onPageChange={setCurrentPage}
+              onItemsPerPageChange={setItemsPerPage}
+            />
           </div>
         </div>
       </div>
 
-      {/* Pagination */}
-      <div className="px-6 py-4 bg-white border-t border-gray-200">
-        <Pagination
-          currentPage={currentPage}
-          totalItems={filteredAgents.length}
-          itemsPerPage={itemsPerPage}
-          onPageChange={setCurrentPage}
-          onItemsPerPageChange={setItemsPerPage}
-        />
-      </div>
 
       {/* Add/Edit Agent Modal */}
       {addAgentModal && (
         <div
           className="fixed inset-0 backdrop-brightness-50 flex items-center justify-center z-50 p-4"
-          onClick={() => {setAddAgentModal(false)}}
+          onClick={() => { setAddAgentModal(false) }}
         >
           <div
             onClick={(e) => e.stopPropagation()}
@@ -278,7 +274,7 @@ const getAllFieldExecutives = async () => {
                 {editData ? "Edit Agent Details" : "Add New Agent"}
               </h2>
               <button
-                onClick={() => {setAddAgentModal(false);}}
+                onClick={() => { setAddAgentModal(false); }}
                 className="text-gray-400 hover:text-gray-500 text-2xl font-bold cursor-pointer"
               >
                 &times;
@@ -323,9 +319,9 @@ const getAllFieldExecutives = async () => {
               </button>
             </div>
             <div className="p-6">
-              <ViewFeildExecutiveDetails 
-                ViewData={viewAgentModalData} 
-                onClose={() => setViewAgentModal(false)} 
+              <ViewFeildExecutiveDetails
+                ViewData={viewAgentModalData}
+                onClose={() => setViewAgentModal(false)}
               />
             </div>
           </div>
