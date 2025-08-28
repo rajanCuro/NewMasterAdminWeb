@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axiosInstance from '../../auth/axiosInstance';
 import Swal from 'sweetalert2';
 
-function AddVehicle({id}) {
+function AddVehicle({id, onClose}) {
   const [formData, setFormData] = useState({
     type: '',
     number: '',
@@ -20,7 +20,7 @@ function AddVehicle({id}) {
     }));
   };
 
-  const handleSubmit = async() => {
+  const handleSubmit = async(e) => {
     e.preventDefault();
     try {
         const  response = await axiosInstance.post('/city-admin/addNewVehicleToFiledExecutive',formData);
@@ -29,14 +29,15 @@ function AddVehicle({id}) {
             title: 'success',
             text: 'Vehicale add successfully'
         })
+        onClose();
     } catch (error) {
      console.log('error',error)   
     }
   };
 
   return (
-    <div className="">
-      <div className="">      
+    <>
+            
         <form onSubmit={handleSubmit} className="">
           <div className="relative mt-4">
             <input
@@ -109,8 +110,7 @@ function AddVehicle({id}) {
             </button>
           </div>
         </form>
-      </div>
-    </div>
+    </>
   );
 }
 

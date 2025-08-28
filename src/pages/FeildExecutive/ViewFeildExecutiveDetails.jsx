@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
-import { FaUserTie, FaPhone, FaEnvelope, FaMapMarkerAlt, FaCalendarAlt, FaChartLine, FaCheckCircle, FaExclamationTriangle, FaUsers, FaSave, FaTimes } from 'react-icons/fa';
+import { FaUserTie, FaPhone, FaEnvelope, FaMapMarkerAlt, FaCalendarAlt, FaUsers, FaSave, FaTimes } from 'react-icons/fa';
 import { MdLocalPharmacy } from "react-icons/md";
 import AddVehicale from './AddVehicale';
+import AddAddress from './AddAddress';
 
 const ViewFeildExecutiveDetails = ({ ViewData: initialData, onSave, onClose }) => {
-  console.log('view ',initialData);
+  console.log('view ', initialData);
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState('details');
   const [errors, setErrors] = useState({});
-  const [addVehicleModal, setAddVehicleModal] = useState(false); // Fixed spelling
+  const [addVehicleModal, setAddVehicleModal] = useState(false);
+  const [addAddressModal, setAddAddressModal] = useState(false);
   const fieldExecutiveId = initialData.id;
-  console.log('id',fieldExecutiveId)
+  console.log('id', fieldExecutiveId)
 
   const transformData = (data) => {
     return {
@@ -21,6 +23,9 @@ const ViewFeildExecutiveDetails = ({ ViewData: initialData, onSave, onClose }) =
       mobileNumber: data.mobileNumber || 'N/A',
       roleName: data.roles?.roleName || 'N/A',
       roleId: data.id || 'N/A',
+      assignedPinCodes: data.assignedPinCodes?.map(pin => pin.pinCode) || [],
+      type: data.vehicle?.type || '',
+      vehicleNum: data.vehicle?.vehicleNumber || '',
       status: data.enabled ? 'Active' : 'Inactive',
       performance: 'Good', // Default placeholder
       agentsCount: 24, // Placeholder since not in API
@@ -38,7 +43,7 @@ const ViewFeildExecutiveDetails = ({ ViewData: initialData, onSave, onClose }) =
   };
 
   const [formData, setFormData] = useState(transformData(initialData));
-  
+
   // Format phone number
   const formatPhoneNumber = (phone) => {
     try {
@@ -95,7 +100,7 @@ const ViewFeildExecutiveDetails = ({ ViewData: initialData, onSave, onClose }) =
 
   const handleAddVehicleClick = () => {
     setAddVehicleModal(true);
-    
+
   };
 
   return (
@@ -127,7 +132,7 @@ const ViewFeildExecutiveDetails = ({ ViewData: initialData, onSave, onClose }) =
                 </div>
               ) : (
                 <>
-                <h2 className="text-lg sm:text-xl font-semibold text-gray-800 text-center">{formData.name}</h2>
+                  <h2 className="text-lg sm:text-xl font-semibold text-gray-800 text-center">{formData.name}</h2>
                 </>
               )}
 
@@ -144,14 +149,14 @@ const ViewFeildExecutiveDetails = ({ ViewData: initialData, onSave, onClose }) =
                     aria-invalid={!!errors.roleName}
                     aria-describedby={errors.roleName ? 'circleName-error' : undefined}
                   />
-                  
+
                 </div>
               ) : (
                 <p className="text-indigo-600 font-medium text-sm sm:text-base mt-2">{formData.roleName}</p>
               )}
               <div className="mt-6 w-full space-x-3">
                 <button onClick={handleAddVehicleClick} className='submit-btn'>Add Vehicle</button>
-                <button className='submit-btn'>Add Address</button>
+                <button onClick={() => { setAddAddressModal(true); }} className='submit-btn'>Add Address</button>
               </div>
             </div>
 
@@ -163,8 +168,8 @@ const ViewFeildExecutiveDetails = ({ ViewData: initialData, onSave, onClose }) =
                   <button
                     key={tab}
                     className={`py-2 px-3 sm:px-4 cursor-pointer font-medium text-sm rounded-t-lg transition-all duration-200 ${activeTab === tab
-                        ? 'text-indigo-600 border-b-2 border-indigo-600 bg-indigo-50'
-                        : 'text-gray-500 hover:text-indigo-600 hover:bg-gray-100'
+                      ? 'text-indigo-600 border-b-2 border-indigo-600 bg-indigo-50'
+                      : 'text-gray-500 hover:text-indigo-600 hover:bg-gray-100'
                       }`}
                     onClick={() => { setActiveTab(tab), setIsEditing(false) }}
                     aria-current={activeTab === tab ? 'page' : undefined}
@@ -288,20 +293,43 @@ const ViewFeildExecutiveDetails = ({ ViewData: initialData, onSave, onClose }) =
                   </div>
 
                   <div className="pt-4 border-t border-gray-200">
-                    <h3 className="font-medium text-gray-700 text-sm sm:text-base mb-2">Additional Information</h3>
-                    {isEditing ? (
-                      <textarea
-                        name="additionalInfo"
-                        value={formData.additionalInfo}
-                        onChange={handleInputChange}
-                        className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-sm sm:text-base transition-all duration-200"
-                        rows="4"
-                        aria-label="Additional Information"
-                      />
-                    ) : (
-                      <p className="text-gray-600 text-sm sm:text-base">{formData.additionalInfo}</p>
-                    )}
+                    <h3 className="font-medium text-gray-700 text-sm sm:text-base mb-2">
+                      Additional Information
+                    </h3>
+
+                    <div className='flex justify-between'>
+                      <div className="mb-4">
+                      <h1 className="text-gray-800 font-semibold mb-1">Vehicle Info</h1>
+                      <p className="text-sm text-gray-600">Type: {formData.type || 'N/A'}</p>
+                      <p className="text-sm text-gray-600">Vehicle Number: {formData.vehicleNum || 'N/A'}</p>
+                    </div>
+                    <div className="mb-4">
+                      <h1 className="text-gray-800 font-semibold mb-1">Address Info</h1>
+                      {/* <p className="text-sm text-gray-600">Type: {formData || 'N/A'}</p>
+                      <p className="text-sm text-gray-600">Vehicle Number: {formData || 'N/A'}</p> */}
+                    </div>
+                    </div>
+
+                    <div className="mt-4">
+                      <h1 className="text-gray-800 font-semibold mb-2">Assigned Pincodes</h1>
+                      {formData.assignedPinCodes?.length > 0 ? (
+                        <div className="flex flex-wrap gap-2">
+                          {formData.assignedPinCodes.map((pin, index) => (
+                            <span
+                              key={pin.id || index}
+                              className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full shadow-sm"
+                            >
+                              {pin.pinCode}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-gray-500">No pin codes assigned</p>
+                      )}
+                    </div>
+
                   </div>
+
                 </div>
               )}
 
@@ -428,7 +456,7 @@ const ViewFeildExecutiveDetails = ({ ViewData: initialData, onSave, onClose }) =
           </div>
         </div>
       </div>
-      
+
       {/* Vehicle Modal */}
       {addVehicleModal && (
         <div
@@ -450,7 +478,36 @@ const ViewFeildExecutiveDetails = ({ ViewData: initialData, onSave, onClose }) =
                 &times;
               </button>
             </div>
-            <AddVehicale id={fieldExecutiveId}/>
+            <AddVehicale id={fieldExecutiveId}
+              onClose={setAddVehicleModal}
+            />
+          </div>
+        </div>
+      )}
+      {/** Add Adress modal */}
+      {addAddressModal && (
+        <div
+          className="fixed inset-0 backdrop-brightness-50 flex items-center justify-center z-50"
+          onClick={() => { setAddAddressModal(false); }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white rounded-xl shadow-2xl max-w-xl w-full max-h-[95vh] overflow-y-auto p-4"
+          >
+            <div className="flex justify-between items-center border-b pb-3 mb-4">
+              <h2 className="text-lg font-semibold">
+                Add Address
+              </h2>
+              <button
+                onClick={() => { setAddAddressModal(false); }}
+                className="text-gray-500 hover:text-red-500 text-2xl font-bold cursor-pointer"
+              >
+                &times;
+              </button>
+            </div>
+            <AddAddress
+              onClose={setAddAddressModal}
+            />
           </div>
         </div>
       )}

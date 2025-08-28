@@ -23,7 +23,8 @@ import { FaMountainCity } from 'react-icons/fa6';
 
 
 const Sidebar = ({ collapsed, toggleSidebar }) => {
-    const { logout, role, user } = useAuth(); // 👈 get logout from context
+    const { logout, role, user } = useAuth();
+    console.log('role', role);
     const [mobileOpen, setMobileOpen] = useState(false);
     const [showLogoutModal, setShowLogoutModal] = useState(false);
     const location = useLocation();
@@ -46,16 +47,18 @@ const Sidebar = ({ collapsed, toggleSidebar }) => {
 
     const menuItems = [
         { icon: <FiHome className="text-lg" />, label: 'Dashboard', path: '/dashboard' },
-        { icon: <FiUsers className="text-lg" />, label: 'Division Officer', path: '/zonal' },
-        { icon: <FiUserCheck className="text-lg" />, label: 'City Officer', path: '/circle-officer' },
+       (role === "ROLE_ZONE_ADMIN" || role === "ROLE_CIRCLE_OFFICER")
+    ? null
+    : { icon: <FiUsers className="text-lg" />, label: 'Division Officer', path: '/zonal' },
+        (role === "ROLE_ZONE_ADMIN" || role === "ROLE_CIRCLE_OFFICER") ? null : { icon: <SiPrivatedivision className="text-lg" />, label: 'All Divisions', path: '/all_division' },
+        role === "ROLE_CIRCLE_OFFICER" ? null : { icon: <FiUserCheck className="text-lg" />, label: 'City Officer', path: '/circle-officer' },
+         role === "ROLE_CIRCLE_OFFICER" ? null : { icon: <FaMountainCity className="text-lg" />, label: 'All Cities', path: '/all_cities' },
         { icon: <FiUser className="text-lg" />, label: 'Field Executive', path: '/agent' },
         { icon: <TbMapPinCode className="text-lg" />, label: 'Pincode', path: '/pincode' },
         { icon: <FaMapMarkerAlt className="text-lg" />, label: 'Curo Map', path: '/curo_map' },
         { icon: <IoMdSettings className="text-lg" />, label: 'Settings', path: '/setting' },
-        { icon: <SiPrivatedivision  className="text-lg" />, label: 'All Divisions', path: '/all_division' },
-        { icon: <FaMountainCity  className="text-lg" />, label: 'All Cities', path: '/all_cities' },
-        
-    ];
+    ].filter(Boolean); // ✅ This removes null
+
 
 
     return (

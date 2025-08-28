@@ -245,7 +245,7 @@ function CircleOfficerList() {
                       </td>
                     </tr>
                   ) : (
-                    currentCircleOfficers.map((officer, index) => (
+                    currentCircleOfficers.reverse().map((officer, index) => (
                       <tr onDoubleClick={() => handleOpen(officer)}
                         key={officer.id}
                         className="hover:bg-gray-300/50 transition-colors duration-200"
@@ -284,7 +284,7 @@ function CircleOfficerList() {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span
                             className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${officer.enabled
-                              ? 'bg-green-900/20 text-green-900'
+                              ? 'bg-green-300 text-green-900'
                               : 'bg-red-900/20 text-red-900'
                               }`}
                           >

@@ -6,8 +6,6 @@ import Swal from 'sweetalert2';
 
 function AddUpdate_CircleOfficer({ Editdata, onClose, refresh }) {
   const { user } = useAuth();
-  // const id = user.division.id;
-   console.log('id',user);
   const [formData, setFormData] = useState({
     cityId: '',
     email: '',
@@ -102,14 +100,12 @@ function AddUpdate_CircleOfficer({ Editdata, onClose, refresh }) {
       };
 
       if (Editdata) {
-        console.log('Updating Officer with data:', requestData);
-        alert(`Updating Officer ID: ${Editdata.id}`);
       } else {
         const response = await axiosInstance.post('/division_admin/createNewCityAdmin', requestData);
         Swal.fire({
           icon: 'success',
           title: 'Success',
-          text: 'City Admin Created Successfully',
+          text: response.data.message || '',
         });
         onClose();
         refresh();
@@ -121,7 +117,7 @@ function AddUpdate_CircleOfficer({ Editdata, onClose, refresh }) {
       Swal.fire({
         icons: 'error',
         title: 'error',
-        text: 'error',
+        text: response.data.error || 'error',
       })
     }
   };
@@ -129,7 +125,6 @@ function AddUpdate_CircleOfficer({ Editdata, onClose, refresh }) {
   return (
     <div className="">
       <form onSubmit={handleSubmit}>
-        {/* First + Last Name in one row */}
         <div className="flex gap-4 mb-4">
           <div className="flex-1">
             <div className="relative">
@@ -169,10 +164,7 @@ function AddUpdate_CircleOfficer({ Editdata, onClose, refresh }) {
             </div>
           </div>
         </div>
-
-        {/* State and Division Selection */}
         <div className="flex gap-4 mb-4">
-          {/* State */}
           <div className='w-full'>
             <label htmlFor="state" className="block mb-2 font-medium text-gray-700">
               Select Division <span className="text-red-500">*</span>
@@ -191,8 +183,6 @@ function AddUpdate_CircleOfficer({ Editdata, onClose, refresh }) {
               </option>
             </select>
           </div>
-
-          {/* Division */}
           <div className='w-full'>
             <label htmlFor="state" className="block mb-2 font-medium text-gray-700">
               Select City <span className="text-red-500">*</span>
@@ -221,10 +211,7 @@ function AddUpdate_CircleOfficer({ Editdata, onClose, refresh }) {
             </select>
           </div>
         </div>
-
-        {/* City Selection and Email */}
-
-          <div className="w-full mb-4">
+         <div className="w-full mb-4">
             <div className="relative">
               <input
                 type="email"
@@ -242,8 +229,6 @@ function AddUpdate_CircleOfficer({ Editdata, onClose, refresh }) {
               </label>
             </div>
           </div>
-
-        {/* Mobile Number and Profile Picture */}
         <div className="flex gap-4 mb-4">
           <div className="w-full">
             <div className="relative">
