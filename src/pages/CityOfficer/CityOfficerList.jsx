@@ -10,9 +10,6 @@ import { useAuth } from '../../auth/AuthContext';
 function CircleOfficerList() {
   const { stateList } = useAuth();
   const [circleOfficers, setCircleOfficers] = useState([]);
-  const [filteredCircleOfficers, setFilteredCircleOfficers] = useState([]);
-  const [addCircleModal, setAddCircleModal] = useState(false);
-  const [editData, setEditData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [filters, setFilters] = useState({
     searchTerm: '',
@@ -26,51 +23,55 @@ function CircleOfficerList() {
   const [viewCircleData, setViewCircleData] = useState(null);
   const [totalItems, setTotalItems] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
+  const [addCircleModal, setAddCircleModal] = useState(false);
+  const [editData, setEditData] = useState(null);
 
-  // Apply filters
+  // Fetch data with filters and pagination
+  const getAllCityAdmin = async () => {
+    try {
+      setIsLoading(true);
+      
+      // Build query parameters
+      const params = new URLSearchParams({
+        page: currentPage,
+        pageSize: itemsPerPage,
+        search: filters.searchTerm,
+        status: filters.statusFilter !== 'all' ? filters.statusFilter : '',
+        date: filters.dateFilter || ''
+      });
+      
+      const response = await axiosInstance.get(`/division_admin/getAllCityAdmins?${params}`);
+      console.log('All city admins:', response.data);
+      
+      if (response.data && response.data.dtoList) {
+        setCircleOfficers(response.data.dtoList);
+        setTotalItems(response.data.totalItems);
+        setTotalPages(response.data.totalPages);
+      } else {
+        setCircleOfficers([]);
+        setTotalItems(0);
+        setTotalPages(0);
+      }
+    } catch (error) {
+      console.log('Error fetching city admins:', error);
+      setCircleOfficers([]);
+      setTotalItems(0);
+      setTotalPages(0);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Fetch data when filters, page, or items per page change
   useEffect(() => {
-    let result = circleOfficers;
-
-    if (filters.searchTerm) {
-      const term = filters.searchTerm.toLowerCase();
-      result = result.filter(item =>
-        (item.firstName && item.firstName.toLowerCase().includes(term)) ||
-        (item.lastName && item.lastName.toLowerCase().includes(term)) ||
-        (item.email && item.email.toLowerCase().includes(term)) ||
-        (item.mobileNumber && item.mobileNumber.toLowerCase().includes(term))
-      );
-    }
-
-    if (filters.statusFilter !== 'all') {
-      result = result.filter(item => {
-        if (filters.statusFilter === 'active') {
-          return item.enabled === true;
-        } else if (filters.statusFilter === 'inactive') {
-          return item.enabled === false;
-        }
-        return false;
-      });
-    }
-
-    if (filters.dateFilter) {
-      const filterDate = new Date(filters.dateFilter);
-      result = result.filter(item => {
-        const itemDate = new Date(item.createdAt);
-        return (
-          itemDate.getFullYear() === filterDate.getFullYear() &&
-          itemDate.getMonth() === filterDate.getMonth() &&
-          itemDate.getDate() === filterDate.getDate()
-        );
-      });
-    }
-
-    setFilteredCircleOfficers(result);
-    setCurrentPage(1); // Reset to first page when filters change
-  }, [filters, circleOfficers]);
+    getAllCityAdmin();
+  }, [currentPage, itemsPerPage, filters]);
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
     setFilters(prev => ({ ...prev, [name]: value }));
+    // Reset to first page when filters change
+    setCurrentPage(1);
   };
 
   const handleVerify = (id) => {
@@ -85,6 +86,7 @@ function CircleOfficerList() {
       statusFilter: 'all',
       dateFilter: ''
     });
+    setCurrentPage(1);
   };
 
   const handleAddCircle = () => {
@@ -98,46 +100,17 @@ function CircleOfficerList() {
   };
 
   const handleAddNewOfficer = (newOfficer) => {
-    setCircleOfficers(prev => [...prev, newOfficer]);
+    // Refresh the list after adding
+    getAllCityAdmin();
     setAddCircleModal(false);
   };
 
   const handleUpdateOfficer = (updatedOfficer) => {
-    setCircleOfficers(prev => prev.map(item =>
-      item.id === updatedOfficer.id ? updatedOfficer : item
-    ));
+    // Refresh the list after updating
+    getAllCityAdmin();
     setAddCircleModal(false);
     setEditData(null);
   };
-
-  const getAllCityAdmin = async () => {
-    try {
-      setIsLoading(true);
-      const response = await axiosInstance.get(`/division_admin/getAllCityAdmins?page=${currentPage}&pageSize=${itemsPerPage}`);
-      console.log('All city admins:', response.data);
-      if (response.data && response.data.dtoList) {
-        setCircleOfficers(response.data.dtoList);
-        setTotalItems(response.data.totalItems);
-        setTotalPages(response.data.totalPages);
-      } else {
-        setCircleOfficers([]);
-      }
-    } catch (error) {
-      console.log('Error fetching city admins:', error);
-      setCircleOfficers([]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    getAllCityAdmin();
-  }, [currentPage, itemsPerPage]);
-
-  // Pagination logic
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentCircleOfficers = filteredCircleOfficers.slice(indexOfFirstItem, indexOfLastItem);
 
   const handleOpen = (data) => {
     setDetailModal(true);
@@ -194,6 +167,25 @@ function CircleOfficerList() {
               </select>
             </div>
 
+            {/* Date Filter */}
+            <div className="w-full md:w-auto">
+              <input
+                type="date"
+                name="dateFilter"
+                value={filters.dateFilter}
+                onChange={handleFilterChange}
+                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+
+            {/* Reset Filters */}
+            <button
+              onClick={resetFilters}
+              className="px-4 py-2.5 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+            >
+              Reset Filters
+            </button>
+
             {/* Action */}
             <button
               onClick={handleAddCircle}
@@ -238,19 +230,19 @@ function CircleOfficerList() {
                         </div>
                       </td>
                     </tr>
-                  ) : currentCircleOfficers.length === 0 ? (
+                  ) : circleOfficers.length === 0 ? (
                     <tr>
                       <td colSpan="7" className="px-6 py-4 text-center">
                         No data available
                       </td>
                     </tr>
                   ) : (
-                    currentCircleOfficers.reverse().map((officer, index) => (
+                    circleOfficers.map((officer, index) => (
                       <tr onDoubleClick={() => handleOpen(officer)}
                         key={officer.id}
                         className="hover:bg-gray-300/50 transition-colors duration-200"
                       >
-                        <td className="px-6 py-4 whitespace-nowrap">{index + 1}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">{(currentPage - 1) * itemsPerPage + index + 1}</td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
                             {officer.profilePicture && officer.profilePicture !== 'NA' ? (
@@ -262,7 +254,7 @@ function CircleOfficerList() {
                             ) : (
                               <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center mr-3">
                                 <span className="text-blue-600 font-medium">
-                                  {zonal.firstName?.charAt(0)}{zonal.lastName?.charAt(0)}
+                                  {officer.firstName?.charAt(0)}{officer.lastName?.charAt(0)}
                                 </span>
                               </div>
                             )}

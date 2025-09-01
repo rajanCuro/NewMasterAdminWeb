@@ -5,7 +5,7 @@ import { useAuth } from '../../auth/AuthContext';
 
 function AddUpdateAgent({ editData, onClose, onSave }) {
   const { user } = useAuth();
-  const id = user.city.id;
+  const id = user?.city?.id ?? null;
 
   const [formData, setFormData] = useState({
     firstName: '',

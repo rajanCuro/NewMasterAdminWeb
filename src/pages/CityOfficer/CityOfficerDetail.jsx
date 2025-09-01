@@ -136,7 +136,7 @@ const [formData, setFormData] = useState(transformData(initialData));
             {/* Profile Sidebar */}
             <div className="lg:w-1/3 p-6 bg-gradient-to-br from-indigo-50 to-blue-50 flex flex-col items-center justify-start">
               <div className="w-24 h-24 sm:w-32 sm:h-32 bg-indigo-100 rounded-full flex items-center justify-center mb-4 border-4 border-white shadow-md">
-                <FaUserTie className="text-indigo-500 text-3xl sm:text-5xl" aria-hidden="true" />
+                <img src={formData.profilePicture} alt="" className=' rounded-full'/>
               </div>
 
               {isEditing ? (

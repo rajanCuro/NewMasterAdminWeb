@@ -12,7 +12,6 @@ const ViewFeildExecutiveDetails = ({ ViewData: initialData, onSave, onClose }) =
   const [addVehicleModal, setAddVehicleModal] = useState(false);
   const [addAddressModal, setAddAddressModal] = useState(false);
   const fieldExecutiveId = initialData.id;
-  console.log('id', fieldExecutiveId)
 
   const transformData = (data) => {
     return {
@@ -155,7 +154,7 @@ const ViewFeildExecutiveDetails = ({ ViewData: initialData, onSave, onClose }) =
                 <p className="text-indigo-600 font-medium text-sm sm:text-base mt-2">{formData.roleName}</p>
               )}
               <div className="mt-6 w-full space-x-3">
-                <button onClick={handleAddVehicleClick} className='submit-btn'>Add Vehicle</button>
+                <button onClick={handleAddVehicleClick} className='submit-btn'>{formData.vehicleNum ? 'Edite Vehical' : 'Add Vehicle'}</button>
                 <button onClick={() => { setAddAddressModal(true); }} className='submit-btn'>Add Address</button>
               </div>
             </div>

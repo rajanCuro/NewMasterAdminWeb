@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../auth/AuthContext';
 import axiosInstance from '../../auth/axiosInstance';
 import Swal from 'sweetalert2';
+import ImageUploader from '../../components/ImageUploader';
 
 function AddUpdateDivision({ EditData, onClose }) {
   console.log('EditData:', EditData);
@@ -92,13 +93,13 @@ function AddUpdateDivision({ EditData, onClose }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-
-    // Basic validation
-    if (!formData.firstName || !formData.lastName || !formData.email || !formData.mobileNumber || !selectedState || !formData.divisionId) {
-      Swal.fire("Validation Error", "Please fill all required fields", "warning");
-      setIsLoading(false);
-      return;
-    }
+    const truncateText = (text, wordLimit) => {
+      const words = text.split(' ');
+      if (words.length > wordLimit) {
+        return words.slice(0, wordLimit).join(' ') + ']';
+      }
+      return text;
+    };
 
     if (!/^\d{10}$/.test(formData.mobileNumber)) {
       Swal.fire("Validation Error", "Please enter a valid 10-digit phone number", "warning");
@@ -136,14 +137,21 @@ function AddUpdateDivision({ EditData, onClose }) {
           `/head_admin/createNewDivisionAdmin`,
           payload
         );
-        console.log("Create response:", res.data);
-        Swal.fire("Success", "Division Admin created successfully!", "success");
+        Swal.fire({
+          icon: 'success',
+          title: 'success',
+          text: res.data.message || ''
+        });
         onClose();
       }
     } catch (error) {
       console.error("Error:", error);
-      const errorMessage = error.response?.data?.message || "An error occurred. Please try again.";
-      Swal.fire("Error", errorMessage, "error");
+      Swal.fire({
+        icon: 'error',
+        title: 'error',
+        text: truncateText(error.response?.data?.error || 'field', 7)
+      });
+
     } finally {
       setIsLoading(false);
     }
@@ -206,7 +214,7 @@ function AddUpdateDivision({ EditData, onClose }) {
           </div>
 
           {/* First + Last Name */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">           
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
             <div className='float-container'>
               <input
                 type="text"
@@ -274,18 +282,9 @@ function AddUpdateDivision({ EditData, onClose }) {
           </div>
 
           {/* Profile Picture */}
-          <div className='float-container'>
-            <input
-              type="text"
-              id="profilePicture"
-              className="float-input"
-              value={formData.profilePicture}
-              onChange={handleChange}
-              placeholder=""
-            />
-            <label htmlFor="profilePicture" className="float-label">
-              Profile Picture URL
-            </label>
+          <div className='float-input'>
+            <ImageUploader onUploadSuccess={(url) => setFormData((prev) => ({ ...prev, profilePicture: url }))} />
+
           </div>
 
           <div className="flex justify-end gap-3 pt-4">
