@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../auth/AuthContext';
 import axiosInstance from '../../auth/axiosInstance';
 import Swal from 'sweetalert2';
+import ImageUploader from '../../components/ImageUploader';
 
 
 function AddUpdate_CircleOfficer({ Editdata, onClose, refresh }) {
@@ -52,7 +53,7 @@ function AddUpdate_CircleOfficer({ Editdata, onClose, refresh }) {
       setIsCityLoading(true);
       const response = await axiosInstance.get(`/area/getAllCities?divisionId=${divisionId}`);
       const cityList = response?.data?.cityList;
-     if (Array.isArray(cityList)) {
+      if (Array.isArray(cityList)) {
         setCity(cityList);
       } else if (cityList) {
         setCity([cityList]);
@@ -88,6 +89,15 @@ function AddUpdate_CircleOfficer({ Editdata, onClose, refresh }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    const truncateText = (text, wordLimit) => {
+      const words = text.split(' ');
+      if (words.length > wordLimit) {
+        return words.slice(0, wordLimit).join(' ') + ']';
+      }
+      return text;
+    };
+
+
     try {
       // Prepare the data for API call
       const requestData = {
@@ -100,6 +110,10 @@ function AddUpdate_CircleOfficer({ Editdata, onClose, refresh }) {
       };
 
       if (Editdata) {
+        Swal.fire({
+          icon: 'info',
+          text:'edite data is under process'
+        })
       } else {
         const response = await axiosInstance.post('/division_admin/createNewCityAdmin', requestData);
         Swal.fire({
@@ -115,10 +129,10 @@ function AddUpdate_CircleOfficer({ Editdata, onClose, refresh }) {
     } catch (error) {
       console.error('Error submitting form:', error);
       Swal.fire({
-        icons: 'error',
+        icon: 'error',
         title: 'error',
-        text: response.data.error || 'error',
-      })
+        text: truncateText(error.response?.data?.error || 'field', 7)
+      });
     }
   };
 
@@ -178,8 +192,8 @@ function AddUpdate_CircleOfficer({ Editdata, onClose, refresh }) {
             >
               <option value="">-- Select Division --</option>
 
-              <option key={user.division.id } value={user.division.id} selected>
-                {user.division.zoneName}
+              <option key={user?.division?.id} value={user?.division?.id} selected>
+                {user?.division?.zoneName}
               </option>
             </select>
           </div>
@@ -211,24 +225,24 @@ function AddUpdate_CircleOfficer({ Editdata, onClose, refresh }) {
             </select>
           </div>
         </div>
-         <div className="w-full mb-4">
-            <div className="relative">
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder=" " className="float-input"
-                required
-              />
-              <label
-                htmlFor="email" className="float-label"
-              >
-                Email
-              </label>
-            </div>
+        <div className="w-full mb-4">
+          <div className="relative">
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              placeholder=" " className="float-input"
+              required
+            />
+            <label
+              htmlFor="email" className="float-label"
+            >
+              Email
+            </label>
           </div>
+        </div>
         <div className="flex gap-4 mb-4">
           <div className="w-full">
             <div className="relative">
@@ -252,24 +266,15 @@ function AddUpdate_CircleOfficer({ Editdata, onClose, refresh }) {
           </div>
 
           <div className="w-full">
-            <div className="relative">
-              <input
-                type="text"
-                id="profilePicture"
-                name="profilePicture"
-                value={formData.profilePicture}
-                onChange={handleChange}
-                placeholder=''
-                className="float-input"
+            <div className="float-input">
+              <ImageUploader
+                onUploadSuccess={(url) =>
+                  setFormData((prev) => ({ ...prev, profilePicture: url }))
+                }
               />
-              <label
-                htmlFor="profilePicture"
-                className="float-label"
-              >
-                Profile Picture (URL)
-              </label>
             </div>
           </div>
+
         </div>
 
         <div className='flex mt-6 justify-end'>

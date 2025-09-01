@@ -2,7 +2,7 @@
 import axios from "axios";
 
 const axiosInstance = axios.create({
-  baseURL: "http://192.168.1.32:8081", 
+  baseURL: "http://192.168.1.18:8082", 
 });
 
 // Optional: Add request interceptor

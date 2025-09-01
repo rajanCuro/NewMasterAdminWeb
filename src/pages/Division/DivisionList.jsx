@@ -254,7 +254,7 @@ function DivisionList() {
                     </td>
                   </tr>
                 ) : (
-                  filteredZonalHeads.map((zonal, index) => (
+                  [...filteredZonalHeads].map((zonal, index) => (
 
                     <tr onDoubleClick={() => handleViewZonal(zonal)} key={zonal.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{index+1}</td>
