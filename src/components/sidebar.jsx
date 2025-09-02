@@ -11,6 +11,7 @@ import {
     FiChevronRight,
     FiMenu,
 } from 'react-icons/fi';
+import { MdAppRegistration } from "react-icons/md";
 import { TbMapPinCode } from "react-icons/tb";
 import { CiLogin } from "react-icons/ci";
 import { FaMapMarkerAlt } from "react-icons/fa";
@@ -57,6 +58,7 @@ const Sidebar = ({ collapsed, toggleSidebar }) => {
         { icon: <TbMapPinCode className="text-lg" />, label: 'Pincode', path: '/pincode' },
         { icon: <FaMapMarkerAlt className="text-lg" />, label: 'Curo Map', path: '/curo_map' },
         { icon: <IoMdSettings className="text-lg" />, label: 'Settings', path: '/setting' },
+        { icon: <MdAppRegistration className='text-lg' />, label: 'NewRegistration', path: '/regi' },
     ].filter(Boolean); // ✅ This removes null
 
 
