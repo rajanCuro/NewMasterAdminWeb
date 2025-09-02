@@ -12,7 +12,7 @@ function Pincode() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [editData, setEditData] = useState();
-    
+
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -24,7 +24,7 @@ function Pincode() {
             setLoading(true);
             const response = await axiosInstance.get(`/city-admin/getAllPinCodes?page=${currentPage}&pageSize=${itemsPerPage}`);
             console.log("API Response:", response.data);
-            
+
             // Check if response.data has dtoList property and it's an array
             if (response.data && Array.isArray(response.data.dtoList)) {
                 setPincodes(response.data.dtoList);
@@ -58,6 +58,13 @@ function Pincode() {
     }
 
     const handleDeletePincode = async (id) => {
+        const truncateText = (text, wordLimit) => {
+            const words = text.split(' ');
+            if (words.length > wordLimit) {
+                return words.slice(0, wordLimit).join(' ') + ']';
+            }
+            return text;
+        };
         try {
             const response = await axiosInstance.delete(`/city-admin/deletePinCode?id=${id}`)
             Swal.fire({
@@ -71,7 +78,7 @@ function Pincode() {
             console.error('Error deleting pincode:', error);
             Swal.fire({
                 icon: 'error',
-                title: 'Failed to delete pincode'
+                title: truncateText(error.response?.data?.error || '', 8)
             });
         }
     };
@@ -222,9 +229,9 @@ function Pincode() {
                             </button>
                         </div>
                         <div className="p-4">
-                            <AddUpdatePincode 
-                                onClose={() => setPincodeAddModal(false)} 
-                                refresh={getAllPincode} 
+                            <AddUpdatePincode
+                                onClose={() => setPincodeAddModal(false)}
+                                refresh={getAllPincode}
                                 editData={editData}
                             />
                         </div>

@@ -19,7 +19,7 @@ const VIewZonal = ({ ViewData: initialData, onSave, onClose }) => {
       mobileNumber: data.mobileNumber,
       cityName: data.city?.cityName || 'N/A',
       cityId: data.city?.id || 'N/A',
-      status: data.enabled ? 'Active' : 'Inactive',
+      status: data.accountNonLocked ? 'Active' : 'Inactive',
       performance: 'Good', // Default value
       agentsCount: 24, // Default value since not in API
       PhCounts: 5, // Default value since not in API
@@ -135,8 +135,8 @@ const [formData, setFormData] = useState(transformData(initialData));
           <div className="flex flex-col lg:flex-row">
             {/* Profile Sidebar */}
             <div className="lg:w-1/3 p-6 bg-gradient-to-br from-indigo-50 to-blue-50 flex flex-col items-center justify-start">
-              <div className="w-24 h-24 sm:w-32 sm:h-32 bg-indigo-100 rounded-full flex items-center justify-center mb-4 border-4 border-white shadow-md">
-                <img src={formData.profilePicture} alt="" className=' rounded-full'/>
+              <div className="w-10 h-10 sm:w-32 sm:h-32 bg-indigo-100 rounded-full flex items-center justify-center mb-4 border-4 border-white shadow-md">
+                <img src={formData.profilePicture} alt="" className=' w-full h-full rounded-full object-cover'/>
               </div>
 
               {isEditing ? (
@@ -198,33 +198,10 @@ const [formData, setFormData] = useState(transformData(initialData));
                   </select>
                 </div>
               ) : (
-                <div className="mt-4 px-3 py-1.5 bg-green-100 text-green-800 rounded-full text-sm font-medium inline-flex items-center animate-pulse-short">
+                <div className={`mt-4 px-3 py-1.5 bg-green-100 text-green-800 rounded-full text-sm font-medium inline-flex items-center animate-pulse-short ${formData.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                    }`}>
                   <FaCheckCircle className="mr-2" aria-hidden="true" />
                   {formData.status}
-                </div>
-              )}
-
-              {/* Performance Indicator */}
-              {isEditing ? (
-                <div className="w-full mt-4 relative">
-                  <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="performance">Performance</label>
-                  <select
-                    id="performance"
-                    name="performance"
-                    value={formData.performance}
-                    onChange={handleInputChange}
-                    className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-sm sm:text-base transition-all duration-200"
-                    aria-label="Performance"
-                  >
-                    <option value="Excellent">Excellent</option>
-                    <option value="Good">Good</option>
-                    <option value="Needs Improvement">Needs Improvement</option>
-                    <option value="Poor">Poor</option>
-                  </select>
-                </div>
-              ) : (
-                <div className="mt-4">
-                  <PerformanceIndicator performance={formData.performance} />
                 </div>
               )}
 
@@ -550,27 +527,6 @@ const [formData, setFormData] = useState(transformData(initialData));
       </div>
     </div>
   );
-};
-
-// Default props with dummy data
-VIewZonal.defaultProps = {
-  ViewData: {
-    name: "John Doe",
-    circleName: "North Region",
-    status: "Active",
-    performance: "Good",
-    agentsCount: 24,
-    coCounts: 5,
-    email: "john.doe@example.com",
-    phone: "+1234567890",
-    circleId: "ZONE-1234",
-    createdDate: "2023-05-15T00:00:00.000Z",
-    lastUpdated: new Date().toISOString(),
-    joiningDate: "2023-05-15",
-    additionalInfo: "This zonal head manages the North Region and oversees a team of 24 agents and 5 COs."
-  },
-  onSave: (data) => console.log("Saving data:", data),
-  onClose: () => console.log("Closing modal")
 };
 
 export default VIewZonal;

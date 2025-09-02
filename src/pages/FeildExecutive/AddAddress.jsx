@@ -3,9 +3,10 @@ import axiosInstance from '../../auth/axiosInstance';
 import Swal from 'sweetalert2';
 import { useAuth } from '../../auth/AuthContext';
 
-const AddAddress = ({onClose}) => {
-    const {latitude,longitude, user} = useAuth();
-
+const AddAddress = ({onClose, agentId, editeAddressData}) => {
+  console.log('editData:', editeAddressData);
+    const {latitude,longitude} = useAuth();
+      const [loading, setLoading] = useState(false);
       const [formData, setFormData] = useState({
         houseNumber: '',
         street: '',
@@ -18,6 +19,21 @@ const AddAddress = ({onClose}) => {
         latitude: 0,
         addressType: 'HOME',
     });
+
+    useEffect(() => {
+      setFormData({
+        houseNumber: editeAddressData?.houseNumber || '',
+        street: editeAddressData?.street || '',
+        city: editeAddressData?.city || '',
+        state: editeAddressData?.state || '',
+        postalCode: editeAddressData?.postalCode || '',
+        country: editeAddressData?.country || '',
+        phoneNumber: editeAddressData?.phoneNumber || '',
+        longitude: editeAddressData?.longitude || 0,
+        latitude: editeAddressData?.latitude || 0,
+        addressType: editeAddressData?.addressType || 'HOME',
+      })
+    } ,[])
 
      useEffect(() => {
         if (latitude && longitude) {
@@ -40,10 +56,11 @@ const AddAddress = ({onClose}) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
+            setLoading(true);
             const requestData = {
                 ...formData,
                 user: {
-                    id: user?.id || 0
+                    id: agentId || 0
                 }
             };
             
@@ -63,7 +80,9 @@ const AddAddress = ({onClose}) => {
                 title: 'Error',
                 text: errorMessage
             });
-        } 
+        }  finally{
+          setLoading(false);
+        }
     };
 
   return (
@@ -208,7 +227,7 @@ const AddAddress = ({onClose}) => {
               type="submit"
               className="px-6 py-3 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
             >
-              Save Address
+              {loading  ? (editeAddressData ? 'Updating...' : 'Adding...') : (editeAddressData? 'Update' : 'Add Address')}
             </button>
           </div>
         </form>

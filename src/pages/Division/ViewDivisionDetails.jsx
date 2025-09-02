@@ -23,7 +23,7 @@ const ViewDivisionDetails = ({ ViewData: initialData, onSave, onClose }) => {
       mobileNumber: data.mobileNumber,
       zoneName: data.division?.zoneName || 'N/A',
       zoneId: data.division?.id || 'N/A',
-      status: data.enabled ? 'Active' : 'Inactive',
+      status: data.accountNonLocked ? 'Active' : 'Inactive',
       performance: 'Good', // Default value
       agentsCount: 24, // Default value since not in API
       coCounts: 5, // Default value since not in API

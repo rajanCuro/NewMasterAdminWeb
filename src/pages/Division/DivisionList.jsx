@@ -6,10 +6,11 @@ import ViewDivisionDetails from './ViewDivisionDetails';
 import AddUpdateDivision from './AddUpdateDivision';
 import axiosInstance from '../../auth/axiosInstance';
 import { useAuth } from '../../auth/AuthContext';
+import { FaCamera } from "react-icons/fa";
 import Swal from 'sweetalert2';
 
 function DivisionList() {
-  const { getALLState } = useAuth();
+  const { getALLState, uploadImage } = useAuth();
   const [zonalHeads, setZonalHeads] = useState([]);
   const [filteredZonalHeads, setFilteredZonalHeads] = useState([]);
   const [addZonalModal, setAddZonalModal] = useState(false);
@@ -116,26 +117,16 @@ function DivisionList() {
     }));
   };
 
-  const handleStatusChange = async (id, newStatus) => {
+  const handleStatusChange = async (id) => {
     try {
-      // Update status via API
-      const enabled = newStatus === 'Verified';
-      await axiosInstance.put(`/head_admin/updateDivisionAdminStatus/${id}`, { enabled });
-
-      // Update local state
-      setZonalHeads(prev =>
-        prev.map(item =>
-          item.id === id ? {
-            ...item,
-            status: newStatus,
-            enabled: enabled,
-            lastUpdated: new Date().toLocaleDateString()
-          } : item
-        )
-      );
-
-      setSelectedZonal(null);
-      Swal.fire("Success", "Status updated successfully", "success");
+      
+      const response = await axiosInstance.put(`/head_admin/toggleLockStatusUserById/${id}`);
+      Swal.fire({
+        icon: 'success',
+        title: 'Success',
+        text: 'Status updated successfully'
+      });
+      getAllDivisions();
     } catch (error) {
       console.error("Error updating status:", error);
       Swal.fire("Error", "Failed to update status", "error");
@@ -175,6 +166,20 @@ function DivisionList() {
       document.removeEventListener('click', handleClickOutside);
     };
   }, []);
+
+  const updateProfilePic = async (id, imageUrl) => {
+    try {
+      await axiosInstance.put(`/auth/updateProfilePic?url=${imageUrl}&id=${id}`);
+      Swal.fire({
+        icon: 'success',
+        title: 'Success',
+        text: 'Profile picture updated successfully'
+      })
+      getAllDivisions();
+    } catch (error) {
+      console.error("Error updating profile picture:", error);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -257,38 +262,74 @@ function DivisionList() {
                   [...filteredZonalHeads].map((zonal, index) => (
 
                     <tr onDoubleClick={() => handleViewZonal(zonal)} key={zonal.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{index+1}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{(currentPage - 1) * itemsPerPage + index + 1}</td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
-                          {zonal.profilePicture && zonal.profilePicture !== 'NA' ? (
-                            <img
-                              src={zonal.profilePicture}
-                              alt={zonal.name}
-                              className="h-10 w-10 rounded-full object-cover mr-3"
-                            />
-                          ) : (
-                            <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center mr-3">
-                              <span className="text-blue-600 font-medium">
-                                {zonal.firstName?.charAt(0)}{zonal.lastName?.charAt(0)}
-                              </span>
+                          {/* Avatar wrapper must be relative */}
+                          <div className="relative group h-12 w-12 mr-3">
+                            {zonal.profilePicture && zonal.profilePicture !== "NA" ? (
+                              <img
+                                src={zonal.profilePicture}
+                                alt={zonal.name}
+                                className="h-12 w-12 rounded-full object-cover"
+                              />
+                            ) : (
+                              <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
+                                <span className="text-blue-600 font-medium">
+                                  {zonal.firstName?.charAt(0)}
+                                  {zonal.lastName?.charAt(0)}
+                                </span>
+                              </div>
+                            )}
+
+                            {/* Camera overlay positioned bottom-right */}
+                            <div
+                              className="absolute bottom-0 right-0 bg-black/60 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer"
+                              onClick={() => document.getElementById(`fileInput-${zonal.id}`).click()}
+                            >
+                              <FaCamera size={14} className="text-white" />
                             </div>
-                          )}
+
+                            {/* Hidden file input */}
+                            <input
+                              id={`fileInput-${zonal.id}`}
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={async (e) => {
+                                const file = e.target.files[0];
+                                if (!file) return;
+                                try {
+                                  const result = await uploadImage(file);
+                                  const imageUrl = result.imageUrl || result.url;
+                                  await updateProfilePic(zonal.id, imageUrl);
+                                } catch (err) {
+                                  console.error("Error updating profile image:", err);
+                                }
+                              }}
+                            />
+                          </div>
+
+                          {/* Officer info */}
                           <div>
-                            <div className="text-sm font-medium text-gray-900">{zonal.firstName} {zonal.lastName}</div>
+                            <div className="text-sm font-medium text-gray-900">
+                              {zonal.firstName} {zonal.lastName}
+                            </div>
                             <div className="text-xs text-gray-500">{zonal.email}</div>
                           </div>
                         </div>
                       </td>
+
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">{zonal.division?.zoneName || "N/A"}</div>
                         <div className="text-xs text-gray-500">ID: {zonal.division?.id || "N/A"}</div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td onClick={() => handleStatusChange(zonal.id)} className="px-6 py-4 whitespace-nowrap cursor-pointer">
                         <span
-                          className={`px-3 py-1 rounded-full  text-sm ${zonal.accountNonExpired ? "bg-green-200 text-green-600" : "bg-red-500"
+                          className={`px-3 py-1 rounded-full  text-sm ${zonal.accountNonLocked ? "bg-green-200 text-green-600" : "bg-red-500"
                             }`}
                         >
-                          {zonal.accountNonExpired ? "Active" : "Inactive"}
+                          {zonal.accountNonLocked ? "Active" : "Inactive"}
                         </span>
                       </td>
 

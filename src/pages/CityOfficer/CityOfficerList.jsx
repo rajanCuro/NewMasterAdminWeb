@@ -6,9 +6,13 @@ import { GrFormView } from "react-icons/gr";
 import CityOfficerDetail from './CityOfficerDetail';
 import axiosInstance from '../../auth/axiosInstance';
 import { useAuth } from '../../auth/AuthContext';
+import { FaCamera } from "react-icons/fa";
+import Swal from 'sweetalert2';
+
 
 function CircleOfficerList() {
-  const { stateList } = useAuth();
+  const { stateList, uploadImage,role } = useAuth();
+  console.log('role:', role);
   const [circleOfficers, setCircleOfficers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filters, setFilters] = useState({
@@ -30,7 +34,7 @@ function CircleOfficerList() {
   const getAllCityAdmin = async () => {
     try {
       setIsLoading(true);
-      
+
       // Build query parameters
       const params = new URLSearchParams({
         page: currentPage,
@@ -39,10 +43,10 @@ function CircleOfficerList() {
         status: filters.statusFilter !== 'all' ? filters.statusFilter : '',
         date: filters.dateFilter || ''
       });
-      
+
       const response = await axiosInstance.get(`/division_admin/getAllCityAdmins?${params}`);
       console.log('All city admins:', response.data);
-      
+
       if (response.data && response.data.dtoList) {
         setCircleOfficers(response.data.dtoList);
         setTotalItems(response.data.totalItems);
@@ -127,9 +131,36 @@ function CircleOfficerList() {
     });
   };
 
-  const getStatusText = (enabled) => {
-    return enabled ? 'Active' : 'Inactive';
+  const updateProfilePic = async (id, imageUrl) => {
+    try {
+      await axiosInstance.put(`/auth/updateProfilePic?url=${imageUrl}&id=${id}`);
+      Swal.fire({
+        icon: 'success',
+        title: 'Success',
+        text: 'Profile picture updated successfully'
+      })
+      getAllCityAdmin();
+    } catch (error) {
+      console.error("Error updating profile picture:", error);
+    }
   };
+
+   const handleStatusChange = async (id) => {
+    try {
+      
+      const response = await axiosInstance.put(`/head_admin/toggleLockStatusUserById/${id}`);
+      Swal.fire({
+        icon: 'success',
+        title: 'Success',
+        text: 'Status updated successfully'
+      });
+      getAllCityAdmin();
+    } catch (error) {
+      console.error("Error updating status:", error);
+      Swal.fire("Error", "Failed to update status", "error");
+    }
+  };
+
 
   return (
     <div className="min-h-screen main_bg">
@@ -187,12 +218,12 @@ function CircleOfficerList() {
             </button>
 
             {/* Action */}
-            <button
+           {role === 'ROLE_ADMIN' ? '' :  <button
               onClick={handleAddCircle}
               className="submit-btn"
             >
               + Circle Officer
-            </button>
+            </button>}
           </div>
         </div>
 
@@ -245,25 +276,60 @@ function CircleOfficerList() {
                         <td className="px-6 py-4 whitespace-nowrap">{(currentPage - 1) * itemsPerPage + index + 1}</td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
-                            {officer.profilePicture && officer.profilePicture !== 'NA' ? (
-                              <img
-                                src={officer.profilePicture}
-                                alt={officer.name}
-                                className="h-10 w-10 rounded-full object-cover mr-3"
-                              />
-                            ) : (
-                              <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center mr-3">
-                                <span className="text-blue-600 font-medium">
-                                  {officer.firstName?.charAt(0)}{officer.lastName?.charAt(0)}
-                                </span>
+                            <div className="relative group">
+                              {officer.profilePicture && officer.profilePicture !== "NA" ? (
+                                <img
+                                  src={officer.profilePicture}
+                                  alt={officer.name}
+                                  className="h-12 w-12 rounded-full object-cover mr-3 cursor-pointer"
+                                />
+                              ) : (
+                                <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center mr-3 cursor-pointer">
+                                  <span className="text-blue-600 font-medium">
+                                    {officer.firstName?.charAt(0)}
+                                    {officer.lastName?.charAt(0)}
+                                  </span>
+                                </div>
+                              )}
+
+                              {/* Camera overlay */}
+                              <div
+                                className="absolute bottom-0 right-0 bg-black/50 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer"
+                                onClick={() => document.getElementById(`fileInput-${officer.id}`).click()}
+                              >
+                                <FaCamera size={14} className="text-white" />
                               </div>
-                            )}
+
+                              {/* Hidden file input */}
+                              <input
+                                id={`fileInput-${officer.id}`}
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={async (e) => {
+                                  const file = e.target.files[0];
+                                  if (!file) return;
+                                  try {
+                                    // Step 1: Upload image
+                                    const result = await uploadImage(file);
+                                    const imageUrl = result.imageUrl || result.url;
+                                    // Step 2: Update profile pic in backend
+                                    await updateProfilePic(officer.id, imageUrl);
+                                  } catch (err) {
+                                    console.error("Error updating profile image:", err);
+                                  }
+                                }}
+                              />
+                            </div>
                             <div>
-                              <div className="text-sm font-medium text-gray-900">{officer.firstName} {officer.lastName}</div>
+                              <div className="text-sm font-medium text-gray-900">
+                                {officer.firstName} {officer.lastName}
+                              </div>
                               <div className="text-xs text-gray-500">{officer.email}</div>
                             </div>
                           </div>
                         </td>
+
                         <td className="px-6 py-4 whitespace-nowrap text-sm">
                           {officer.mobileNumber}
                         </td>
@@ -273,14 +339,14 @@ function CircleOfficerList() {
                         <td className="px-6 py-4 whitespace-nowrap text-sm">
                           {formatDate(officer.createdAt)}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td onClick={() => handleStatusChange(officer.id)} className="px-6 py-4 whitespace-nowrap cursor-pointer">
                           <span
-                            className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${officer.enabled
+                            className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${officer.accountNonLocked
                               ? 'bg-green-300 text-green-900'
                               : 'bg-red-900/20 text-red-900'
                               }`}
                           >
-                            {getStatusText(officer.enabled)}
+                            {officer.accountNonLocked ? "Active" : "Inactive"}
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex gap-2">
@@ -320,7 +386,7 @@ function CircleOfficerList() {
             </div>
 
             {/* Fixed Pagination at Bottom */}
-            <div className="sticky bottom-0 bg-white border-t border-gray-200 px-4 py-3">             
+            <div className="sticky bottom-0 bg-white border-t border-gray-200 px-4 py-3">
               <Pagination
                 currentPage={currentPage}
                 totalItems={totalItems}

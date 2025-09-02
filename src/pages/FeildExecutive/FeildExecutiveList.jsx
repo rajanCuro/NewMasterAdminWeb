@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { RiSearchLine } from "react-icons/ri";
 import { FiEdit } from "react-icons/fi";
-import { FaEye } from "react-icons/fa";
+import { FaCamera, FaEye } from "react-icons/fa";
 import AddUpdateFeildExecutive from "./AddUpdateFeildExecutive";
 import Pagination from "../Pagination";
 import ViewFeildExecutiveDetails from "./ViewFeildExecutiveDetails";
 import axiosInstance from "../../auth/axiosInstance";
+import { useAuth } from "../../auth/AuthContext";
+import Swal from "sweetalert2";
 
 const FeildExecutiveList = () => {
+  const { uploadImage,role } = useAuth();
   const [agents, setAgents] = useState([]);
   const [filteredAgents, setFilteredAgents] = useState([]);
   const [addAgentModal, setAddAgentModal] = useState(false);
@@ -116,23 +119,6 @@ const FeildExecutiveList = () => {
     getAllFieldExecutives();
     setEditData(null);
   };
-
-  // Status badge color
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "Verified":
-      case "ACTIVE":
-        return "bg-green-100 text-green-800 border-green-200";
-      case "Pending":
-      case "INACTIVE":
-        return "bg-yellow-100 text-yellow-800 border-yellow-200";
-      case "Rejected":
-      case "REJECTED":
-        return "bg-red-100 text-red-800 border-red-200";
-      default:
-        return "bg-gray-100 text-gray-800 border-gray-200";
-    }
-  };
   const totalItems = filteredAgents.length;
   const totalPages = Math.ceil(totalItems / itemsPerPage);
 
@@ -143,6 +129,36 @@ const FeildExecutiveList = () => {
   // Format agent name
   const formatAgentName = (agent) => {
     return `${agent.firstName || ''} ${agent.lastName || ''}`.trim() || 'Unknown Agent';
+  };
+
+  const updateProfilePic = async (id, imageUrl) => {
+    try {
+      await axiosInstance.put(`/auth/updateProfilePic?url=${imageUrl}&id=${id}`);
+      Swal.fire({
+        icon: 'success',
+        title: 'Success',
+        text: 'Profile picture updated successfully'
+      })
+      getAllFieldExecutives();
+    } catch (error) {
+      console.error("Error updating profile picture:", error);
+    }
+  };
+
+   const handleStatusChange = async (id) => {
+    try {
+      
+      const response = await axiosInstance.put(`/head_admin/toggleLockStatusUserById/${id}`);
+      Swal.fire({
+        icon: 'success',
+        title: 'Success',
+        text: response.data.message || ''
+      });
+      getAllFieldExecutives();
+    } catch (error) {
+      console.error("Error updating status:", error);
+      Swal.fire("Error", "Failed to update status", "error");
+    }
   };
 
   return (
@@ -164,14 +180,14 @@ const FeildExecutiveList = () => {
             />
           </div>
 
-          <div className="mt-4 md:mt-0">
+         {role === 'ROLE_ADMIN' || role === 'ROLE_ZONE_ADMIN' ? '' :  <div className="mt-4 md:mt-0">
             <button
               onClick={handleAddAgent}
               className="submit-btn"
             >
               Add FeildExecutive
             </button>
-          </div>
+          </div>}
         </div>
       </div>
 
@@ -186,27 +202,71 @@ const FeildExecutiveList = () => {
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Agent</th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Contact</th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Status</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Created</th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Actions</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {currentAgents.length > 0 ? (
-                  currentAgents.reverse().map((agent,index) => (
+                  currentAgents.reverse().map((agent, index) => (
                     <tr onDoubleClick={() => handleViewAgent(agent)} key={agent.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{index+1}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{index + 1}</td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{formatAgentName(agent)}</div>
-                        <div className="text-xs text-gray-500">{agent.email}</div>
+                        <div className="flex items-center">
+                          {/* Avatar wrapper */}
+                          <div className="relative group h-12 w-12 mr-3">
+                            {agent.profilePicture ? (
+                              <img
+                                src={agent.profilePicture}
+                                alt={(agent.firstName?.charAt(0) || '') + (agent.lastName?.charAt(0) || '')}
+                                className="h-12 w-12 rounded-full object-cover"
+                              />
+                            ) : (
+                              <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-medium">
+                                {(agent.firstName?.charAt(0) || '') + (agent.lastName?.charAt(0) || '')}
+                              </div>
+                            )}
+
+                            {/* Camera overlay */}
+                            <div
+                              className="absolute bottom-0 right-0 bg-black/60 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer"
+                              onClick={() => document.getElementById(`fileInput-${agent.id}`).click()}
+                            >
+                              <FaCamera size={14} className="text-white" />
+                            </div>
+
+                            {/* Hidden file input */}
+                            <input
+                              id={`fileInput-${agent.id}`}
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={async (e) => {
+                                const file = e.target.files[0];
+                                if (!file) return;
+                                try {
+                                  const result = await uploadImage(file);
+                                  const imageUrl = result.imageUrl || result.url;
+                                  await updateProfilePic(agent.id, imageUrl); // <-- fixed from "officer.id"
+                                } catch (err) {
+                                  console.error("Error updating profile image:", err);
+                                }
+                              }}
+                            />
+                          </div>
+
+                          {/* Agent info */}
+                          <div>
+                            <div className="text-sm font-medium text-gray-900">{formatAgentName(agent)}</div>
+                            <div className="text-xs text-gray-500">{agent.email}</div>
+                          </div>
+                        </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{agent.phoneNumber}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2.5 py-1 text-xs font-medium rounded-full border ${getStatusColor(agent.status)}`}>
-                          {agent.status || 'Unknown'}
+
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{agent.mobileNumber}</td>
+                      <td onClick={() =>handleStatusChange(agent.id)} className="px-6 py-4 whitespace-nowrap cursor-pointer">
+                        <span className={`px-2.5 py-1 text-xs font-medium rounded-full border ${agent.accountNonLocked ? "bg-green-200 text-green-600" : "bg-red-500"}`}>
+                          {agent.accountNonLocked ? 'Active' : 'Inactive'}
                         </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                        {agent.createdAt ? new Date(agent.createdAt).toLocaleDateString() : 'N/A'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex items-center gap-2">
