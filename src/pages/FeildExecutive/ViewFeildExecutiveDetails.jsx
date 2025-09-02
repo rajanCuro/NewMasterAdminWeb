@@ -5,12 +5,13 @@ import AddVehicale from './AddVehicale';
 import AddAddress from './AddAddress';
 
 const ViewFeildExecutiveDetails = ({ ViewData: initialData, onSave, onClose }) => {
-  console.log('view ', initialData);
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState('details');
   const [errors, setErrors] = useState({});
   const [addVehicleModal, setAddVehicleModal] = useState(false);
   const [addAddressModal, setAddAddressModal] = useState(false);
+  const [editeAddressData, setEditeAddressData] = useState(initialData.address);
+  const [editeVehicleData, setEditeVehicleData] = useState(initialData.vehicle);
   const fieldExecutiveId = initialData.id;
 
   const transformData = (data) => {
@@ -25,6 +26,8 @@ const ViewFeildExecutiveDetails = ({ ViewData: initialData, onSave, onClose }) =
       assignedPinCodes: data.assignedPinCodes?.map(pin => pin.pinCode) || [],
       type: data.vehicle?.type || '',
       vehicleNum: data.vehicle?.vehicleNumber || '',
+      city: data.address?.city || 'N/A',
+      street: data.address?.street || '',
       status: data.enabled ? 'Active' : 'Inactive',
       performance: 'Good', // Default placeholder
       agentsCount: 24, // Placeholder since not in API
@@ -111,7 +114,7 @@ const ViewFeildExecutiveDetails = ({ ViewData: initialData, onSave, onClose }) =
             {/* Profile Sidebar */}
             <div className="lg:w-1/3 p-6 bg-gradient-to-br from-indigo-50 to-blue-50 flex flex-col items-center justify-start">
               <div className="w-24 h-24 sm:w-32 sm:h-32 bg-indigo-100 rounded-full flex items-center justify-center mb-4 border-4 border-white shadow-md">
-                <FaUserTie className="text-indigo-500 text-3xl sm:text-5xl" aria-hidden="true" />
+               <img src={formData.profilePicture} alt="" className='w-full h-full object-cover rounded-full'/>
               </div>
 
               {isEditing ? (
@@ -154,8 +157,8 @@ const ViewFeildExecutiveDetails = ({ ViewData: initialData, onSave, onClose }) =
                 <p className="text-indigo-600 font-medium text-sm sm:text-base mt-2">{formData.roleName}</p>
               )}
               <div className="mt-6 w-full space-x-3">
-                <button onClick={handleAddVehicleClick} className='submit-btn'>{formData.vehicleNum ? 'Edite Vehical' : 'Add Vehicle'}</button>
-                <button onClick={() => { setAddAddressModal(true); }} className='submit-btn'>Add Address</button>
+                <button onClick={handleAddVehicleClick} className='bg-blue-500 rounded-md py-1 px-3 text-white cursor-pointer hover:bg-blue-600'>{formData.vehicleNum ? 'Update Vehical' : 'Add Vehicle'}</button>
+                <button onClick={() => { setAddAddressModal(true); }} className='bg-blue-500 rounded-md py-1 px-3 text-white cursor-pointer hover:bg-blue-600'>{formData.street ? 'Update Address' : 'Add Address'}</button>
               </div>
             </div>
 
@@ -304,8 +307,8 @@ const ViewFeildExecutiveDetails = ({ ViewData: initialData, onSave, onClose }) =
                     </div>
                     <div className="mb-4">
                       <h1 className="text-gray-800 font-semibold mb-1">Address Info</h1>
-                      {/* <p className="text-sm text-gray-600">Type: {formData || 'N/A'}</p>
-                      <p className="text-sm text-gray-600">Vehicle Number: {formData || 'N/A'}</p> */}
+                      <p className="text-sm text-gray-600">City: {formData.city || 'N/A'}</p>
+                      <p className="text-sm text-gray-600">Street: {formData.street || 'N/A'}</p>
                     </div>
                     </div>
 
@@ -468,7 +471,7 @@ const ViewFeildExecutiveDetails = ({ ViewData: initialData, onSave, onClose }) =
           >
             <div className="flex justify-between items-center border-b pb-3 mb-4">
               <h2 className="text-lg font-semibold">
-                Add New Vehicle
+                {editeVehicleData? 'Edit Vehicle' : 'Add Vehicle'}
               </h2>
               <button
                 onClick={() => { setAddVehicleModal(false); }}
@@ -479,6 +482,7 @@ const ViewFeildExecutiveDetails = ({ ViewData: initialData, onSave, onClose }) =
             </div>
             <AddVehicale id={fieldExecutiveId}
               onClose={setAddVehicleModal}
+              editeVehicleData={editeVehicleData}
             />
           </div>
         </div>
@@ -495,7 +499,7 @@ const ViewFeildExecutiveDetails = ({ ViewData: initialData, onSave, onClose }) =
           >
             <div className="flex justify-between items-center border-b pb-3 mb-4">
               <h2 className="text-lg font-semibold">
-                Add Address
+                {editeAddressData ? 'Edit Address' : 'Add New Address'}  
               </h2>
               <button
                 onClick={() => { setAddAddressModal(false); }}
@@ -506,6 +510,8 @@ const ViewFeildExecutiveDetails = ({ ViewData: initialData, onSave, onClose }) =
             </div>
             <AddAddress
               onClose={setAddAddressModal}
+              agentId={fieldExecutiveId}
+              editeAddressData={editeAddressData}
             />
           </div>
         </div>

@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import axiosInstance from '../../auth/axiosInstance';
 import Swal from 'sweetalert2';
 
-function AddVehicle({id, onClose}) {
+function AddVehicle({id, onClose, editeVehicleData}) {
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     type: '',
     number: '',
@@ -11,6 +12,17 @@ function AddVehicle({id, onClose}) {
     assignedDate: '',
     fieldExecutiveId: id || ''
   });
+
+  useEffect(() =>{
+    setFormData({
+      type: editeVehicleData?.type || '',
+      number: editeVehicleData?.vehicleNumber || '',
+      model: editeVehicleData?.model || '',
+      color: editeVehicleData?.color || '',
+      assignedDate: editeVehicleData?.assignedDate || '',
+      fieldExecutiveId: id || ''
+    })
+  } ,[])
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -23,6 +35,7 @@ function AddVehicle({id, onClose}) {
   const handleSubmit = async(e) => {
     e.preventDefault();
     try {
+      setLoading(true);
         const  response = await axiosInstance.post('/city-admin/addNewVehicleToFiledExecutive',formData);
         Swal.fire({
             icon: 'success',
@@ -32,6 +45,8 @@ function AddVehicle({id, onClose}) {
         onClose();
     } catch (error) {
      console.log('error',error)   
+    } finally{
+      setLoading(false);
     }
   };
 
@@ -106,7 +121,7 @@ function AddVehicle({id, onClose}) {
               type="submit"
               className='submit-btn'
               >
-              Add Vehicle
+                {loading ? (editeVehicleData ? 'Updating...' : 'Adding...') : (editeVehicleData? 'Update Vehicle' : 'Add Vehicle'  )}
             </button>
           </div>
         </form>

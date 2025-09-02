@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axiosInstance from '../../auth/axiosInstance';
 import Swal from 'sweetalert2';
 import { useAuth } from '../../auth/AuthContext';
+import ImageUploader from '../../components/ImageUploader';
 
 function AddUpdateAgent({ editData, onClose, onSave }) {
   const { user } = useAuth();
@@ -14,7 +15,8 @@ function AddUpdateAgent({ editData, onClose, onSave }) {
     email: '',
     password: '',
     dlno: '',
-    adhar: ''
+    adhar: '',
+    profilePicture: ''
   });
 
   const [loading, setLoading] = useState(false);
@@ -152,102 +154,6 @@ function AddUpdateAgent({ editData, onClose, onSave }) {
     <div className="w-full max-w-4xl mx-auto p-6">
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* First Name */}
-          <div className="float-container">
-            <input
-              type="text"
-              id="firstName"
-              placeholder=" "
-              className="float-input"
-              required
-              value={formData.firstName}
-              onChange={handleChange}
-            />
-            <label htmlFor="firstName" className="float-label">First Name</label>
-          </div>
-
-          {/* Last Name */}
-          <div className="float-container">
-            <input
-              type="text"
-              id="lastName"
-              placeholder=" "
-              className="float-input"
-              required
-              value={formData.lastName}
-              onChange={handleChange}
-            />
-            <label htmlFor="lastName" className="float-label">Last Name</label>
-          </div>
-
-          {/* Email */}
-          <div className="float-container">
-            <input
-              type="email"
-              id="email"
-              placeholder=" "
-              className="float-input"
-              required
-              value={formData.email}
-              onChange={handleChange}
-            />
-            <label htmlFor="email" className="float-label">Email Address</label>
-          </div>
-
-          {/* Phone Number */}
-          <div className="float-container">
-            <input
-              type="text"
-              id="phoneNumber"
-              placeholder=" "
-              className="float-input"
-              required
-              value={formData.phoneNumber}
-              onChange={handleChange}
-            />
-            <label htmlFor="phoneNumber" className="float-label">Phone Number</label>
-          </div>
-
-          {/* Password */}
-          <div className="float-container">
-            <input
-              type="password"
-              id="password"
-              placeholder=" "
-              className="float-input"
-              required
-              value={formData.password}
-              onChange={handleChange}
-            />
-            <label htmlFor="password" className="float-label">Password</label>
-          </div>
-
-          {/* DL Number */}
-          <div className="float-container">
-            <input
-              type="text"
-              id="dlno"
-              placeholder=" "
-              className="float-input"
-              value={formData.dlno}
-              onChange={handleChange}
-            />
-            <label htmlFor="dlno" className="float-label">DL Number (Optional)</label>
-          </div>
-
-          {/* Aadhar */}
-          <div className="float-container md:col-span-2">
-            <input
-              type="text"
-              id="adhar"
-              placeholder=" "
-              className="float-input"
-              value={formData.adhar}
-              onChange={handleChange}
-            />
-            <label htmlFor="adhar" className="float-label">Aadhar Number (Optional)</label>
-          </div>
-
           {/* Pincode Selection - Full width */}
           <div className="md:col-span-2">
             <div className="mb-2">
@@ -313,8 +219,8 @@ function AddUpdateAgent({ editData, onClose, onSave }) {
                           <div
                             key={pin.id}
                             className={`p-2 rounded-md cursor-pointer flex items-center ${selectedPincodeIds.includes(pin.id)
-                                ? 'bg-blue-100 text-blue-700'
-                                : 'hover:bg-gray-100'
+                              ? 'bg-blue-100 text-blue-700'
+                              : 'hover:bg-gray-100'
                               }`}
                             onClick={() => togglePincodeSelection(pin.id)}
                           >
@@ -362,9 +268,100 @@ function AddUpdateAgent({ editData, onClose, onSave }) {
               </div>
             )}
           </div>
-        </div>
+          <div className="float-container">
+            <input
+              type="text"
+              id="firstName"
+              placeholder=" "
+              className="float-input"
+              required
+              value={formData.firstName}
+              onChange={handleChange}
+            />
+            <label htmlFor="firstName" className="float-label">First Name</label>
+          </div>
 
-        {/* Submit Button */}
+          {/* Last Name */}
+          <div className="float-container">
+            <input
+              type="text"
+              id="lastName"
+              placeholder=" "
+              className="float-input"
+              required
+              value={formData.lastName}
+              onChange={handleChange}
+            />
+            <label htmlFor="lastName" className="float-label">Last Name</label>
+          </div>
+          <div className="float-container">
+            <input
+              type="email"
+              id="email"
+              placeholder=" "
+              className="float-input"
+              required
+              value={formData.email}
+              onChange={handleChange}
+            />
+            <label htmlFor="email" className="float-label">Email Address</label>
+          </div>
+          <div className="float-container">
+            <input
+              type="text"
+              id="phoneNumber"
+              placeholder=" "
+              className="float-input"
+              required
+              value={formData.phoneNumber}
+              onChange={handleChange}
+            />
+            <label htmlFor="phoneNumber" className="float-label">Phone Number</label>
+          </div>
+          <div className="float-container">
+            <input
+              type="password"
+              id="password"
+              placeholder=" "
+              className="float-input"
+              required
+              value={formData.password}
+              onChange={handleChange}
+            />
+            <label htmlFor="password" className="float-label">Password</label>
+          </div>
+          <div className="float-container">
+            <input
+              type="text"
+              id="dlno"
+              placeholder=" "
+              className="float-input"
+              value={formData.dlno}
+              onChange={handleChange}
+            />
+            <label htmlFor="dlno" className="float-label">DL Number (Optional)</label>
+          </div>
+          <div className="float-container">
+            <input
+              type="text"
+              id="adhar"
+              placeholder=" "
+              className="float-input"
+              value={formData.adhar}
+              onChange={handleChange}
+            />
+            <label htmlFor="adhar" className="float-label">Aadhar Number (Optional)</label>
+          </div>
+          <div className="w-full">
+            <div className="float-input">
+              <ImageUploader
+                onUploadSuccess={(url) =>
+                  setFormData((prev) => ({ ...prev, profilePicture: url }))
+                }
+              />
+            </div>
+          </div>
+        </div>
         <div className="pt-6">
           <button
             type="submit"
