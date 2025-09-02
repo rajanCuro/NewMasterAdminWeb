@@ -28,7 +28,7 @@ const ViewFeildExecutiveDetails = ({ ViewData: initialData, onSave, onClose }) =
       vehicleNum: data.vehicle?.vehicleNumber || '',
       city: data.address?.city || 'N/A',
       street: data.address?.street || '',
-      status: data.enabled ? 'Active' : 'Inactive',
+      status: data.accountNonLocked ? 'Active' : 'Inactive',
       performance: 'Good', // Default placeholder
       agentsCount: 24, // Placeholder since not in API
       PhCounts: 5, // Placeholder
@@ -114,7 +114,7 @@ const ViewFeildExecutiveDetails = ({ ViewData: initialData, onSave, onClose }) =
             {/* Profile Sidebar */}
             <div className="lg:w-1/3 p-6 bg-gradient-to-br from-indigo-50 to-blue-50 flex flex-col items-center justify-start">
               <div className="w-24 h-24 sm:w-32 sm:h-32 bg-indigo-100 rounded-full flex items-center justify-center mb-4 border-4 border-white shadow-md">
-               <img src={formData.profilePicture} alt="" className='w-full h-full object-cover rounded-full'/>
+                <img src={formData.profilePicture} alt="" className='w-full h-full object-cover rounded-full' />
               </div>
 
               {isEditing ? (
@@ -137,25 +137,7 @@ const ViewFeildExecutiveDetails = ({ ViewData: initialData, onSave, onClose }) =
                   <h2 className="text-lg sm:text-xl font-semibold text-gray-800 text-center">{formData.name}</h2>
                 </>
               )}
-
-              {isEditing ? (
-                <div className="w-full mb-4 relative">
-                  <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="circleName">Role Name</label>
-                  <input
-                    type="text"
-                    id="circleName"
-                    name="circleName"
-                    value={formData.roleName}
-                    onChange={handleInputChange}
-                    className={`w-full p-2.5 border ${errors.roleName ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-sm sm:text-base transition-all duration-200`}
-                    aria-invalid={!!errors.roleName}
-                    aria-describedby={errors.roleName ? 'circleName-error' : undefined}
-                  />
-
-                </div>
-              ) : (
-                <p className="text-indigo-600 font-medium text-sm sm:text-base mt-2">{formData.roleName}</p>
-              )}
+              <p className={` font-medium rounded-md px-3 ${formData.status === 'Active' ? 'bg-green-400 text-white' : 'bg-red-400 text-white'}`}>{formData.status}</p>
               <div className="mt-6 w-full space-x-3">
                 <button onClick={handleAddVehicleClick} className='bg-blue-500 rounded-md py-1 px-3 text-white cursor-pointer hover:bg-blue-600'>{formData.vehicleNum ? 'Update Vehical' : 'Add Vehicle'}</button>
                 <button onClick={() => { setAddAddressModal(true); }} className='bg-blue-500 rounded-md py-1 px-3 text-white cursor-pointer hover:bg-blue-600'>{formData.street ? 'Update Address' : 'Add Address'}</button>
@@ -301,15 +283,15 @@ const ViewFeildExecutiveDetails = ({ ViewData: initialData, onSave, onClose }) =
 
                     <div className='flex justify-between'>
                       <div className="mb-4">
-                      <h1 className="text-gray-800 font-semibold mb-1">Vehicle Info</h1>
-                      <p className="text-sm text-gray-600">Type: {formData.type || 'N/A'}</p>
-                      <p className="text-sm text-gray-600">Vehicle Number: {formData.vehicleNum || 'N/A'}</p>
-                    </div>
-                    <div className="mb-4">
-                      <h1 className="text-gray-800 font-semibold mb-1">Address Info</h1>
-                      <p className="text-sm text-gray-600">City: {formData.city || 'N/A'}</p>
-                      <p className="text-sm text-gray-600">Street: {formData.street || 'N/A'}</p>
-                    </div>
+                        <h1 className="text-gray-800 font-semibold mb-1">Vehicle Info</h1>
+                        <p className="text-sm text-gray-600">Type: {formData.type || 'N/A'}</p>
+                        <p className="text-sm text-gray-600">Vehicle Number: {formData.vehicleNum || 'N/A'}</p>
+                      </div>
+                      <div className="mb-4">
+                        <h1 className="text-gray-800 font-semibold mb-1">Address Info</h1>
+                        <p className="text-sm text-gray-600">City: {formData.city || 'N/A'}</p>
+                        <p className="text-sm text-gray-600">Street: {formData.street || 'N/A'}</p>
+                      </div>
                     </div>
 
                     <div className="mt-4">
@@ -471,7 +453,7 @@ const ViewFeildExecutiveDetails = ({ ViewData: initialData, onSave, onClose }) =
           >
             <div className="flex justify-between items-center border-b pb-3 mb-4">
               <h2 className="text-lg font-semibold">
-                {editeVehicleData? 'Edit Vehicle' : 'Add Vehicle'}
+                {editeVehicleData ? 'Edit Vehicle' : 'Add Vehicle'}
               </h2>
               <button
                 onClick={() => { setAddVehicleModal(false); }}
@@ -499,7 +481,7 @@ const ViewFeildExecutiveDetails = ({ ViewData: initialData, onSave, onClose }) =
           >
             <div className="flex justify-between items-center border-b pb-3 mb-4">
               <h2 className="text-lg font-semibold">
-                {editeAddressData ? 'Edit Address' : 'Add New Address'}  
+                {editeAddressData ? 'Edit Address' : 'Add New Address'}
               </h2>
               <button
                 onClick={() => { setAddAddressModal(false); }}

@@ -334,7 +334,7 @@ function AddAddress({ initialPosition, onClose }) {
                     name="city"
                     value={address.city}
                     onChange={handleInputChange}
-                    placeholder="New York"
+                    placeholder="City"
                     required
                   />
                 </div>

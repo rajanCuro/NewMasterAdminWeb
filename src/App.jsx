@@ -12,7 +12,8 @@ import FeildExecutiveList from './pages/FeildExecutive/FeildExecutiveList.jsx';
 import City from './pages/CreatCity/AllCity.jsx';
 import Division from './pages/CreatDivision/AllDivision.jsx';
 import PrivateRoute from './auth/PrivateRoute';
-import Sidebar from './components/Sidebar.jsx';
+import NewRegistration from './components/NewRegistration.jsx';
+import Sidebar from './components/sidebar.jsx';
 
 function App() {
   const [collapsed, setCollapsed] = useState(false);
@@ -126,6 +127,7 @@ function App() {
                 </PrivateRoute>
               }
             />
+            <Route path='regi' element={<PrivateRoute><NewRegistration/></PrivateRoute>}/>
           </Routes>
         </main>
       </div>
