@@ -3,8 +3,11 @@ import { FaUserTie, FaPhone, FaEnvelope, FaMapMarkerAlt, FaCalendarAlt, FaUsers,
 import { MdLocalPharmacy } from "react-icons/md";
 import AddVehicale from './AddVehicale';
 import AddAddress from './AddAddress';
+import { useAuth } from '../../auth/AuthContext';
 
 const ViewFeildExecutiveDetails = ({ ViewData: initialData, onSave, onClose }) => {
+  const { submittedData, setSubmittedData } = useAuth()
+  console.log("check", submittedData)
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState('details');
   const [errors, setErrors] = useState({});
@@ -12,6 +15,7 @@ const ViewFeildExecutiveDetails = ({ ViewData: initialData, onSave, onClose }) =
   const [addAddressModal, setAddAddressModal] = useState(false);
   const [editeAddressData, setEditeAddressData] = useState(initialData.address);
   const [editeVehicleData, setEditeVehicleData] = useState(initialData.vehicle);
+  const [addedData, setAddedData] = useState(null)
   const fieldExecutiveId = initialData.id;
 
   const transformData = (data) => {
@@ -139,7 +143,7 @@ const ViewFeildExecutiveDetails = ({ ViewData: initialData, onSave, onClose }) =
               )}
               <p className={` font-medium rounded-md px-3 ${formData.status === 'Active' ? 'bg-green-400 text-white' : 'bg-red-400 text-white'}`}>{formData.status}</p>
               <div className="mt-6 w-full space-x-3">
-                <button onClick={handleAddVehicleClick} className='bg-blue-500 rounded-md py-1 px-3 text-white cursor-pointer hover:bg-blue-600'>{formData.vehicleNum ? 'Update Vehical' : 'Add Vehicle'}</button>
+                <button onClick={handleAddVehicleClick} className='bg-blue-500 rounded-md py-1 px-3 text-white cursor-pointer hover:bg-blue-600'>{formData.vehicleNum ? 'Update Vehicle' : 'Add Vehicle'}</button>
                 <button onClick={() => { setAddAddressModal(true); }} className='bg-blue-500 rounded-md py-1 px-3 text-white cursor-pointer hover:bg-blue-600'>{formData.street ? 'Update Address' : 'Add Address'}</button>
               </div>
             </div>
@@ -276,16 +280,16 @@ const ViewFeildExecutiveDetails = ({ ViewData: initialData, onSave, onClose }) =
                     </div>
                   </div>
 
+
                   <div className="pt-4 border-t border-gray-200">
                     <h3 className="font-medium text-gray-700 text-sm sm:text-base mb-2">
                       Additional Information
                     </h3>
-
                     <div className='flex justify-between'>
                       <div className="mb-4">
                         <h1 className="text-gray-800 font-semibold mb-1">Vehicle Info</h1>
-                        <p className="text-sm text-gray-600">Type: {formData.type || 'N/A'}</p>
-                        <p className="text-sm text-gray-600">Vehicle Number: {formData.vehicleNum || 'N/A'}</p>
+                        <p className="text-sm text-gray-600 capitalize">Type: {submittedData && submittedData.type || formData.type}</p>
+                        <p className="text-sm text-gray-600 ">Vehicle Number: <span className='uppercase'>{submittedData && submittedData.number || formData.vehicleNum}</span></p>
                       </div>
                       <div className="mb-4">
                         <h1 className="text-gray-800 font-semibold mb-1">Address Info</h1>
@@ -311,7 +315,6 @@ const ViewFeildExecutiveDetails = ({ ViewData: initialData, onSave, onClose }) =
                         <p className="text-sm text-gray-500">No pin codes assigned</p>
                       )}
                     </div>
-
                   </div>
 
                 </div>

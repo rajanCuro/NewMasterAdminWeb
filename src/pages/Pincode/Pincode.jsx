@@ -84,12 +84,12 @@ function Pincode() {
     };
 
     return (
-        <div className='w-full px-4 py-6 md:px-10 flex flex-col' style={{ minHeight: 'calc(107.5vh - 2rem)' }}>
+        <div className='w-full px-4 py-6 md:px-4 flex flex-col' style={{ minHeight: 'calc(107.5vh - 2rem)' }}>
             <div className='flex flex-col sm:flex-row justify-between items-center mb-6'>
                 <h1 className='text-2xl font-bold text-gray-800 mb-4 sm:mb-0'>Pincode Management</h1>
                 <button
                     onClick={() => { setPincodeAddModal(true); setEditData(null) }}
-                    className='bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors flex items-center'
+                    className='bg-blue-600 cursor-pointer text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors flex items-center'
                 >
                     <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
@@ -153,12 +153,12 @@ function Pincode() {
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                                     <div className="flex items-center gap-2">
-                                                        <button
+                                                        {/* <button
                                                             className="text-blue-600 cursor-pointer hover:text-blue-800 p-1.5 rounded-md hover:bg-blue-100 transition-colors"
                                                             title="View pincode details"
                                                         >
                                                             <FaEye className="w-4 h-4" />
-                                                        </button>
+                                                        </button> */}
                                                         <button
                                                             onClick={() => handleEdit(pincode)}
                                                             className="text-green-600 cursor-pointer hover:text-green-800 p-1.5 rounded-md hover:bg-green-100 transition-colors"
@@ -217,13 +217,13 @@ function Pincode() {
                         onClick={(e) => e.stopPropagation()}
                         className="bg-white rounded-lg shadow-lg w-full max-w-md transform transition-all duration-300 scale-100 max-h-[90vh] overflow-y-auto"
                     >
-                        <div className="flex justify-between items-center border-b p-4 sticky top-0 bg-white z-10">
-                            <h2 className="text-xl font-semibold text-gray-800">
+                        <div className="flex justify-between items-center border-b p-4 sticky top-0 modal_header z-10">
+                            <h2 className="text-xl font-semibold ">
                                 {editData ? 'Edit Pincode' : 'Add New Pincode'}
                             </h2>
                             <button
                                 onClick={() => { setPincodeAddModal(false); }}
-                                className="text-gray-500 hover:text-red-500 text-2xl font-bold cursor-pointer"
+                                className=" hover:text-red-500 text-2xl font-bold cursor-pointer"
                             >
                                 &times;
                             </button>

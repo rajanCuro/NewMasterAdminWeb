@@ -14,7 +14,7 @@ import {
 import { MdAppRegistration } from "react-icons/md";
 import { TbMapPinCode } from "react-icons/tb";
 import { CiLogin } from "react-icons/ci";
-import { FaMapMarkerAlt } from "react-icons/fa";
+import { FaInfoCircle, FaMapMarkerAlt } from "react-icons/fa";
 import { useAuth } from '../auth/AuthContext';
 import { IoMdSettings } from "react-icons/io";
 import Time from '../Time';
@@ -58,7 +58,8 @@ const Sidebar = ({ collapsed, toggleSidebar }) => {
         { icon: <TbMapPinCode className="text-lg" />, label: 'Pincode', path: '/pincode' },
         { icon: <FaMapMarkerAlt className="text-lg" />, label: 'Curo Map', path: '/curo_map' },
         { icon: <IoMdSettings className="text-lg" />, label: 'Settings', path: '/setting' },
-        { icon: <MdAppRegistration className='text-lg' />, label: 'NewRegistration', path: '/regi' },
+        { icon: <MdAppRegistration className='text-lg' />, label: 'New Registration', path: '/registration' },
+        { icon: <FaInfoCircle  className='text-lg' />, label: 'Info', path: '/distance_info' },
     ].filter(Boolean); // ✅ This removes null
 
 

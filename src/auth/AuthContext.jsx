@@ -11,6 +11,7 @@ export const AuthProvider = ({ children }) => {
   const [role, setRole] = useState(null);
   const [stateList, setStateList] = useState([]);
   const [loading, setLoading] = useState(true); // important
+  const [submittedData, setSubmittedData] = useState(null)
   const [latitude, setLatitude] = useState({
     lat: 25.356917,
     lng: 83.007167,
@@ -73,24 +74,24 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-const uploadImage = async (file) => {
-  try {
-    const formData = new FormData();
-    formData.append("file", file);
+  const uploadImage = async (file) => {
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
 
-    const response = await axiosInstance.post("/auth/uploadImage", formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-        Authorization: `Bearer ${token}`, // If your API needs authentication
-      },
-    });
+      const response = await axiosInstance.post("/auth/uploadImage", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`, // If your API needs authentication
+        },
+      });
 
-    return response.data;
-  } catch (error) {
-    console.error("Error uploading image:", error);
-    throw error;
-  }
-};
+      return response.data;
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      throw error;
+    }
+  };
 
 
 
@@ -109,7 +110,8 @@ const uploadImage = async (file) => {
         loading,
         longitude, setLongitude,
         latitude, setLatitude,
-        uploadImage
+        uploadImage,
+        submittedData, setSubmittedData
       }}
     >
       {children}
