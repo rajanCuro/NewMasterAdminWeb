@@ -223,3 +223,10 @@
   scrollbar-width: thin; /* "auto" | "thin" */
   scrollbar-color: #a0aec0 transparent; /* thumb | track */
 }
+
+
+/* modal header */
+ .modal_header{
+  background-color: #357ab8;
+  color:#fff
+ }

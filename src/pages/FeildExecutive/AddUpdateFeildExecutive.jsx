@@ -151,12 +151,12 @@ function AddUpdateAgent({ editData, onClose, onSave }) {
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto p-6">
+    <div className="w-full  mx-auto ">
       <form onSubmit={handleSubmit}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
           {/* Pincode Selection - Full width */}
           <div className="md:col-span-2">
-            <div className="mb-2">
+            <div className=" ">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Select Pincode(s) <span className="text-red-500">*</span>
               </label>
@@ -181,11 +181,11 @@ function AddUpdateAgent({ editData, onClose, onSave }) {
               </div>
 
               {/* Custom select dropdown */}
-              <div className="relative">
+              <div className="relative ">
                 <div
                   className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white cursor-pointer flex items-center justify-between"
                   onClick={() => setShowDropdown(!showDropdown)}
-                >
+                 >
                   <span className="text-gray-500">Select pincodes</span>
                   <svg
                     className={`w-4 h-4 transition-transform ${showDropdown ? 'rotate-180' : ''}`}
@@ -199,9 +199,9 @@ function AddUpdateAgent({ editData, onClose, onSave }) {
                 </div>
 
                 {showDropdown && (
-                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                  <div className="absolute z-20 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
                     {/* Search input inside dropdown */}
-                    <div className="sticky top-0 bg-white p-2 border-b">
+                    <div className="sticky top-0 bg-white p-2 border-b z-20">
                       <input
                         type="text"
                         placeholder="Search pincodes..."
@@ -246,7 +246,7 @@ function AddUpdateAgent({ editData, onClose, onSave }) {
 
             {/* Selected pincodes preview */}
             {selectedPincodeIds.length > 0 && (
-              <div className="mt-3">
+              <div className="mt-1">
                 <p className="text-sm font-medium text-gray-700 mb-1">Selected Pincodes:</p>
                 <div className="flex flex-wrap gap-2">
                   {selectedPincodeIds.map((pincodeId) => (
@@ -362,7 +362,7 @@ function AddUpdateAgent({ editData, onClose, onSave }) {
             </div>
           </div>
         </div>
-        <div className="pt-6">
+        <div className="pt-2">
           <button
             type="submit"
             className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-400"

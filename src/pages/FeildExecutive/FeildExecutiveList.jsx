@@ -10,7 +10,7 @@ import { useAuth } from "../../auth/AuthContext";
 import Swal from "sweetalert2";
 
 const FeildExecutiveList = () => {
-  const { uploadImage,role } = useAuth();
+  const { uploadImage, role } = useAuth();
   const [agents, setAgents] = useState([]);
   const [filteredAgents, setFilteredAgents] = useState([]);
   const [addAgentModal, setAddAgentModal] = useState(false);
@@ -145,16 +145,32 @@ const FeildExecutiveList = () => {
     }
   };
 
-   const handleStatusChange = async (id) => {
+  const handleStatusChange = async (id) => {
     try {
-      
-      const response = await axiosInstance.put(`/head_admin/toggleLockStatusUserById/${id}`);
-      Swal.fire({
-        icon: 'success',
-        title: 'Success',
-        text: response.data.message || ''
+      const result = await Swal.fire({
+        title: "Are you sure?",
+        text: "Do you want to change this user's status?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, change it!",
+        cancelButtonText: "Cancel",
       });
-      getAllFieldExecutives();
+
+      if (result.isConfirmed) {
+        const response = await axiosInstance.put(
+          `/head_admin/toggleLockStatusUserById/${id}`
+        );
+
+        Swal.fire({
+          icon: "success",
+          title: "Success",
+          text: response.data.message || "Status updated successfully",
+        });
+
+        getAllFieldExecutives();
+      }
     } catch (error) {
       console.error("Error updating status:", error);
       Swal.fire("Error", "Failed to update status", "error");
@@ -180,7 +196,7 @@ const FeildExecutiveList = () => {
             />
           </div>
 
-         {role === 'ROLE_ADMIN' || role === 'ROLE_ZONE_ADMIN' ? '' :  <div className="mt-4 md:mt-0">
+          {role === 'ROLE_ADMIN' || role === 'ROLE_ZONE_ADMIN' ? '' : <div className="mt-4 md:mt-0">
             <button
               onClick={handleAddAgent}
               className="submit-btn"
@@ -263,7 +279,7 @@ const FeildExecutiveList = () => {
                       </td>
 
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{agent.mobileNumber}</td>
-                      <td onClick={() =>handleStatusChange(agent.id)} className="px-6 py-4 whitespace-nowrap cursor-pointer">
+                      <td onClick={() => handleStatusChange(agent.id)} className="px-6 py-4 whitespace-nowrap cursor-pointer">
                         <span className={`px-2.5 py-1 text-xs font-medium rounded-full border ${agent.accountNonLocked ? "bg-green-200 text-green-600" : "bg-red-500"}`}>
                           {agent.accountNonLocked ? 'Active' : 'Inactive'}
                         </span>
@@ -321,7 +337,7 @@ const FeildExecutiveList = () => {
       {/* Add/Edit Agent Modal */}
       {addAgentModal && (
         <div
-          className="fixed inset-0 backdrop-brightness-50 flex items-center justify-center z-50 p-4"
+          className="fixed inset-0 backdrop-brightness-50 flex items-center justify-center z-70 p-4"
           onClick={() => { setAddAgentModal(false) }}
         >
           <div
@@ -329,13 +345,13 @@ const FeildExecutiveList = () => {
             className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
           >
             {/* Header */}
-            <div className="flex justify-between items-center border-b border-gray-200 p-6 sticky top-0 bg-white">
-              <h2 className="text-xl font-semibold text-gray-800">
+            <div className="flex justify-between items-center border-b border-gray-200 p-6 sticky top-0 modal_header z-70 ">
+              <h2 className="text-xl font-semibold ">
                 {editData ? "Edit Agent Details" : "Add New Agent"}
               </h2>
               <button
                 onClick={() => { setAddAgentModal(false); }}
-                className="text-gray-400 hover:text-gray-500 text-2xl font-bold cursor-pointer"
+                className=" hover:text-red-500 text-2xl font-bold cursor-pointer"
               >
                 &times;
               </button>
@@ -366,7 +382,7 @@ const FeildExecutiveList = () => {
             onClick={(e) => e.stopPropagation()}
             className="bg-white rounded-xl shadow-2xl max-w-6xl w-full max-h-[95vh] overflow-y-auto"
           >
-            <div className="flex justify-between items-center border-b border-gray-200 p-6 sticky top-0 bg-blue-700 text-white z-10">
+            <div className="flex justify-between items-center border-b border-gray-200 p-6 sticky top-0 modal_header z-10">
               <h2 className="text-xl font-semibold">Field Executive Details</h2>
               <button
                 onClick={() => {

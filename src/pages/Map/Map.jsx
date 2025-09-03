@@ -3,12 +3,13 @@ import { GoogleMap, Marker, useJsApiLoader } from "@react-google-maps/api";
 import AddAddress from "./AddAddress"; // Make sure this path is correct
 import { useAuth } from "../../auth/AuthContext";
 
-export default function MyLocationMap() {
-  const {latitude,longitude, setLongitude} = useAuth();
+export default function MyLocationMap({ mapE }) {
+  // alert(mapE)
+  const { latitude, longitude, setLongitude } = useAuth();
   const { isLoaded, loadError } = useJsApiLoader({
     googleMapsApiKey: "AIzaSyDQhTx-hV6s2j1v9YL9ewHJwJpTiFhdj00",
   });
-   const [showAddressModal, setShowAddressModal] = useState(false);
+  const [showAddressModal, setShowAddressModal] = useState(false);
 
   const handleMapClick = (e) => {
     const newPos = {
@@ -32,7 +33,7 @@ export default function MyLocationMap() {
   return (
     <div className="relative p-2">
       {/* Map Container */}
-      <div className="w-full h-screen rounded-2xl shadow-lg overflow-hidden">
+      <div className={`w-full ${mapE ? "h-[82vh]" : "h-screen "} rounded-2xl shadow-lg overflow-hidden`}>
         <GoogleMap
           mapContainerClassName="w-full h-full"
           center={latitude}
@@ -44,12 +45,12 @@ export default function MyLocationMap() {
       </div>
 
       {/* Add Address Button */}
-      <button
+      {!mapE && <button
         onClick={handleAddAddress}
         className="absolute top-4.5 right-15 bg-blue-600 hover:bg-blue-700 cursor-pointer text-white font-bold py-2 px-4 rounded-l-full shadow-lg transition-colors duration-200"
       >
         Add Address
-      </button>
+      </button>}
 
       {/* Branding Footer */}
       <div className="absolute bottom-3 left-18.5 transform -translate-x-1/2 bg-white text-gray-800 text-sm font-semibold px-4 py-1 rounded-full shadow-md">

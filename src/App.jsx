@@ -13,7 +13,9 @@ import City from './pages/CreatCity/AllCity.jsx';
 import Division from './pages/CreatDivision/AllDivision.jsx';
 import PrivateRoute from './auth/PrivateRoute';
 import NewRegistration from './components/NewRegistration.jsx';
-import Sidebar from './components/sidebar.jsx';
+import Sidebar from './components/Sidebar.jsx';
+import GetDistanceInfo from './pages/FieldExecutiveDistance/GetDistanceInfoExecutiveList.jsx';
+
 
 function App() {
   const [collapsed, setCollapsed] = useState(false);
@@ -31,9 +33,8 @@ function App() {
         {token && <Sidebar collapsed={collapsed} toggleSidebar={toggleSidebar} />}
 
         <main
-          className={`flex-1 transition-all duration-300 ease-in-out ${
-            token ? (collapsed ? 'md:ml-20' : 'md:ml-64') : ''
-          } ${token ? 'ml-0' : ''}`}
+          className={`flex-1 transition-all duration-300 ease-in-out ${token ? (collapsed ? 'md:ml-20' : 'md:ml-64') : ''
+            } ${token ? 'ml-0' : ''}`}
         >
           <Routes>
             <Route path="/" element={token ? <Navigate to="/dashboard" replace /> : <Login />} />
@@ -127,7 +128,8 @@ function App() {
                 </PrivateRoute>
               }
             />
-            <Route path='regi' element={<PrivateRoute><NewRegistration/></PrivateRoute>}/>
+            <Route path='/registration' element={<PrivateRoute><NewRegistration /></PrivateRoute>} />
+            <Route path='/distance_info' element={<PrivateRoute><GetDistanceInfo /></PrivateRoute>} />
           </Routes>
         </main>
       </div>
