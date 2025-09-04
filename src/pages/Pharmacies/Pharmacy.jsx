@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import AddPharmacy from './AddPharmacy';
 
 const PharmacyTable = () => {
@@ -9,6 +9,18 @@ const PharmacyTable = () => {
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
   const [expandedRow, setExpandedRow] = useState(null);
   const [addModal, setAddModal] = useState(false);
+
+  // Calculate pharmacy statistics
+  const pharmacyStats = useMemo(() => {
+    const total = pharmacies.length;
+    const active = pharmacies.filter(pharmacy => pharmacy.status === "Open" || pharmacy.status === "Limited").length;
+    const inactive = pharmacies.filter(pharmacy => pharmacy.status === "Closed").length;
+    const open = pharmacies.filter(pharmacy => pharmacy.status === "Open").length;
+    const closed = pharmacies.filter(pharmacy => pharmacy.status === "Closed").length;
+    const limited = pharmacies.filter(pharmacy => pharmacy.status === "Limited").length;
+    
+    return { total, active, inactive, open, closed, limited };
+  }, [pharmacies]);
 
   // Sample data with enhanced information
   useEffect(() => {
@@ -206,6 +218,95 @@ const PharmacyTable = () => {
           </div>
           <button onClick={() => setAddModal(true)} className='submit-btn'>Add Pharmacy</button>
         </div>
+        
+        {/* Stats Cards Section */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+          {/* Total Pharmacies Card */}
+          <div className="bg-white rounded-lg shadow p-4 border-l-4 border-blue-500">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                  <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  </svg>
+                </div>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-gray-500">Total Pharmacies</h3>
+                <p className="text-xl font-semibold text-gray-900">{pharmacyStats.total}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Active Pharmacies Card */}
+          <div className="bg-white rounded-lg shadow p-4 border-l-4 border-green-500">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                  <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-gray-500">Active Pharmacies</h3>
+                <p className="text-xl font-semibold text-gray-900">{pharmacyStats.active}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Inactive Pharmacies Card */}
+          <div className="bg-white rounded-lg shadow p-4 border-l-4 border-red-500">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                  <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-gray-500">Inactive Pharmacies</h3>
+                <p className="text-xl font-semibold text-gray-900">{pharmacyStats.inactive}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Open Pharmacies Card */}
+          <div className="bg-white rounded-lg shadow p-4 border-l-4 border-teal-500">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <div className="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center">
+                  <svg className="w-5 h-5 text-teal-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-gray-500">Open Now</h3>
+                <p className="text-xl font-semibold text-gray-900">{pharmacyStats.open}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Closed Pharmacies Card */}
+          <div className="bg-white rounded-lg shadow p-4 border-l-4 border-orange-500">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
+                  <svg className="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </div>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-gray-500">Closed</h3>
+                <p className="text-xl font-semibold text-gray-900">{pharmacyStats.closed}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Filters and Search */}
         <div className="bg-white p-4 rounded-lg shadow-md mb-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

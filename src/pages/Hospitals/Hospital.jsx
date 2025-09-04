@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback } from "react";
-import { FaSearch, FaStar, FaMapMarkerAlt, FaPhone, FaSort, FaPlus, FaEdit, FaTrash } from "react-icons/fa";
+import { FaSearch, FaStar, FaMapMarkerAlt, FaPhone, FaSort, FaPlus, FaEdit, FaTrash, FaBed } from "react-icons/fa";
 import debounce from "lodash.debounce";
 import { hospitals as initialHospitals } from "./data.hospital";
 import AddHospital from "./AddHospital";
@@ -20,6 +20,28 @@ export default function HospitalTable() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const locations = ["All", ...new Set(hospitals.map((hospital) => hospital.location))];
+
+  // Calculate hospital statistics
+  const hospitalStats = useMemo(() => {
+    const total = hospitals.length;
+    const active = hospitals.filter(hospital => hospital.status === "active").length;
+    const inactive = total - active;
+    
+    // Calculate bed statistics
+    let occupiedBeds = 0;
+    let totalBeds = 0;
+    
+    hospitals.forEach(hospital => {
+      if (hospital.beds) {
+        occupiedBeds += hospital.beds.occupied || 0;
+        totalBeds += hospital.beds.total || 0;
+      }
+    });
+    
+    const availableBeds = totalBeds - occupiedBeds;
+    
+    return { total, active, inactive, occupiedBeds, availableBeds, totalBeds };
+  }, [hospitals]);
 
   // Extract all unique specialties from all hospitals
   const allSpecialties = useMemo(() => {
@@ -122,6 +144,91 @@ export default function HospitalTable() {
     <>
       <div className="bg-gray-50 h-screen overflow-y-auto w-full p-4">
         <div className="bg-white rounded-xl p-6 mb-6 shadow-sm">
+          {/* Stats Cards Section */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+            {/* Total Hospitals Card */}
+            <div className="bg-white rounded-lg shadow p-4 border-l-4 border-blue-500">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                    <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                  </div>
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-gray-500">Total Hospitals</h3>
+                  <p className="text-xl font-semibold text-gray-900">{hospitalStats.total}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Active Hospitals Card */}
+            <div className="bg-white rounded-lg shadow p-4 border-l-4 border-green-500">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                    <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-gray-500">Active Hospitals</h3>
+                  <p className="text-xl font-semibold text-gray-900">{hospitalStats.active}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Inactive Hospitals Card */}
+            <div className="bg-white rounded-lg shadow p-4 border-l-4 border-red-500">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                    <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-gray-500">Inactive Hospitals</h3>
+                  <p className="text-xl font-semibold text-gray-900">{hospitalStats.inactive}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Occupied Beds Card */}
+            <div className="bg-white rounded-lg shadow p-4 border-l-4 border-orange-500">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
+                    <FaBed className="w-5 h-5 text-orange-500" />
+                  </div>
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-gray-500">Occupied Beds</h3>
+                  <p className="text-xl font-semibold text-gray-900">{hospitalStats.occupiedBeds}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Available Beds Card */}
+            <div className="bg-white rounded-lg shadow p-4 border-l-4 border-purple-500">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
+                    <FaBed className="w-5 h-5 text-purple-500" />
+                  </div>
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-gray-500">Available Beds</h3>
+                  <p className="text-xl font-semibold text-gray-900">{hospitalStats.availableBeds}</p>
+                  <p className="text-xs text-gray-500">Total: {hospitalStats.totalBeds}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
             <div>
               <h2 className="text-2xl font-bold text-gray-800">Hospital Directory</h2>

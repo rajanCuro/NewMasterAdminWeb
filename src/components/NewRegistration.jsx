@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import axiosInstance from '../auth/axiosInstance';
+import { useAuth } from '../auth/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 function NewRegistration() {
+  const { role } = useAuth();
+  const navigate = useNavigate();
+
   const [registrations, setRegistrations] = useState([]);
   const [filteredRegistrations, setFilteredRegistrations] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -9,7 +14,13 @@ function NewRegistration() {
     status: 'all',
     role: 'all',
     search: ''
-  });  
+  });
+
+  useEffect(() => {
+    if (role !== "ROLE_ZONE_ADMIN") {
+      navigate('/dashboard');
+    }
+  }, [role, navigate]);
 
   // Simulate API call
   useEffect(() => {
@@ -30,32 +41,32 @@ function NewRegistration() {
   // Apply filters whenever filters or registrations change
   useEffect(() => {
     let result = registrations;
-    
+
     // Apply status filter
     if (filters.status !== 'all') {
-      result = result.filter(user => 
+      result = result.filter(user =>
         filters.status === 'active' ? user.enabled : !user.enabled
       );
     }
-    
+
     // Apply role filter
     if (filters.role !== 'all') {
-      result = result.filter(user => 
+      result = result.filter(user =>
         user.roles.roleName === filters.role
       );
     }
-    
+
     // Apply search filter
     if (filters.search) {
       const searchLower = filters.search.toLowerCase();
-      result = result.filter(user => 
+      result = result.filter(user =>
         user.firstName.toLowerCase().includes(searchLower) ||
         user.lastName.toLowerCase().includes(searchLower) ||
         user.email.toLowerCase().includes(searchLower) ||
         (user.mobileNumber && user.mobileNumber.toLowerCase().includes(searchLower))
       );
     }
-    
+
     setFilteredRegistrations(result);
   }, [filters, registrations]);
 
@@ -68,9 +79,9 @@ function NewRegistration() {
 
   // Format date to be more readable
   const formatDate = (dateString) => {
-    const options = { 
-      year: 'numeric', 
-      month: 'short', 
+    const options = {
+      year: 'numeric',
+      month: 'short',
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit'
@@ -89,17 +100,19 @@ function NewRegistration() {
     );
   }
 
+  const tableHeaders = ["User", "Contact Info", "Status", "Role", "Last Login"];
+
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold text-gray-800 mb-6">New Registrations</h1>
-      
+
       {/* Filters and Search */}
       <div className="bg-white p-4 rounded-lg shadow mb-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Status Filter */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-            <select 
+            <select
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={filters.status}
               onChange={(e) => handleFilterChange('status', e.target.value)}
@@ -109,11 +122,11 @@ function NewRegistration() {
               <option value="inactive">Inactive</option>
             </select>
           </div>
-          
+
           {/* Role Filter */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
-            <select 
+            <select
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={filters.role}
               onChange={(e) => handleFilterChange('role', e.target.value)}
@@ -124,7 +137,7 @@ function NewRegistration() {
               ))}
             </select>
           </div>
-          
+
           {/* Search */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Search</label>
@@ -138,12 +151,12 @@ function NewRegistration() {
           </div>
         </div>
       </div>
-      
+
       {/* Results Count */}
       <div className="mb-4 text-sm text-gray-600">
         Showing {filteredRegistrations.length} of {registrations.length} registrations
       </div>
-      
+
       {filteredRegistrations.length === 0 ? (
         <div className="bg-white rounded-lg shadow p-6 text-center">
           <p className="text-gray-500">No matching registrations found.</p>
@@ -154,21 +167,15 @@ function NewRegistration() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    User
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Contact Info
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Role
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Last Login
-                  </th>
+                  {tableHeaders.map((header) => (
+                    <th
+                      key={header}
+                      scope="col"
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      {header}
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -177,15 +184,12 @@ function NewRegistration() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-10 w-10">
-                          <img 
-                            className="h-10 w-10 rounded-full object-cover" 
-                            src={user.profilePicture && user.profilePicture !== 'null' ? 
-                              user.profilePicture.replace(/"/g, '') : 
-                              'https://via.placeholder.com/40?text=U'} 
+                          <img
+                            className="h-10 w-10 rounded-full object-cover"
+                            src={user.profilePicture && user.profilePicture !== 'null' ?
+                              user.profilePicture.replace(/"/g, '') :
+                              'https://via.placeholder.com/40?text=U'}
                             alt={user.firstName}
-                            onError={(e) => {
-                              e.target.src = 'https://via.placeholder.com/40?text=U'
-                            }}
                           />
                         </div>
                         <div className="ml-4">

@@ -12,7 +12,7 @@ import {
     FiMenu,
 } from 'react-icons/fi';
 import { MdAppRegistration } from "react-icons/md";
-import { TbMapPinCode } from "react-icons/tb";
+import { TbLiveViewFilled, TbMapPinCode } from "react-icons/tb";
 import { CiLogin } from "react-icons/ci";
 import { FaInfoCircle, FaMapMarkerAlt } from "react-icons/fa";
 import { useAuth } from '../auth/AuthContext';
@@ -48,18 +48,19 @@ const Sidebar = ({ collapsed, toggleSidebar }) => {
 
     const menuItems = [
         { icon: <FiHome className="text-lg" />, label: 'Dashboard', path: '/dashboard' },
-       (role === "ROLE_ZONE_ADMIN" || role === "ROLE_CIRCLE_OFFICER")
-    ? null
-    : { icon: <FiUsers className="text-lg" />, label: 'Division Officer', path: '/zonal' },
+        (role === "ROLE_ZONE_ADMIN" || role === "ROLE_CIRCLE_OFFICER")
+            ? null
+            : { icon: <FiUsers className="text-lg" />, label: 'Division Officer', path: '/zonal' },
         (role === "ROLE_ZONE_ADMIN" || role === "ROLE_CIRCLE_OFFICER") ? null : { icon: <SiPrivatedivision className="text-lg" />, label: 'All Divisions', path: '/all_division' },
         role === "ROLE_CIRCLE_OFFICER" ? null : { icon: <FiUserCheck className="text-lg" />, label: 'City Officer', path: '/circle-officer' },
-         role === "ROLE_CIRCLE_OFFICER" ? null : { icon: <FaMountainCity className="text-lg" />, label: 'All Cities', path: '/all_cities' },
+        role === "ROLE_CIRCLE_OFFICER" ? null : { icon: <FaMountainCity className="text-lg" />, label: 'All Cities', path: '/all_cities' },
         { icon: <FiUser className="text-lg" />, label: 'Field Executive', path: '/agent' },
         { icon: <TbMapPinCode className="text-lg" />, label: 'Pincode', path: '/pincode' },
         { icon: <FaMapMarkerAlt className="text-lg" />, label: 'Curo Map', path: '/curo_map' },
         { icon: <IoMdSettings className="text-lg" />, label: 'Settings', path: '/setting' },
-        { icon: <MdAppRegistration className='text-lg' />, label: 'New Registration', path: '/registration' },
-        { icon: <FaInfoCircle  className='text-lg' />, label: 'Info', path: '/distance_info' },
+        role === "ROLE_ZONE_ADMIN" ? { icon: <MdAppRegistration className='text-lg' />, label: 'New Registration', path: '/registration' } : null,
+
+        { icon: <TbLiveViewFilled  className='text-lg' />, label: 'Live Tracking', path: '/distance_info' },
     ].filter(Boolean); // ✅ This removes null
 
 

@@ -1,22 +1,53 @@
 import React, { useState, useEffect } from 'react';
 import { Loader2, MapPin, Map } from "lucide-react";
+import Swal from 'sweetalert2';
+import axiosInstance from '../../auth/axiosInstance';
 
-
-function AddAddress({ initialPosition, onClose }) {
-  const [address, setAddress] = useState({
-    street: '',
-    city: '',
-    state: '',
-    postalCode: '',
-    country: ''
-  });
+function AddAddress({ initialPosition, onClose, agentId, editeAddressData }) {
   const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(false)
   const [isFetchingLocation, setIsFetchingLocation] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [showMap, setShowMap] = useState(false);
   const [selectedPosition, setSelectedPosition] = useState(initialPosition || null);
   const [pressedKey, setPressedKey] = useState("");
+  const [address, setAddress] = useState({
+    houseNumber: '',
+    street: '',
+    city: '',
+    state: '',
+    postalCode: '',
+    country: '',
+    phoneNumber: '',
+    longitude: 0,
+    latitude: 0,
+    addressType: 'HOME',
+  });
+
+  useEffect(() => {
+    if (editeAddressData) {
+      setAddress({
+        houseNumber: editeAddressData?.houseNumber || '',
+        street: editeAddressData?.street || '',
+        city: editeAddressData?.city || '',
+        state: editeAddressData?.state || '',
+        postalCode: editeAddressData?.postalCode || '',
+        country: editeAddressData?.country || '',
+        phoneNumber: editeAddressData?.phoneNumber || '',
+        longitude: editeAddressData?.longitude || 0,
+        latitude: editeAddressData?.latitude || 0,
+        addressType: editeAddressData?.addressType || 'HOME',
+      });
+
+      if (editeAddressData.longitude && editeAddressData.latitude) {
+        setSelectedPosition({
+          lat: editeAddressData.latitude,
+          lng: editeAddressData.longitude
+        });
+      }
+    }
+  }, [editeAddressData]);
 
   // Initialize map when component mounts
   useEffect(() => {
@@ -32,20 +63,19 @@ function AddAddress({ initialPosition, onClose }) {
     }
   }, [initialPosition]);
 
-  
-
   useEffect(() => {
     const handleKeyDown = (event) => {
-      setPressedKey(event.key); // store the pressed key
-      console.log("Key pressed:", event.key);
+      setPressedKey(event.key);
+      if (event.key === 'Escape') {
+        onClose();
+      }
     };
 
     window.addEventListener("keydown", handleKeyDown);
 
     // cleanup
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
-
+  }, [onClose]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -54,9 +84,6 @@ function AddAddress({ initialPosition, onClose }) {
       [name]: value
     }));
   };
-  if (pressedKey === 'Escape') {
-    onClose()
-  }
 
   const fetchAddressFromCoordinates = async (lat, lng) => {
     setIsLoading(true);
@@ -73,13 +100,14 @@ function AddAddress({ initialPosition, onClose }) {
         throw new Error(data.error);
       }
 
-      setAddress({
+      setAddress(prev => ({
+        ...prev,
         street: [data.address.road, data.address.house_number].filter(Boolean).join(' ') || '',
         city: data.address.city || data.address.town || data.address.village || '',
         state: data.address.state || data.address.region || '',
         postalCode: data.address.postcode || '',
         country: data.address.country || ''
-      });
+      }));
     } catch (err) {
       setError('Failed to fetch address details. Please enter manually.');
       console.error(err);
@@ -122,30 +150,46 @@ function AddAddress({ initialPosition, onClose }) {
       return;
     }
 
-    // Load Leaflet CSS
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = 'https://unpkg.com/leaflet@1.7.1/dist/leaflet.css';
-    link.integrity = 'sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A==';
-    link.crossOrigin = '';
-    document.head.appendChild(link);
+    // Check if Leaflet CSS is already loaded
+    if (!document.querySelector('link[href*="leaflet"]')) {
+      // Load Leaflet CSS
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = 'https://unpkg.com/leaflet@1.7.1/dist/leaflet.css';
+      link.integrity = 'sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A==';
+      link.crossOrigin = '';
+      document.head.appendChild(link);
+    }
 
-    // Load Leaflet JS
-    const script = document.createElement('script');
-    script.src = 'https://unpkg.com/leaflet@1.7.1/dist/leaflet.js';
-    script.integrity = 'sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==';
-    script.crossOrigin = '';
-    script.async = true;
-    script.onload = () => createMap();
-    document.head.appendChild(script);
+    // Check if Leaflet JS is already loaded
+    if (!document.querySelector('script[src*="leaflet"]')) {
+      // Load Leaflet JS
+      const script = document.createElement('script');
+      script.src = 'https://unpkg.com/leaflet@1.7.1/dist/leaflet.js';
+      script.integrity = 'sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==';
+      script.crossOrigin = '';
+      script.async = true;
+      script.onload = () => createMap();
+      document.head.appendChild(script);
+    } else {
+      // If already loaded, create map directly
+      if (window.L) {
+        createMap();
+      }
+    }
   };
 
   const createMap = () => {
     const { L } = window;
     if (!L) return;
 
+    // Clean up any existing map
+    if (window.addressMap) {
+      window.addressMap.remove();
+    }
+
     // Create map centered on selected position or default location
-    const mapCenter = selectedPosition || { lat: 40.7128, lng: -74.0060 }; // Default to New York
+    const mapCenter = selectedPosition || { lat: 25.3176, lng: 82.9739 }; // Default to Varanasi
     const map = L.map('map-container').setView([mapCenter.lat, mapCenter.lng], 13);
 
     // Add tile layer
@@ -178,16 +222,32 @@ function AddAddress({ initialPosition, onClose }) {
 
     // Store map instance for cleanup
     window.addressMap = map;
+
+    // Trigger resize to ensure map renders properly
+    setTimeout(() => {
+      map.invalidateSize();
+    }, 100);
   };
 
   const handleMapSelection = () => {
     setShowMap(true);
-    // Clean up any existing map
-    if (window.addressMap) {
-      window.addressMap.remove();
-      window.addressMap = null;
-    }
   };
+
+  useEffect(() => {
+    if (showMap) {
+      // Ensure map container has proper height when map is shown
+      const mapContainer = document.getElementById('map-container');
+      if (mapContainer) {
+        mapContainer.style.height = '100%';
+        mapContainer.style.width = '100%';
+      }
+
+      // Initialize map after a short delay
+      setTimeout(() => {
+        initMap();
+      }, 100);
+    }
+  }, [showMap]);
 
   const handleCloseMap = () => {
     setShowMap(false);
@@ -200,30 +260,71 @@ function AddAddress({ initialPosition, onClose }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
-    setError(null);
-    setSuccess(null);
+    // Basic validation
+    if (!address.street || !address.city || !address.country) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Missing Information',
+        text: 'Please fill in all required fields (street, city, country)'
+      });
+      return;
+    }
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      setLoading(true);
 
-      // Validate required fields
-      if (!address.street || !address.city || !address.country) {
-        throw new Error('Please fill in all required fields');
+      // Prepare the data to send
+      const requestData = {
+        houseNumber: address.houseNumber,
+        street: address.street,
+        city: address.city,
+        state: address.state,
+        postalCode: address.postalCode,
+        country: address.country,
+        phoneNumber: address.phoneNumber,
+        longitude: selectedPosition?.lng || address.longitude,
+        latitude: selectedPosition?.lat || address.latitude,
+        addressType: address.addressType,
+        user: {
+          id: agentId || 0
+        }
+      };
+      if (editeAddressData) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Pending Task',
+          text: 'Oh! This is a working Component',
+          confirmButtonText: 'OK'
+        });
+        onClose()
+        return;
       }
 
-      // Here you would typically send the address data to your backend
-      console.log('Address submitted:', address);
+      const response = await axiosInstance.post('/address/addHomeAddress', requestData);
+      console.log(response);
 
-      setSuccess('Address saved successfully!');
-      setTimeout(() => {
-        onClose();
-      }, 1500);
-    } catch (err) {
-      setError(err.message || 'Failed to save address');
+      Swal.fire({
+        icon: 'success',
+        title: 'Success',
+        text: 'Address added successfully'
+      });
+      onClose();
+
+    } catch (error) {
+      console.log('Error adding address:', error);
+
+      // Extract error message from the error object
+      const errorMessage = error.response?.data?.message ||
+        error.message ||
+        'Failed to add address. Please try again.';
+
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: errorMessage
+      });
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
@@ -232,7 +333,9 @@ function AddAddress({ initialPosition, onClose }) {
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-6xl h-full max-h-[90vh] overflow-hidden flex flex-col lg:flex-row">
         <div className={`w-full ${showMap ? 'lg:w-1/2' : 'lg:w-full'} p-6 overflow-y-auto`}>
           <div className="mb-6 flex justify-between items-center">
-            <h2 className="text-2xl font-bold text-gray-800">Add New Address</h2>
+            <h2 className="text-2xl font-bold text-gray-800">
+              {editeAddressData ? 'Edit Address' : 'Add New Address'}
+            </h2>
             <button
               onClick={onClose}
               className="text-gray-500 hover:text-gray-700 p-1 rounded-full hover:bg-gray-100 transition-colors"
@@ -399,15 +502,14 @@ function AddAddress({ initialPosition, onClose }) {
               </button>
               <button
                 type="submit"
-                disabled={isLoading}
-                className={`submit-btn   ${isLoading ? 'cursor-not-allowed' : ''
-                  }`}
-               >
-                {isLoading ? (
-                  <span className="flex items-center justify-center cursor-not-allowed">                   
+                disabled={loading}
+                className={`submit-btn ${loading ? 'cursor-not-allowed' : ''}`}
+              >
+                {loading ? (
+                  <span className="flex items-center justify-center cursor-not-allowed">
                     Saving...
                   </span>
-                ) : 'Save Address'}
+                ) : editeAddressData ? 'Update Address' : 'Save Address'}
               </button>
             </div>
           </form>
@@ -424,7 +526,11 @@ function AddAddress({ initialPosition, onClose }) {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
-            <div id="map-container" className="h-full w-full"></div>
+            <div
+              id="map-container"
+              className="h-full w-full"
+              style={{ minHeight: '400px' }}
+            ></div>
             <div className="absolute bottom-4 left-0 right-0 mx-auto bg-white p-4 rounded-lg shadow-md max-w-xs text-center z-10">
               <p className="text-sm text-gray-700 font-medium">Click on the map to select your address</p>
             </div>
