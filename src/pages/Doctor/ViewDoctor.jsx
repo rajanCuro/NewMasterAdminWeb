@@ -15,9 +15,9 @@ const ViewDoctor = ({ viewData }) => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
+    <div className="max-w-6xl mx-auto p-1">
       {/* Header Section */}
-      <div className="bg-white rounded-xl shadow-md overflow-hidden mb-8">
+      <div className="bg-white rounded-xl shadow-md overflow-hidden mb-2">
         <div className="md:flex">
           {/* Doctor Image */}
           <div className="md:flex-shrink-0 md:w-64 p-6 flex flex-col items-center">

@@ -1,11 +1,31 @@
-import React from 'react';
-import FieldExecutiveMap from './FieldExecutiveMap';
+import React, { useEffect, useState } from 'react';
 import Map from '../Map/Map'
 
+import stompClient from '../../ws/socket';
+import FieldExecutiveMap from './FieldExecutiveMap';
+
 function DistanceInfo({ data }) {
+    const [mapData, setMapData] = useState(null)
     if (!data) {
         return <div className="text-gray-500 p-4">No data available</div>;
     }
+
+    useEffect(() => {
+        stompClient.onConnect = () => {
+            console.log('Connected to WebSocket');
+            stompClient.subscribe('/topic/field-executive-location', (message) => {
+                const payload = JSON.parse(message.body);
+                console.log('Received location:', payload);
+                setMapData(payload)
+            });
+        };
+        stompClient.activate();
+        return () => {
+            if (stompClient.connected) {
+                stompClient.deactivate();
+            }
+        };
+    }, []);
 
     const {
         totalTravelDistance = 0,
@@ -17,6 +37,7 @@ function DistanceInfo({ data }) {
 
     return (
         <div className="flex flex-col lg:flex-row gap-1 p-2 ">
+            {/* <WebSocketComponent /> */}
             {/* Metrics Panel */}
             <div className="w-full lg:w-1/4 xl:w-1/4 flex flex-col gap-3 p-3 md:p-4 border border-gray-300 rounded-2xl bg-white shadow-sm">
                 <h2 className="text-lg md:text-xl font-semibold text-gray-800 mb-2">
@@ -80,8 +101,8 @@ function DistanceInfo({ data }) {
 
             {/* Map Container */}
             <div className='w-full lg:w-3/4 xl:w-3/4 h-80 md:h-96 lg:h-auto'>
-                <FieldExecutiveMap />
-                {/* <Map mapE={true} /> */}
+                <FieldExecutiveMap location={mapData} />
+                {/* <Map location={mapData} data={'mapE'} /> */}
             </div>
         </div>
     );

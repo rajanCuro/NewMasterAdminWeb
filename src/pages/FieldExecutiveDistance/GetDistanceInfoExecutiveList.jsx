@@ -103,9 +103,7 @@ const GetDistanceInfo = () => {
             });
 
             if (result.isConfirmed) {
-                const response = await axiosInstance.put(
-                    `/head_admin/toggleLockStatusUserById/${id}`
-                );
+                const response = await axiosInstance.put(`/head_admin/toggleLockStatusUserById/${id}`);
 
                 Swal.fire({
                     icon: "success",

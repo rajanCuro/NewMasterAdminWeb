@@ -4,6 +4,7 @@ import { MdLocalPharmacy } from "react-icons/md";
 import AddVehicale from './AddVehicale';
 import AddAddress from './AddAddress';
 import { useAuth } from '../../auth/AuthContext';
+import AddNewAddress from '../Map/AddAddress'
 
 const ViewFeildExecutiveDetails = ({ ViewData: initialData, onSave, onClose }) => {
   const { submittedData, setSubmittedData } = useAuth()
@@ -493,11 +494,14 @@ const ViewFeildExecutiveDetails = ({ ViewData: initialData, onSave, onClose }) =
                 &times;
               </button>
             </div>
-            <AddAddress
+            {/* <AddAddress
               onClose={setAddAddressModal}
               agentId={fieldExecutiveId}
               editeAddressData={editeAddressData}
-            />
+            /> */}
+            <AddNewAddress onClose={()=>setAddAddressModal(false)}
+              agentId={fieldExecutiveId}
+              editeAddressData={editeAddressData} />
           </div>
         </div>
       )}

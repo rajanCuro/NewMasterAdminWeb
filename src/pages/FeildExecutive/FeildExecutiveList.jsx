@@ -554,7 +554,7 @@ const FeildExecutiveList = () => {
           aria-modal="true"
         >
           <div
-            className="bg-white rounded-lg relative max-w-4xl w-full mx-4"
+            className="bg-white rounded-lg relative max-w-5xl w-full mx-4 max-h-[95vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <button

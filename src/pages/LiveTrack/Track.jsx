@@ -4,28 +4,27 @@ import { FaPhone, FaSync, FaClinicMedical, FaHospital, FaPills, FaPlus, FaMinus,
 // Dummy data for labs, hospitals, and pharmacies in Varanasi
 const dummyPlaces = {
   laboratory: [
-    { name: 'Varanasi Diagnostics', lat: 25.3176, lng: 82.9739 },
-    { name: 'Ganga Pathology Lab', lat: 25.3105, lng: 82.9901 },
-    { name: 'Shree Lab Services', lat: 25.3050, lng: 82.9650 },
+    { name: 'Varanasi Diagnostics', lat: 25.3176, lng: 82.9739, address: '123 Main St, Varanasi', phone: '+91 9876543210', hours: '8:00 AM - 8:00 PM' },
+    { name: 'Ganga Pathology Lab', lat: 25.3105, lng: 82.9901, address: '456 Ganga Rd, Varanasi', phone: '+91 9876543211', hours: '9:00 AM - 7:00 PM' },
+    { name: 'Shree Lab Services', lat: 25.3050, lng: 82.9650, address: '789 Temple St, Varanasi', phone: '+91 9876543212', hours: '8:30 AM - 6:30 PM' },
   ],
   hospital: [
-    { name: 'Heritage Hospital', lat: 25.3335, lng: 82.9810 },
-    { name: 'Saranath Medical Center', lat: 25.3500, lng: 82.9700 },
-    { name: 'Kashi Vishwanath Hospital', lat: 25.3100, lng: 83.0100 },
+    { name: 'Heritage Hospital', lat: 25.3335, lng: 82.9810, address: '101 Heritage Rd, Varanasi', phone: '+91 9876543213', hours: '24/7' },
+    { name: 'Saranath Medical Center', lat: 25.3500, lng: 82.9700, address: '202 Saranath Circle, Varanasi', phone: '+91 9876543214', hours: '24/7' },
+    { name: 'Kashi Vishwanath Hospital', lat: 25.3100, lng: 83.0100, address: '303 Temple Rd, Varanasi', phone: '+91 9876543215', hours: '24/7' },
   ],
   pharmacy: [
-    { name: 'MedPlus Varanasi', lat: 25.3200, lng: 82.9900 },
-    { name: 'Apollo Pharmacy', lat: 25.3150, lng: 82.9750 },
-    { name: 'Ganga Medical Store', lat: 25.3250, lng: 82.9850 },
+    { name: 'MedPlus Varanasi', lat: 25.3200, lng: 82.9900, address: '404 Pharmacy Lane, Varanasi', phone: '+91 9876543216', hours: '8:00 AM - 10:00 PM' },
+    { name: 'Apollo Pharmacy', lat: 25.3150, lng: 82.9750, address: '505 Medical St, Varanasi', phone: '+91 9876543217', hours: '8:00 AM - 11:00 PM' },
+    { name: 'Ganga Medical Store', lat: 25.3250, lng: 82.9850, address: '606 River View, Varanasi', phone: '+91 9876543218', hours: '7:00 AM - 11:00 PM' },
   ],
 };
 
 // Generate Google Maps API script source
 const generateMapSrc = () => {
-  console.log('Environment variables:', import.meta.env); // Debug line
-  const apiKey = import.meta.env.AIzaSyArgNP_2JIkchiqTZQWA0lLNXjPi98X5Wk || '';
+  const apiKey = `AIzaSyArgNP_2JIkchiqTZQWA0lLNXjPi98X5Wk`;
   if (!apiKey) {
-    console.error('Google Maps API key is missing. Please set AIzaSyArgNP_2JIkchiqTZQWA0lLNXjPi98X5Wk in your .env file at the project root.');
+    console.error('Google Maps API key is missing.');
     return '';
   }
   return `https://maps.googleapis.com/maps/api/js?key=${apiKey}&loading=async&libraries=places`;
@@ -36,6 +35,7 @@ function Track() {
   const mapInstanceRef = useRef(null);
   const [markers, setMarkers] = useState([]);
   const [selectedPlace, setSelectedPlace] = useState(null);
+  const [infoWindow, setInfoWindow] = useState(null);
   const [error, setError] = useState(null);
   const [currentLocation, setCurrentLocation] = useState(null);
   const [currentLocationMarker, setCurrentLocationMarker] = useState(null);
@@ -52,7 +52,7 @@ function Track() {
 
       const mapSrc = generateMapSrc();
       if (!mapSrc) {
-        setError('Google Maps API key is missing. Please set VITE_GOOGLE_MAPS_API_KEY in your .env file at the project root.');
+        setError('Google Maps API key is missing.');
         return;
       }
 
@@ -70,10 +70,10 @@ function Track() {
         if (window.google && window.google.maps) {
           initializeMap();
         } else {
-          setError('Google Maps API loaded but window.google.maps is undefined. Check your API key restrictions.');
+          setError('Google Maps API loaded but window.google.maps is undefined.');
         }
       };
-      script.onerror = () => setError('Failed to load Google Maps API script. Check your API key or network connection.');
+      script.onerror = () => setError('Failed to load Google Maps API script.');
       document.body.appendChild(script);
 
       return () => {
@@ -84,7 +84,7 @@ function Track() {
     const initializeMap = () => {
       try {
         if (!window.google || !window.google.maps) {
-          setError('Google Maps API not available. Ensure the API script loaded correctly.');
+          setError('Google Maps API not available.');
           return;
         }
 
@@ -95,8 +95,13 @@ function Track() {
         });
 
         mapInstanceRef.current = googleMap;
-        setIsMapInitialized(true); // Mark map as initialized
+        setIsMapInitialized(true);
 
+        // Create a single info window instance
+        const infoWindowInstance = new window.google.maps.InfoWindow();
+        setInfoWindow(infoWindowInstance);
+
+        // Add agent marker
         new window.google.maps.Marker({
           position: { lat: 25.3176, lng: 82.9739 },
           map: googleMap,
@@ -107,13 +112,13 @@ function Track() {
           },
         });
 
-        addAllMarkers(googleMap);
+        addAllMarkers(googleMap, infoWindowInstance);
       } catch (err) {
         setError('Error initializing map: ' + err.message);
       }
     };
 
-    const addAllMarkers = (googleMap) => {
+    const addAllMarkers = (googleMap, infoWindowInstance) => {
       markers.forEach(marker => marker.setMap(null));
       const newMarkers = [];
 
@@ -135,7 +140,21 @@ function Track() {
             },
           });
 
+          // Create content for the info window
+          const content = `
+            <div class="p-2 max-w-xs">
+              <h3 class="font-bold text-lg mb-1">${place.name}</h3>
+              <p class="text-sm mb-1"><strong>Type:</strong> ${type}</p>
+              <p class="text-sm mb-1"><strong>Address:</strong> ${place.address}</p>
+              <p class="text-sm mb-1"><strong>Phone:</strong> ${place.phone}</p>
+              <p class="text-sm mb-1"><strong>Hours:</strong> ${place.hours}</p>
+            </div>
+          `;
+
           marker.addListener('click', () => {
+            infoWindowInstance.close();
+            infoWindowInstance.setContent(content);
+            infoWindowInstance.open(googleMap, marker);
             setSelectedPlace({ ...place, type });
           });
 
@@ -185,7 +204,7 @@ function Track() {
     }
 
     if (!mapInstanceRef.current) {
-      setError('Map is not initialized yet. Please wait or check your API key.');
+      setError('Map is not initialized yet.');
       return;
     }
 
@@ -238,31 +257,25 @@ function Track() {
     if (mapInstanceRef.current) {
       mapInstanceRef.current.setCenter({ lat: 25.3176, lng: 82.9739 });
       mapInstanceRef.current.setZoom(13);
-      addAllMarkers(mapInstanceRef.current);
+      
+      // Close any open info window
+      if (infoWindow) {
+        infoWindow.close();
+      }
+      
+      // Clear selected place
+      setSelectedPlace(null);
     } else {
-      setError('Map is not initialized. Please check your API key or network connection.');
+      setError('Map is not initialized.');
     }
   };
 
-  // Get icon based on place type
-  const getIcon = (type) => {
-    switch (type) {
-      case 'laboratory':
-        return <FaClinicMedical className="text-green-500" />;
-      case 'hospital':
-        return <FaHospital className="text-red-500" />;
-      case 'pharmacy':
-        return <FaPills className="text-yellow-500" />;
-      default:
-        return <FaClinicMedical />;
-    }
-  };
+  
 
   return (
-    <div className="w-full max-w-4xl mx-auto p-6">
-      <div className="w-full bg-white rounded-xl shadow-md p-6">
+    <div className="w-full mx-auto p-6 overflow-hidden">
+      <div className="w-full">
         <h1 className="text-2xl font-bold text-gray-800 mb-4">Healthcare Facilities Map - Varanasi</h1>
-
         <div className="mb-4 flex flex-wrap gap-4">
           <div className="flex items-center">
             <div className="w-4 h-4 bg-green-500 rounded-full mr-2"></div>
@@ -285,12 +298,6 @@ function Track() {
             <span className="text-sm">Your Location</span>
           </div>
         </div>
-
-        {error && (
-          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg">
-            {error}
-          </div>
-        )}
 
         <div className="relative">
           <div
@@ -340,11 +347,11 @@ function Track() {
           </div>
         )}
 
-        {selectedPlace && (
+        {/* {selectedPlace && (
           <div className="bg-gray-50 p-4 rounded-lg shadow-sm mb-6">
             <h2 className="text-lg font-semibold text-gray-700 mb-2 flex items-center">
               {getIcon(selectedPlace.type)}
-              <span className="ml-2">Location Details</span>
+              <span className="ml-2">Selected Location Details</span>
             </h2>
             <p className="text-gray-600">
               <span className="font-medium">Name:</span> {selectedPlace.name}
@@ -353,13 +360,22 @@ function Track() {
               <span className="font-medium">Type:</span> {selectedPlace.type}
             </p>
             <p className="text-gray-600">
+              <span className="font-medium">Address:</span> {selectedPlace.address}
+            </p>
+            <p className="text-gray-600">
+              <span className="font-medium">Phone:</span> {selectedPlace.phone}
+            </p>
+            <p className="text-gray-600">
+              <span className="font-medium">Hours:</span> {selectedPlace.hours}
+            </p>
+            <p className="text-gray-600">
               <span className="font-medium">Latitude:</span> {selectedPlace.lat.toFixed(4)}
             </p>
             <p className="text-gray-600">
               <span className="font-medium">Longitude:</span> {selectedPlace.lng.toFixed(4)}
             </p>
           </div>
-        )}
+        )} */}
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div className="bg-green-50 p-4 rounded-lg shadow-sm border-l-4 border-green-500">
