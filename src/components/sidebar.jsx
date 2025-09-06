@@ -17,6 +17,8 @@ import { CiLogin } from "react-icons/ci";
 import { FaInfoCircle, FaMapMarkerAlt } from "react-icons/fa";
 import { useAuth } from '../auth/AuthContext';
 import { IoMdSettings } from "react-icons/io";
+import { FaFile } from "react-icons/fa";
+
 import Time from '../Time';
 import { SiPrivatedivision } from 'react-icons/si';
 import { FaMountainCity } from 'react-icons/fa6';
@@ -59,8 +61,9 @@ const Sidebar = ({ collapsed, toggleSidebar }) => {
         { icon: <FaMapMarkerAlt className="text-lg" />, label: 'Curo Map', path: '/curo_map' },
         { icon: <IoMdSettings className="text-lg" />, label: 'Settings', path: '/setting' },
         role === "ROLE_ZONE_ADMIN" ? { icon: <MdAppRegistration className='text-lg' />, label: 'New Registration', path: '/registration' } : null,
-
         { icon: <TbLiveViewFilled  className='text-lg' />, label: 'Live Tracking', path: '/distance_info' },
+        { icon: <FaFile className="text-lg" />, label: 'File manager', path: '/file_manager' },
+        
     ].filter(Boolean); // ✅ This removes null
 
 

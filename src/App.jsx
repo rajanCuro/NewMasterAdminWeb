@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './auth/Login';
 import Zonal from './pages/Division/DivisionList.jsx';
@@ -16,6 +16,7 @@ import NewRegistration from './components/NewRegistration.jsx';
 import Sidebar from './components/Sidebar.jsx';
 import GetDistanceInfo from './pages/FieldExecutiveDistance/GetDistanceInfoExecutiveList.jsx';
 
+import FileManager from './components/FileManager.jsx';
 
 function App() {
   const [collapsed, setCollapsed] = useState(false);
@@ -26,7 +27,7 @@ function App() {
   if (loading) {
     return <div className="p-4">Loading...</div>;
   }
-
+  
   return (
     <Router>
       <div className="flex">
@@ -130,6 +131,15 @@ function App() {
             />
             <Route path='/registration' element={<PrivateRoute><NewRegistration /></PrivateRoute>} />
             <Route path='/distance_info' element={<PrivateRoute><GetDistanceInfo /></PrivateRoute>} />
+
+             <Route
+              path="/file_manager"
+              element={
+                <PrivateRoute>
+                  <FileManager />
+                </PrivateRoute>
+              }
+            />
           </Routes>
         </main>
       </div>
