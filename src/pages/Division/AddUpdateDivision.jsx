@@ -92,6 +92,14 @@ function AddUpdateDivision({ EditData, onClose }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!formData.profilePicture) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Profile Picture Required',
+        text: 'Please upload a profile picture before submitting.',
+      });
+      return; // optional: stop form submission or further code
+    }
     setIsLoading(true);
     const truncateText = (text, wordLimit) => {
       const words = text.split(' ');
@@ -223,8 +231,12 @@ function AddUpdateDivision({ EditData, onClose }) {
                 required
                 value={formData.firstName}
                 onChange={handleChange}
+                onInput={(e) => {
+                  e.target.value = e.target.value.replace(/[^a-zA-Z\s]/g, "");
+                }}
                 placeholder=""
               />
+
               <label htmlFor="firstName" className="float-label">
                 First Name <span className="text-red-500">*</span>
               </label>
@@ -238,6 +250,9 @@ function AddUpdateDivision({ EditData, onClose }) {
                 required
                 value={formData.lastName}
                 onChange={handleChange}
+                onInput={(e) => {
+                  e.target.value = e.target.value.replace(/[^a-zA-Z\s]/g, "");
+                }}
                 placeholder=""
               />
               <label htmlFor="lastName" className="float-label">
@@ -256,10 +271,15 @@ function AddUpdateDivision({ EditData, onClose }) {
                 required
                 value={formData.mobileNumber}
                 onChange={handleChange}
+                onInput={(e) => {
+                  e.target.value = e.target.value.replace(/[^0-9]/g, "");
+                }}
                 maxLength="10"
                 pattern="[0-9]{10}"
                 placeholder=""
+                title="Enter a 10-digit mobile number"
               />
+
               <label htmlFor="mobileNumber" className="float-label">
                 Phone Number <span className="text-red-500">*</span>
               </label>

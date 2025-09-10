@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import axiosInstance from "../auth/axiosInstance";
 import { FiSearch, FiGrid, FiList, FiFolder, FiFile, FiTrash2, FiEye } from "react-icons/fi";
+import Loader from "../pages/Loader";
+import NoDataPage from "../NodataPage";
 
 export default function FileManager() {
   const [files, setFiles] = useState([]);
@@ -43,9 +45,9 @@ export default function FileManager() {
   );
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen ">
       {/* Sidebar */}
-      
+
 
       {/* Main Content */}
       <div className="flex-1 p-6 overflow-auto">
@@ -79,9 +81,13 @@ export default function FileManager() {
 
         {/* File Display */}
         {loading ? (
-          <p className="text-gray-500 text-center">Loading files...</p>
+
+          <Loader />
+
         ) : filteredFiles.length === 0 ? (
-          <p className="text-gray-500 text-center">No files found</p>
+          <>
+            <NoDataPage />
+          </>
         ) : viewMode === "grid" ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {filteredFiles.map((file, idx) => (
