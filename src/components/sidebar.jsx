@@ -127,7 +127,7 @@ const Sidebar = ({ collapsed, toggleSidebar }) => {
                             <div className="ml-3 flex items-center justify-between">
                                 <div>
                                     <p className="text-xs">{role}</p>
-                                    <p className="text-xs text-gray-400">{user.email}</p>
+                                    <p className="text-xs text-gray-400">{user?.email}</p>
                                     <p className="text-xs text-gray-400"></p>
                                 </div>
                                 <div className='cursor-pointer' onClick={handleLogoutClick}>

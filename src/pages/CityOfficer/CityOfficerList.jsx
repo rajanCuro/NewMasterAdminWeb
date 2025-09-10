@@ -8,10 +8,11 @@ import axiosInstance from '../../auth/axiosInstance';
 import { useAuth } from '../../auth/AuthContext';
 import { FaCamera } from "react-icons/fa";
 import Swal from 'sweetalert2';
+import NoDataPage from '../../NodataPage';
 
 
 function CircleOfficerList() {
-  const { stateList, uploadImage,role } = useAuth();
+  const { stateList, uploadImage, role } = useAuth();
   console.log('role:', role);
   const [circleOfficers, setCircleOfficers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -145,21 +146,51 @@ function CircleOfficerList() {
     }
   };
 
-   const handleStatusChange = async (id) => {
-    try {
-      
-      const response = await axiosInstance.put(`/head_admin/toggleLockStatusUserById/${id}`);
+  const handleStatusChange = async (id) => {
+    const confirmation = await Swal.fire({
+      title: 'Are you sure?',
+      text: "Do you want to change the status of this user?",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, change it!',
+    });
+
+    if (confirmation.isConfirmed) {
+      // Show loading alert
       Swal.fire({
-        icon: 'success',
-        title: 'Success',
-        text: 'Status updated successfully'
+        title: 'Please wait...',
+        text: 'Updating status...',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
       });
-      getAllCityAdmin();
-    } catch (error) {
-      console.error("Error updating status:", error);
-      Swal.fire("Error", "Failed to update status", "error");
+
+      try {
+        const response = await axiosInstance.put(`/head_admin/toggleLockStatusUserById/${id}`);
+
+        // Close loading and show success
+        Swal.fire({
+          icon: 'success',
+          title: 'Success',
+          text: 'Status updated successfully',
+        });
+
+        getAllCityAdmin(); // Refresh list
+      } catch (error) {
+        console.error("Error updating status:", error);
+
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Failed to update status',
+        });
+      }
     }
   };
+
 
 
   return (
@@ -218,7 +249,7 @@ function CircleOfficerList() {
             </button>
 
             {/* Action */}
-           {role === 'ROLE_ADMIN' ? '' :  <button
+            {role === 'ROLE_ADMIN' ? '' : <button
               onClick={handleAddCircle}
               className="submit-btn"
             >
@@ -263,9 +294,13 @@ function CircleOfficerList() {
                     </tr>
                   ) : circleOfficers.length === 0 ? (
                     <tr>
-                      <td colSpan="7" className="px-6 py-4 text-center">
-                        No data available
+                      <td colSpan="7" className="px-6 py-4 h-[70vh]">
+                        <div className="flex items-center justify-center h-full">
+                          <NoDataPage />
+                          {/* <img src={nodata} alt="No data" className="max-w-[200px]" /> */}
+                        </div>
                       </td>
+
                     </tr>
                   ) : (
                     circleOfficers.map((officer, index) => (
@@ -339,8 +374,9 @@ function CircleOfficerList() {
                         <td className="px-6 py-4 whitespace-nowrap text-sm">
                           {formatDate(officer.createdAt)}
                         </td>
-                        <td onClick={() => handleStatusChange(officer.id)} className="px-6 py-4 whitespace-nowrap cursor-pointer">
+                        <td className="px-6 py-4 whitespace-nowrap cursor-pointer">
                           <span
+                            onClick={() => handleStatusChange(officer.id)}
                             className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${officer.accountNonLocked
                               ? 'bg-green-300 text-green-900'
                               : 'bg-red-900/20 text-red-900'
@@ -441,7 +477,7 @@ function CircleOfficerList() {
           >
             <div
               onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-xl shadow-2xl max-w-6xl w-full max-h-[95vh] overflow-y-auto hide-scrollbar transform transition-all duration-300 scale-100"
+              className="bg-white rounded-xl shadow-2xl max-w-7xl w-full min-h-[80vh] max-h-[80vh] overflow-y-auto hide-scrollbar transform transition-all duration-300 scale-100"
             >
               <div className="flex justify-between items-center border-b border-gray-200 p-6 sticky top-0 bg-blue-700 text-white z-10">
                 <h2 className="text-xl font-semibold">Circle Officer Details</h2>

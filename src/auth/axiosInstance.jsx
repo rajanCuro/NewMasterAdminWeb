@@ -1,14 +1,16 @@
-
 import axios from "axios";
 
-const axiosInstance = axios.create({
+// You can dynamically pick the base URL depending on the environment
+const baseURL = import.meta.env.VITE_DEVLOP_API_BASE_URL;
+// const baseURL = import.meta.env.VITE_TEST_API_BASE_URL;
+// const baseURL = import.meta.env.VITE_PRODUCTION_API_BASE_URL;
 
-  baseURL: "http://192.168.1.42:8082", 
+const axiosInstance = axios.create({
+  baseURL,
 });
 
-// Optional: Add request interceptor
 axiosInstance.interceptors.request.use(
-  (config) => {    // Example: Attach token if available
+  (config) => {
     const token = localStorage.getItem("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -17,7 +19,5 @@ axiosInstance.interceptors.request.use(
   },
   (error) => Promise.reject(error)
 );
-
-
 
 export default axiosInstance;

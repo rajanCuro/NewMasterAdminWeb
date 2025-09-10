@@ -1,13 +1,18 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FaUserTie, FaPhone, FaEnvelope, FaMapMarkerAlt, FaCalendarAlt, FaUsers, FaSave, FaTimes } from 'react-icons/fa';
 import { MdLocalPharmacy } from "react-icons/md";
 import AddVehicale from './AddVehicale';
 import AddAddress from './AddAddress';
 import { useAuth } from '../../auth/AuthContext';
 import AddNewAddress from '../Map/AddAddress'
+import axiosInstance from '../../auth/axiosInstance';
+import AllDoctor from '../AllDoctor';
+import AllPharmacy from '../AllPharmacy';
+import AllLabs from '../AllLabs';
+import AllAmbulance from '../AllAmbulance';
 
 const ViewFeildExecutiveDetails = ({ ViewData: initialData, onSave, onClose }) => {
-  const { submittedData, setSubmittedData } = useAuth()
+  const { submittedData, setSubmittedData, user } = useAuth()
   console.log("check", submittedData)
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState('details');
@@ -17,6 +22,9 @@ const ViewFeildExecutiveDetails = ({ ViewData: initialData, onSave, onClose }) =
   const [editeAddressData, setEditeAddressData] = useState(initialData.address);
   const [editeVehicleData, setEditeVehicleData] = useState(initialData.vehicle);
   const [addedData, setAddedData] = useState(null)
+  const [AllStats, setAllStates] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false)
   const fieldExecutiveId = initialData.id;
 
   const transformData = (data) => {
@@ -50,6 +58,32 @@ const ViewFeildExecutiveDetails = ({ ViewData: initialData, onSave, onClose }) =
   };
 
   const [formData, setFormData] = useState(transformData(initialData));
+
+
+  useEffect(() => {
+    const fetchDataAsync = async () => {
+      await fetchData();
+    };
+
+    fetchDataAsync();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+
+      const response = await axiosInstance.get(
+        `/api/field-executive/getAgentStatistics/${user?.id}`
+      );
+      setAllStates(response.data);
+    } catch (error) {
+      setError(true)
+      console.error('Error fetching data:', error);
+    } finally {
+      setLoading(false);
+      setError(true)
+    }
+  };
 
   // Format phone number
   const formatPhoneNumber = (phone) => {
@@ -152,25 +186,39 @@ const ViewFeildExecutiveDetails = ({ ViewData: initialData, onSave, onClose }) =
             {/* Profile Details Section */}
             <div className="lg:w-2/3 p-4 sm:p-6">
               {/* Tabs */}
-              <div className="flex flex-col sm:flex-row border-b border-gray-200 mb-6 space-y-2 sm:space-y-0 sm:space-x-4">
-                {['details', 'ambulance', 'doctor', 'Pharmacy', 'Labs'].map(tab => (
-                  <button
-                    key={tab}
-                    className={`py-2 px-3 sm:px-4 cursor-pointer font-medium text-sm rounded-t-lg transition-all duration-200 ${activeTab === tab
-                      ? 'text-indigo-600 border-b-2 border-indigo-600 bg-indigo-50'
-                      : 'text-gray-500 hover:text-indigo-600 hover:bg-gray-100'
-                      }`}
-                    onClick={() => { setActiveTab(tab), setIsEditing(false) }}
-                    aria-current={activeTab === tab ? 'page' : undefined}
-                  >
-                    {tab === 'details' && 'Details'}
-                    {tab === 'ambulance' && 'Ambulance'}
-                    {tab === 'doctor' && `Doctor (${formData.agentsCount})`}
-                    {tab === 'Pharmacy' && `Pharmacy (${formData.PhCounts})`}
-                    {tab === 'Labs' && `Labs (${formData.LbCounts})`}
-                  </button>
-                ))}
-              </div>
+              {
+                loading ? (
+                  <div className="flex flex-col sm:flex-row border-b border-gray-200 mb-6 space-y-2 sm:space-y-0 sm:space-x-4">
+                    {['details', 'ambulance', 'doctor', 'Pharmacy', 'Labs'].map((tab, index) => (
+                      <div
+                        key={index}
+                        className="py-2 px-3 sm:px-4 rounded-t-lg bg-gray-300 animate-pulse w-24 h-8"
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex flex-col sm:flex-row border-b border-gray-200 mb-6 space-y-2 sm:space-y-0 sm:space-x-4">
+                    {['details', 'ambulance', 'doctor', 'Pharmacy', 'Labs'].map(tab => (
+                      <button
+                        key={tab}
+                        className={`py-2 px-3 sm:px-4 cursor-pointer font-medium text-sm rounded-t-lg transition-all duration-200 ${activeTab === tab
+                          ? 'text-indigo-600 border-b-2 border-indigo-600 bg-indigo-50'
+                          : 'text-gray-500 hover:text-indigo-600 hover:bg-gray-100'
+                          }`}
+                        onClick={() => { setActiveTab(tab); setIsEditing(false); }}
+                        aria-current={activeTab === tab ? 'page' : undefined}
+                      >
+                        {tab === 'details' && 'Details'}
+                        {tab === 'ambulance' && `Ambulance (${AllStats?.ambulanceCount})`}
+                        {tab === 'doctor' && `Doctor (${AllStats?.doctorCount})`}
+                        {tab === 'Pharmacy' && `Pharmacy (${formData.PhCounts})`}
+                        {tab === 'Labs' && `Labs (${formData.LbCounts})`}
+                      </button>
+                    ))}
+                  </div>
+                )
+              }
+
 
               {/* Details Tab Content */}
               {activeTab === 'details' && (
@@ -323,67 +371,20 @@ const ViewFeildExecutiveDetails = ({ ViewData: initialData, onSave, onClose }) =
 
               {/* Activity Tab Content */}
               {activeTab === 'ambulance' && (
-                <div className="space-y-4 animate-fade-in">
-                  {[
-                    { title: 'Performance Review', date: 'August 15, 2025', status: 'Needs Attention', statusColor: 'bg-yellow-100 text-yellow-800' },
-                    { title: 'Team Meeting', date: 'August 20, 2025', status: 'Upcoming', statusColor: 'bg-blue-100 text-blue-800' },
-                    { title: 'Quarterly Report', date: 'July 30, 2025', status: 'Completed', statusColor: 'bg-green-100 text-green-800' }
-                  ].map((activity, index) => (
-                    <div key={index} className="flex justify-between items-center p-3 sm:p-4 bg-gray-50 rounded-lg shadow-sm transition-all duration-200 hover:bg-gray-100">
-                      <div>
-                        <p className="font-medium text-sm sm:text-base">{activity.title}</p>
-                        <p className="text-xs sm:text-sm text-gray-500">{activity.date}</p>
-                      </div>
-                      <span className={`px-3 py-1 rounded-full text-xs sm:text-sm font-medium ${activity.statusColor}`}>
-                        {activity.status}
-                      </span>
-                    </div>
-                  ))}
-                </div>
+                <AllAmbulance data={AllStats} />
               )}
 
               {/* Agents Tab Content */}
               {activeTab === 'doctor' && (
-                <div className="animate-fade-in">
-                  <p className="text-gray-600 text-sm sm:text-base mb-4">
-                    This Circle Officer manages a team of {formData.agentsCount} agents in the {formData.circleName} region.
-                  </p>
-                  <div className="bg-blue-50 p-3 sm:p-4 rounded-lg shadow-sm">
-                    <div className="flex items-center">
-                      <div className="bg-blue-100 p-2 rounded-lg mr-3">
-                        <FaUsers className="text-blue-500" aria-hidden="true" />
-                      </div>
-                      <div>
-                        <p className="text-sm text-blue-700">
-                          Agent details are managed in the dedicated agents section.{' '}
-                          <a href="#agents" className="font-medium text-blue-600 hover:underline">View full agent list</a>
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <AllDoctor data={AllStats} />
               )}
 
               {/* Pharmacy Tab Content */}
               {activeTab === 'Pharmacy' && (
-                <div className="animate-fade-in">
-                  <p className="text-gray-600 text-sm sm:text-base mb-4">
-                    This Circle officer oversees {formData.coCounts} Pharmacys in the {formData.circleName} region.
-                  </p>
-                  <div className="bg-purple-50 p-3 sm:p-4 rounded-lg shadow-sm">
-                    <div className="flex items-center">
-                      <div className="bg-purple-100 p-2 rounded-lg mr-3">
-                        <MdLocalPharmacy className="text-purple-500" aria-hidden="true" />
-                      </div>
-                      <div>
-                        <p className="text-sm text-purple-700">
-                          Pharmacy details are managed in the dedicated pharmacy management section.{' '}
-                          <a href="#co" className="font-medium text-purple-600 hover:underline">View full pharmacy list</a>
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <AllPharmacy data={AllStats} />
+              )}
+              {activeTab === 'Labs' && (
+                <AllLabs data={AllStats} />
               )}
             </div>
           </div>
@@ -499,7 +500,7 @@ const ViewFeildExecutiveDetails = ({ ViewData: initialData, onSave, onClose }) =
               agentId={fieldExecutiveId}
               editeAddressData={editeAddressData}
             /> */}
-            <AddNewAddress onClose={()=>setAddAddressModal(false)}
+            <AddNewAddress onClose={() => setAddAddressModal(false)}
               agentId={fieldExecutiveId}
               editeAddressData={editeAddressData} />
           </div>
