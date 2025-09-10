@@ -1,5 +1,4 @@
-// ZonalHeadList.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { RiSearchLine } from 'react-icons/ri';
 import Pagination from '../Pagination';
 import ViewDivisionDetails from './ViewDivisionDetails';
@@ -8,9 +7,11 @@ import axiosInstance from '../../auth/axiosInstance';
 import { useAuth } from '../../auth/AuthContext';
 import { FaCamera } from "react-icons/fa";
 import Swal from 'sweetalert2';
+import Loader from '../Loader';
 
 function DivisionList() {
   const { getALLState, uploadImage } = useAuth();
+  const [statusId, setStatusId] = useState(null);
   const [zonalHeads, setZonalHeads] = useState([]);
   const [filteredZonalHeads, setFilteredZonalHeads] = useState([]);
   const [addZonalModal, setAddZonalModal] = useState(false);
@@ -28,12 +29,37 @@ function DivisionList() {
   const [selectedZonal, setSelectedZonal] = useState(null);
   const [totalItems, setTotalItems] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
+  const rowRef = useRef(null); // Ref to focus on the updated row
 
   // Fetch data from API
   useEffect(() => {
     getAllDivisions();
     getALLState();
   }, [currentPage, itemsPerPage]);
+
+  // Scroll to the updated row when statusId changes
+  useEffect(() => {
+    if (statusId && rowRef.current) {
+      // Wait for the next render cycle to ensure the row is rendered
+      setTimeout(() => {
+        rowRef.current.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center',
+          inline: 'center'
+        });
+        
+        // Add highlight effect
+        rowRef.current.classList.add('bg-blue-50', 'border-blue-200');
+        
+        // Remove highlight after 3 seconds
+        setTimeout(() => {
+          if (rowRef.current) {
+            rowRef.current.classList.remove('bg-blue-50', 'border-blue-200');
+          }
+        }, 3000);
+      }, 100);
+    }
+  }, [statusId, zonalHeads]);
 
   const getAllDivisions = async () => {
     setIsLoading(true);
@@ -118,18 +144,58 @@ function DivisionList() {
   };
 
   const handleStatusChange = async (id) => {
-    try {
-      
-      const response = await axiosInstance.put(`/head_admin/toggleLockStatusUserById/${id}`);
+    const confirmResult = await Swal.fire({
+      title: 'Are you sure?',
+      text: "Do you really want to change the status?",
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, change it',
+      cancelButtonText: 'No, cancel',
+    });
+
+    if (confirmResult.isConfirmed) {
+      // Show loading message
       Swal.fire({
-        icon: 'success',
-        title: 'Success',
-        text: 'Status updated successfully'
+        title: 'Please wait...',
+        text: 'Updating status...',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
       });
-      getAllDivisions();
-    } catch (error) {
-      console.error("Error updating status:", error);
-      Swal.fire("Error", "Failed to update status", "error");
+
+      try {
+        const response = await axiosInstance.put(`/head_admin/toggleLockStatusUserById/${id}`);
+
+        // Close loading
+        Swal.close();
+
+        // Show success message
+        Swal.fire({
+          icon: 'success',
+          title: 'Success',
+          text: 'Status updated successfully',
+        });
+        
+        // Set the statusId to focus on this row after refresh
+        setStatusId(id);
+        
+        // Refresh the data
+        getAllDivisions();
+      } catch (error) {
+        console.error("Error updating status:", error);
+
+        // Close loading
+        Swal.close();
+
+        // Show error alert
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Failed to update status',
+        });
+      }
     }
   };
 
@@ -234,16 +300,7 @@ function DivisionList() {
                 {isLoading ? (
                   <tr>
                     <td colSpan="7" className="px-6 py-8 text-center">
-                      <div className="flex justify-center items-center">
-                        <svg
-                          className="animate-spin h-5 w-5 mr-3 text-blue-500"
-                          viewBox="0 0 24 24"
-                        >
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
-                        </svg>
-                        Loading division admins...
-                      </div>
+                      <Loader/>
                     </td>
                   </tr>
                 ) : filteredZonalHeads.length === 0 ? (
@@ -260,8 +317,12 @@ function DivisionList() {
                   </tr>
                 ) : (
                   [...filteredZonalHeads].map((zonal, index) => (
-
-                    <tr onDoubleClick={() => handleViewZonal(zonal)} key={zonal.id} className="hover:bg-gray-50 transition-colors">
+                    <tr 
+                      onDoubleClick={() => handleViewZonal(zonal)} 
+                      key={zonal.id} 
+                      className={`hover:bg-gray-50 transition-colors ${zonal.id === statusId ? 'border-2' : ''}`}
+                      ref={zonal.id === statusId ? rowRef : null}
+                    >
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{(currentPage - 1) * itemsPerPage + index + 1}</td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">

@@ -5,6 +5,8 @@ import { MdOutlineGridView, MdOutlineList } from "react-icons/md";
 import axiosInstance from '../../auth/axiosInstance';
 import Swal from 'sweetalert2';
 import Pagination from '../Pagination';
+import Loader from '../Loader';
+import NoDataPage from '../../NodataPage';
 
 function Pincode() {
     const [pincodeAddModal, setPincodeAddModal] = useState(false);
@@ -93,7 +95,7 @@ function Pincode() {
         });
     };
 
-    const filteredPincodes = pincodes.filter(pincode => 
+    const filteredPincodes = pincodes.filter(pincode =>
         pincode.pinCode.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (pincode.city?.cityName || '').toLowerCase().includes(searchQuery.toLowerCase())
     );
@@ -129,7 +131,7 @@ function Pincode() {
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
-                    
+
                     <div className="flex items-center gap-2 self-end">
                         <span className="text-sm text-gray-600">View:</span>
                         <button
@@ -153,22 +155,10 @@ function Pincode() {
             {/* Pincodes Container */}
             <div className="bg-white rounded-xl shadow-sm overflow-hidden flex flex-col flex-grow">
                 {loading ? (
-                    <div className="flex justify-center items-center py-16 flex-grow">
-                        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-                        <span className="ml-4 text-gray-600">Loading pincodes...</span>
-                    </div>
+                    <Loader />
                 ) : error ? (
                     <div className="flex justify-center items-center py-16 flex-grow">
-                        <div className="text-center">
-                            <div className="text-red-500 text-lg mb-2">Error Loading Data</div>
-                            <div className="text-gray-500 mb-4">{error}</div>
-                            <button 
-                                onClick={getAllPincode}
-                                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-                            >
-                                Try Again
-                            </button>
-                        </div>
+                        <NoDataPage />
                     </div>
                 ) : (
                     <>
@@ -338,7 +328,7 @@ function Pincode() {
             {/* Add/Edit Pincode Modal */}
             {pincodeAddModal && (
                 <div
-                    className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 transition-opacity duration-300"
+                    className="fixed inset-0 backdrop-brightness-50 flex items-center justify-center z-50 p-4 transition-opacity duration-300"
                     onClick={() => { setPincodeAddModal(false); }}
                 >
                     <div

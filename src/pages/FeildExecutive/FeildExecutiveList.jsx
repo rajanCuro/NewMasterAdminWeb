@@ -11,6 +11,7 @@ import Track from "../LiveTrack/Track";
 import axiosInstance from "../../auth/axiosInstance";
 import { useAuth } from "../../auth/AuthContext";
 import Swal from "sweetalert2";
+import Loader from "../Loader";
 
 const FeildExecutiveList = () => {
   const { uploadImage, role } = useAuth();
@@ -291,7 +292,7 @@ const FeildExecutiveList = () => {
     const handleClickOutside = () => {
       setActionMenu(null);
     };
-    
+
     document.addEventListener('click', handleClickOutside);
     return () => {
       document.removeEventListener('click', handleClickOutside);
@@ -307,10 +308,10 @@ const FeildExecutiveList = () => {
             <h1 className="text-2xl font-semibold text-gray-800">Field Executives</h1>
             <p className="text-gray-500 mt-1">Manage your team of field executives</p>
           </div>
-          
+
           {role !== "ROLE_ADMIN" && role !== "ROLE_ZONE_ADMIN" && (
-            <button 
-              onClick={handleAddAgent} 
+            <button
+              onClick={handleAddAgent}
               className="mt-4 md:mt-0 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-5 rounded-lg transition-colors flex items-center"
             >
               <FaUser className="mr-2" />
@@ -336,16 +337,16 @@ const FeildExecutiveList = () => {
               onChange={handleFilterChange}
             />
           </div>
-          
+
           <div className="flex gap-3">
-            <button 
+            <button
               onClick={() => setShowFilters(!showFilters)}
               className="flex items-center gap-2 px-4 py-2.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
             >
               <RiFilter3Line />
               Filters
             </button>
-            
+
             <select
               className="border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               name="sortBy"
@@ -358,7 +359,7 @@ const FeildExecutiveList = () => {
             </select>
           </div>
         </div>
-        
+
         {/* Expanded Filters */}
         {showFilters && (
           <div className="mt-4 p-4 bg-gray-50 rounded-lg grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -375,9 +376,9 @@ const FeildExecutiveList = () => {
                 <option value="inactive">Inactive</option>
               </select>
             </div>
-            
+
             <div className="flex items-end">
-              <button 
+              <button
                 onClick={() => {
                   setFilters({
                     searchTerm: "",
@@ -406,7 +407,7 @@ const FeildExecutiveList = () => {
               <p className="text-lg font-semibold">{agents.length}</p>
             </div>
           </div>
-          
+
           <div className="flex items-center">
             <div className="bg-green-100 p-2 rounded-lg">
               <FaUser className="text-green-600" />
@@ -416,7 +417,7 @@ const FeildExecutiveList = () => {
               <p className="text-lg font-semibold">{agents.filter(a => a.accountNonLocked).length}</p>
             </div>
           </div>
-          
+
           <div className="flex items-center">
             <div className="bg-red-100 p-2 rounded-lg">
               <FaUser className="text-red-600" />
@@ -433,63 +434,33 @@ const FeildExecutiveList = () => {
       <div className="px-6 py-4">
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           <div className="overflow-x-auto">
-            {error && (
-              <div className="mx-6 my-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg">
-                {error}
-              </div>
-            )}
-            
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Executive
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Contact
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Added On
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {loading ? (
-                  Array.from({ length: 5 }).map((_, index) => (
-                    <tr key={index} className="animate-pulse">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <div className="h-10 w-10 bg-gray-200 rounded-full"></div>
-                          <div className="ml-4">
-                            <div className="h-4 bg-gray-200 rounded w-24 mb-2"></div>
-                            <div className="h-3 bg-gray-200 rounded w-32"></div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="h-4 bg-gray-200 rounded w-32"></div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="h-6 bg-gray-200 rounded-full w-16"></div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="h-3 bg-gray-200 rounded w-20"></div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right">
-                        <div className="h-8 bg-gray-200 rounded w-24 ml-auto"></div>
-                      </td>
-                    </tr>
-                  ))
-                ) : currentAgents.length > 0 ? (
-                  currentAgents.map((agent, index) => (
-                    <tr 
-                      key={agent.id} 
+            {loading ? (
+              <Loader />
+            ) : (
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Executive
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Contact
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Added On
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {currentAgents.map((agent, index) => (
+                    <tr
+                      key={agent.id}
                       className="hover:bg-gray-50 transition-colors cursor-pointer"
                       onClick={() => handleViewAgent(agent)}
                     >
@@ -530,11 +501,7 @@ const FeildExecutiveList = () => {
                                   await updateProfilePic(agent.id, imageUrl);
                                 } catch (err) {
                                   console.error("Error updating profile image:", err);
-                                  Swal.fire(
-                                    "Error",
-                                    "Failed to update profile picture.",
-                                    "error"
-                                  );
+                                  Swal.fire("Error", "Failed to update profile picture.", "error");
                                 }
                               }}
                             />
@@ -552,7 +519,7 @@ const FeildExecutiveList = () => {
                           <div className="flex items-center text-sm text-gray-700">
                             <MdOutlineMailOutline size={14} className="mr-1.5 text-gray-400" />
                             <span className="truncate max-w-xs">{agent.email}</span>
-                            <button 
+                            <button
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleCopyEmail(agent.email);
@@ -566,7 +533,7 @@ const FeildExecutiveList = () => {
                             <FaPhone size={12} className="mr-1.5 text-gray-400" />
                             <span>{agent.mobileNumber || "Not provided"}</span>
                             {agent.mobileNumber && (
-                              <button 
+                              <button
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleCopyMobile(agent.mobileNumber);
@@ -580,7 +547,7 @@ const FeildExecutiveList = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div 
+                        <div
                           onClick={(e) => {
                             e.stopPropagation();
                             handleStatusChange(agent.id);
@@ -589,14 +556,15 @@ const FeildExecutiveList = () => {
                         >
                           <span className={`px-3 py-1 text-xs font-medium rounded-full ${agent.accountNonLocked
                             ? "bg-green-100 text-green-800"
-                            : "bg-red-100 text-red-800"}`}
+                            : "bg-red-100 text-red-800"
+                            }`}
                           >
                             {agent.accountNonLocked ? "Active" : "Inactive"}
                           </span>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {agent.createdAt ? new Date(agent.createdAt).toLocaleDateString() : 'N/A'}
+                        {agent.createdAt ? new Date(agent.createdAt).toLocaleDateString() : "N/A"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium relative">
                         <button
@@ -605,7 +573,7 @@ const FeildExecutiveList = () => {
                         >
                           <MdMoreVert size={18} />
                         </button>
-                        
+
                         {actionMenu === agent.id && (
                           <div className="absolute right-6 z-10 mt-1 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100">
                             <div className="py-1">
@@ -648,8 +616,9 @@ const FeildExecutiveList = () => {
                                 }}
                                 className="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
                               >
-                                <span className={`mr-3 h-2 w-2 rounded-full ${agent.accountNonLocked ? 'bg-red-500' : 'bg-green-500'}`}></span>
-                                {agent.accountNonLocked ? 'Deactivate' : 'Activate'}
+                                <span className={`mr-3 h-2 w-2 rounded-full ${agent.accountNonLocked ? "bg-red-500" : "bg-green-500"
+                                  }`}></span>
+                                {agent.accountNonLocked ? "Deactivate" : "Activate"}
                               </button>
                               <button
                                 onClick={(e) => {
@@ -666,48 +635,25 @@ const FeildExecutiveList = () => {
                         )}
                       </td>
                     </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="5" className="px-6 py-12 text-center">
-                      <div className="flex flex-col items-center justify-center text-gray-400">
-                        <FaUser className="w-12 h-12 mb-3" />
-                        <p className="text-lg font-medium">No field executives found</p>
-                        <p className="text-sm mt-1 max-w-md">
-                          {filters.searchTerm || filters.statusFilter !== "all" 
-                            ? "Try adjusting your search or filter criteria" 
-                            : "Get started by adding your first field executive"}
-                        </p>
-                        {!filters.searchTerm && filters.statusFilter === "all" && role !== "ROLE_ADMIN" && role !== "ROLE_ZONE_ADMIN" && (
-                          <button 
-                            onClick={handleAddAgent}
-                            className="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg"
-                          >
-                            Add Field Executive
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
-          
-          {/* Pagination */}
-          {filteredAgents.length > 0 && (
-            <div className="px-6 py-4 bg-white border-t border-gray-200">
-              <Pagination
-                currentPage={currentPage}
-                totalItems={totalItems}
-                totalPages={totalPages}
-                itemsPerPage={itemsPerPage}
-                onPageChange={setCurrentPage}
-                onItemsPerPageChange={setItemsPerPage}
-              />
-            </div>
-          )}
         </div>
+        {/* Pagination */}
+        {filteredAgents.length > 0 && (
+          <div className="px-6 py-4 bg-white border-t border-gray-200">
+            <Pagination
+              currentPage={currentPage}
+              totalItems={totalItems}
+              totalPages={totalPages}
+              itemsPerPage={itemsPerPage}
+              onPageChange={setCurrentPage}
+              onItemsPerPageChange={setItemsPerPage}
+            />
+          </div>
+        )}
       </div>
 
       {/* Add/Edit Agent Modal */}

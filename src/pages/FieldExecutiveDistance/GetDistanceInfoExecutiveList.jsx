@@ -1,23 +1,21 @@
-import React, { useState, useEffect, use } from "react";
+import React, { useState, useEffect } from "react";
 import { RiSearchLine } from "react-icons/ri";
-import { FiEdit } from "react-icons/fi";
-import { FaCamera, } from "react-icons/fa";
+import { FaCamera } from "react-icons/fa";
 import Swal from "sweetalert2";
 import { useAuth } from "../../auth/AuthContext";
 import axiosInstance from "../../auth/axiosInstance";
 import DistanceInfo from "./DistanceInfo";
 import { GiPathDistance } from "react-icons/gi";
 import NoDataPage from "../../NodataPage";
+import Loader from "../Loader";
 
 const GetDistanceInfo = () => {
-    const { uploadImage, role } = useAuth();
+    const { uploadImage } = useAuth();
     const [agents, setAgents] = useState([]);
-    const [currentAgents, setCurrentAgents] = useState([])
-    const [loading, setLoading] = useState(false)
-    const [FieldExecutiveInfoModal, setFieldExecutiveInfoModal] = useState(false)
-    const [viewData, setViewData] = useState(null)
-
-
+    const [currentAgents, setCurrentAgents] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [FieldExecutiveInfoModal, setFieldExecutiveInfoModal] = useState(false);
+    const [viewData, setViewData] = useState(null);
 
     const [filters, setFilters] = useState({
         searchTerm: "",
@@ -28,24 +26,49 @@ const GetDistanceInfo = () => {
         try {
             setLoading(true);
             const response = await axiosInstance.get(`/city-admin/getAllFieldExecutiveAddedByCityAdmin`);
-            console.log("xcvb", response)
-
+            
             if (response.data && Array.isArray(response.data.dtoList)) {
                 setCurrentAgents(response.data.dtoList);
-
+                setAgents(response.data.dtoList);
+            } else {
+                setCurrentAgents([]);
+                setAgents([]);
             }
-
         } catch (error) {
             console.error('Error fetching agents:', error);
+            Swal.fire("Error", "Failed to fetch field executives", "error");
         } finally {
             setLoading(false);
         }
-    }; useEffect(() => {
+    };
+
+    useEffect(() => {
         getAllFieldExecutives();
     }, []);
 
     // Filter agents based on filter criteria
+    useEffect(() => {
+        let result = [...agents];
+        
+        if (filters.searchTerm) {
+            const searchTerm = filters.searchTerm.toLowerCase();
+            result = result.filter(
+                (agent) =>
+                    agent.firstName?.toLowerCase().includes(searchTerm) ||
+                    agent.lastName?.toLowerCase().includes(searchTerm) ||
+                    agent.email?.toLowerCase().includes(searchTerm) ||
+                    agent.id?.toString().includes(searchTerm) ||
+                    agent.phoneNumber?.toLowerCase().includes(searchTerm)
+            );
+        }
 
+        if (filters.statusFilter !== "all") {
+            const statusValue = filters.statusFilter === "active";
+            result = result.filter((agent) => agent.accountNonLocked === statusValue);
+        }
+
+        setCurrentAgents(result);
+    }, [filters, agents]);
 
     // Handle filter changes
     const handleFilterChange = (e) => {
@@ -56,20 +79,10 @@ const GetDistanceInfo = () => {
         }));
     };
 
-    // Action handlers
-    const handleEdit = (agent) => {
-        setAddAgentModal(true);
-        setEditData(agent);
-    };
-
     const handleViewExecutiveInfoModal = (agent) => {
         setFieldExecutiveInfoModal(true);
         setViewData(agent);
     };
-
-
-
-
 
     // Format agent name
     const formatAgentName = (agent) => {
@@ -83,10 +96,11 @@ const GetDistanceInfo = () => {
                 icon: 'success',
                 title: 'Success',
                 text: 'Profile picture updated successfully'
-            })
+            });
             getAllFieldExecutives();
         } catch (error) {
             console.error("Error updating profile picture:", error);
+            Swal.fire("Error", "Failed to update profile picture", "error");
         }
     };
 
@@ -120,6 +134,9 @@ const GetDistanceInfo = () => {
         }
     };
 
+    if (loading) {
+        return <Loader />;
+    }
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -151,14 +168,13 @@ const GetDistanceInfo = () => {
                                 <tr>
                                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Sr.No</th>
                                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Agent</th>
-                                    {/* <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Contact</th> */}
                                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Status</th>
                                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
                                 {currentAgents.length > 0 ? (
-                                    currentAgents.reverse().map((agent, index) => (
+                                    currentAgents.map((agent, index) => (
                                         <tr onDoubleClick={() => handleViewExecutiveInfoModal(agent)} key={agent.id} className="hover:bg-gray-50 transition-colors">
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{index + 1}</td>
                                             <td className="px-6 py-4 whitespace-nowrap">
@@ -180,7 +196,10 @@ const GetDistanceInfo = () => {
                                                         {/* Camera overlay */}
                                                         <div
                                                             className="absolute bottom-0 right-0 bg-black/60 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer"
-                                                            onClick={() => document.getElementById(`fileInput-${agent.id}`).click()}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                document.getElementById(`fileInput-${agent.id}`).click();
+                                                            }}
                                                         >
                                                             <FaCamera size={14} className="text-white" />
                                                         </div>
@@ -197,9 +216,10 @@ const GetDistanceInfo = () => {
                                                                 try {
                                                                     const result = await uploadImage(file);
                                                                     const imageUrl = result.imageUrl || result.url;
-                                                                    await updateProfilePic(agent.id, imageUrl); // <-- fixed from "officer.id"
+                                                                    await updateProfilePic(agent.id, imageUrl);
                                                                 } catch (err) {
                                                                     console.error("Error updating profile image:", err);
+                                                                    Swal.fire("Error", "Failed to update profile image", "error");
                                                                 }
                                                             }}
                                                         />
@@ -213,9 +233,8 @@ const GetDistanceInfo = () => {
                                                 </div>
                                             </td>
 
-                                            {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{agent.mobileNumber}</td> */}
                                             <td onClick={() => handleStatusChange(agent.id)} className="px-6 py-4 whitespace-nowrap cursor-pointer">
-                                                <span className={`px-2.5 py-1 text-xs font-medium rounded-full border ${agent.accountNonLocked ? "bg-green-200 text-green-600" : "bg-red-500"}`}>
+                                                <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${agent.accountNonLocked ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
                                                     {agent.accountNonLocked ? 'Active' : 'Inactive'}
                                                 </span>
                                             </td>
@@ -224,18 +243,17 @@ const GetDistanceInfo = () => {
                                                     <button
                                                         onClick={() => handleViewExecutiveInfoModal(agent)}
                                                         className="text-blue-600 cursor-pointer hover:text-blue-800 p-1.5 rounded-md hover:bg-blue-100 transition-colors"
-                                                        title="View agent"
+                                                        title="View distance info"
                                                     >
                                                         <GiPathDistance className="w-10 h-10 bg-blue-100 p-1 rounded-md" />
                                                     </button>
-
                                                 </div>
                                             </td>
                                         </tr>
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan="6" className="px-6 py-8 text-center">
+                                        <td colSpan="4" className="px-6 py-8 text-center">
                                             <NoDataPage />
                                         </td>
                                     </tr>
@@ -244,6 +262,7 @@ const GetDistanceInfo = () => {
                         </table>
                     </div>
                 </div>
+                
                 {FieldExecutiveInfoModal && (
                     <div
                         className="fixed inset-0 backdrop-brightness-50 flex items-center justify-center z-50 p-4"
@@ -251,14 +270,14 @@ const GetDistanceInfo = () => {
                     >
                         <div
                             onClick={(e) => e.stopPropagation()}
-                            className="bg-white rounded-xl shadow-2xl w-full max-w-full  h-screen overflow-y-auto"
+                            className="bg-white rounded-xl shadow-2xl w-full max-w-full h-screen overflow-y-auto"
                         >
                             {/* Header */}
-                            <div className="flex justify-between items-center border-b border-gray-200 p-6 sticky top-0 modal_header">
-                                <h1 className=" text-lg font-bold">Field Executive</h1>
+                            <div className="flex justify-between items-center border-b border-gray-200 p-6 sticky top-0 bg-white z-10">
+                                <h1 className="text-lg font-bold">Field Executive Distance Information</h1>
                                 <button
                                     onClick={() => setFieldExecutiveInfoModal(false)}
-                                    className="text-gray-50 hover:text-gray-100 text-2xl font-bold cursor-pointer"
+                                    className="text-gray-600 hover:text-gray-800 text-2xl font-bold cursor-pointer"
                                 >
                                     &times;
                                 </button>

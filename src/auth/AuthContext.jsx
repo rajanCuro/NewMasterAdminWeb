@@ -74,24 +74,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const uploadImage = async (file) => {
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const response = await axiosInstance.post("/auth/uploadImage", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${token}`, // If your API needs authentication
-        },
-      });
-
-      return response.data;
-    } catch (error) {
-      console.error("Error uploading image:", error);
-      throw error;
-    }
-  };
+ 
 
 
 
@@ -109,8 +92,7 @@ export const AuthProvider = ({ children }) => {
         stateList,
         loading,
         longitude, setLongitude,
-        latitude, setLatitude,
-        uploadImage,
+        latitude, setLatitude,        
         submittedData, setSubmittedData
       }}
     >
