@@ -369,7 +369,7 @@ const DoctorList = () => {
               </button>
             </div>
 
-            <div className="overflow-y-auto p-6">
+            <div className="p-4">
               <ViewDoctor viewData={viewDoctorData} />
             </div>
           </div>

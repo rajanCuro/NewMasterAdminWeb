@@ -3,6 +3,7 @@ import { FaStar, FaPhone, FaEnvelope, FaFileMedical, FaUserMd } from 'react-icon
 
 const ViewDoctor = ({ viewData }) => {
   const [activeTab, setActiveTab] = useState('overview');
+  console.log(viewData)
   
   // Static doctor image (in a real app, this would come from the database)
   const doctorImage = "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80";
@@ -15,9 +16,9 @@ const ViewDoctor = ({ viewData }) => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-1">
+    <div className=" mx-auto p-1">
       {/* Header Section */}
-      <div className="bg-white rounded-xl shadow-md overflow-hidden mb-2">
+      <div className=" rounded-xl shadow-md overflow-hidden mb-2">
         <div className="md:flex">
           {/* Doctor Image */}
           <div className="md:flex-shrink-0 md:w-64 p-6 flex flex-col items-center">
@@ -265,25 +266,4 @@ const ViewDoctor = ({ viewData }) => {
   );
 };
 
-// Sample data for demonstration
-const sampleDoctorData = {
-  email: "doctor1@curo24.com",
-  experience: 15,
-  id: 1,
-  licenseNumber: "LIC1001",
-  name: "Dr. Jane Doe 1",
-  phone: "+91-900000001",
-  specialization: "Pathologist",
-  status: "inactive"
-};
-
-// App component to wrap the ViewDoctor
-const App = () => {
-  return (
-    <div className="min-h-screen bg-gray-100 py-12">
-      <ViewDoctor viewData={sampleDoctorData} />
-    </div>
-  );
-};
-
-export default App;
+export default ViewDoctor;

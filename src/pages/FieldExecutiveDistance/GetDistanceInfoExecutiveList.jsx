@@ -7,6 +7,7 @@ import { useAuth } from "../../auth/AuthContext";
 import axiosInstance from "../../auth/axiosInstance";
 import DistanceInfo from "./DistanceInfo";
 import { GiPathDistance } from "react-icons/gi";
+import NoDataPage from "../../NodataPage";
 
 const GetDistanceInfo = () => {
     const { uploadImage, role } = useAuth();
@@ -150,7 +151,7 @@ const GetDistanceInfo = () => {
                                 <tr>
                                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Sr.No</th>
                                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Agent</th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Contact</th>
+                                    {/* <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Contact</th> */}
                                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Status</th>
                                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Actions</th>
                                 </tr>
@@ -212,7 +213,7 @@ const GetDistanceInfo = () => {
                                                 </div>
                                             </td>
 
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{agent.mobileNumber}</td>
+                                            {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{agent.mobileNumber}</td> */}
                                             <td onClick={() => handleStatusChange(agent.id)} className="px-6 py-4 whitespace-nowrap cursor-pointer">
                                                 <span className={`px-2.5 py-1 text-xs font-medium rounded-full border ${agent.accountNonLocked ? "bg-green-200 text-green-600" : "bg-red-500"}`}>
                                                     {agent.accountNonLocked ? 'Active' : 'Inactive'}
@@ -235,13 +236,7 @@ const GetDistanceInfo = () => {
                                 ) : (
                                     <tr>
                                         <td colSpan="6" className="px-6 py-8 text-center">
-                                            <div className="flex flex-col items-center justify-center text-gray-500">
-                                                <svg className="w-16 h-16 mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                                </svg>
-                                                <p className="text-lg font-medium">No agents found</p>
-                                                <p className="text-sm mt-1">Try adjusting your search or filter criteria</p>
-                                            </div>
+                                            <NoDataPage />
                                         </td>
                                     </tr>
                                 )}

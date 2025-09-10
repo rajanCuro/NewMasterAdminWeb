@@ -1,15 +1,51 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FaUserTie, FaPhone, FaEnvelope, FaMapMarkerAlt, FaCalendarAlt, FaChartLine, FaCheckCircle, FaExclamationTriangle, FaUsers, FaSave, FaTimes } from 'react-icons/fa';
 import { MdLocalPharmacy } from "react-icons/md";
+import AllPharmacy from '../AllPharmacy';
+import AllLabs from '../AllLabs';
+import AllAmbulance from '../AllAmbulance';
+import AllDoctor from '../AllDoctor';
+import axiosInstance from '../../auth/axiosInstance';
+import { useAuth } from '../../auth/AuthContext';
+import NoDataPage from '../../NodataPage';
 
 const VIewZonal = ({ ViewData: initialData, onSave, onClose }) => {
-  console.log('view ',initialData);
-  console.log('data',onSave);
+  console.log('view ', initialData);
+  // console.log('data', onSave);
+  const { user } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState('details');
   const [errors, setErrors] = useState({});
+  const [AllStats, setAllStates] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
 
-  const transformData = (data) =>{
+  useEffect(() => {
+    const fetchDataAsync = async () => {
+      await fetchData();
+    };
+
+    fetchDataAsync();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+
+      const response = await axiosInstance.get(
+        `/api/field-executive/getAgentStatistics/${user?.id}`
+      );
+      setAllStates(response.data);
+    } catch (error) {
+      setError(true)
+      console.error('Error fetching data:', error);
+    } finally {
+      setLoading(false);
+      setError(true)
+    }
+  };
+
+  const transformData = (data) => {
     return {
       id: data.id,
       name: `${data.firstName} ${data.lastName}`,
@@ -35,7 +71,7 @@ const VIewZonal = ({ ViewData: initialData, onSave, onClose }) => {
     };
 
   }
-const [formData, setFormData] = useState(transformData(initialData));
+  const [formData, setFormData] = useState(transformData(initialData));
   // Format phone number
   const formatPhoneNumber = (phone) => {
     try {
@@ -127,6 +163,10 @@ const [formData, setFormData] = useState(transformData(initialData));
     );
   };
 
+  if (error) {
+    <NoDataPage />
+  }
+
   return (
     <div className=" min-h-[400px]">
       <div className="max-w-7xl mx-auto">
@@ -136,7 +176,7 @@ const [formData, setFormData] = useState(transformData(initialData));
             {/* Profile Sidebar */}
             <div className="lg:w-1/3 p-6 bg-gradient-to-br from-indigo-50 to-blue-50 flex flex-col items-center justify-start">
               <div className="w-10 h-10 sm:w-32 sm:h-32 bg-indigo-100 rounded-full flex items-center justify-center mb-4 border-4 border-white shadow-md">
-                <img src={formData.profilePicture} alt="" className=' w-full h-full rounded-full object-cover'/>
+                <img src={formData.profilePicture} alt="" className=' w-full h-full rounded-full object-cover' />
               </div>
 
               {isEditing ? (
@@ -156,8 +196,8 @@ const [formData, setFormData] = useState(transformData(initialData));
                 </div>
               ) : (
                 <>
-                <h2 className="text-lg sm:text-xl font-semibold text-gray-800 text-center">{formData.name}</h2>
-                <p>{formData.cityName}</p>
+                  <h2 className="text-lg sm:text-xl font-semibold text-gray-800 text-center">{formData.name}</h2>
+                  <p>{formData.cityName}</p>
                 </>
               )}
 
@@ -199,85 +239,51 @@ const [formData, setFormData] = useState(transformData(initialData));
                 </div>
               ) : (
                 <div className={`mt-4 px-3 py-1.5 bg-green-100 text-green-800 rounded-full text-sm font-medium inline-flex items-center animate-pulse-short ${formData.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                    }`}>
+                  }`}>
                   <FaCheckCircle className="mr-2" aria-hidden="true" />
                   {formData.status}
                 </div>
               )}
 
-              {/* Stats Section */}
-              <div className="mt-6 w-full space-y-3">
-                <div className="flex items-center bg-white p-3 rounded-lg shadow-sm">
-                  <div className="bg-blue-100 p-2 rounded-lg mr-3">
-                    <FaUsers className="text-blue-500" aria-hidden="true" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm text-gray-500">Agents</p>
-                    {isEditing ? (
-                      <input
-                        type="number"
-                        name="agentsCount"
-                        value={formData.agentsCount}
-                        onChange={handleInputChange}
-                        className="w-20 p-1.5 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-sm transition-all duration-200"
-                        min="0"
-                        aria-label="Agents Count"
-                      />
-                    ) : (
-                      <p className="font-semibold text-gray-800">{formData.agentsCount}</p>
-                    )}
-                  </div>
-                </div>
-                <div className="flex items-center bg-white p-3 rounded-lg shadow-sm">
-                  <div className="bg-purple-100 p-2 rounded-lg mr-3">
-                    <MdLocalPharmacy className="text-purple-500" aria-hidden="true" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm text-gray-500">Pharmacy</p>
-                    {isEditing ? (
-                      <input
-                        type="number"
-                        name="coCounts"
-                        value={formData.PhCounts}
-                        onChange={handleInputChange}
-                        className="w-20 p-1.5 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-sm transition-all duration-200"
-                        min="0"
-                        aria-label="CO Count"
-                      />
-                    ) : (
-                      <p className="font-semibold text-gray-800">{formData.PhCounts}</p>
-                    )}
-                  </div>
-                </div>
-              </div>
+
             </div>
 
             {/* Profile Details Section */}
-            <div className="lg:w-2/3 p-4 sm:p-6">
+            <div className="lg:w-2/3 p-4 sm:p-6  ">
               {/* Tabs */}
               <div className="flex flex-col sm:flex-row border-b border-gray-200 mb-6 space-y-2 sm:space-y-0 sm:space-x-4">
-                {['details', 'activity', 'agents', 'Pharmacy', 'Labs'].map(tab => (
-                  <button
-                    key={tab}
-                    className={`py-2 px-3 sm:px-4 cursor-pointer font-medium text-sm rounded-t-lg transition-all duration-200 ${activeTab === tab
+                {loading ? (
+                  ['details', 'Ambulance', 'Doctors', 'Pharmacy', 'Labs'].map((tab, index) => (
+                    <div
+                      key={index}
+                      className="py-2 px-3 sm:px-4 rounded-t-lg bg-gray-300 animate-pulse w-28 h-8"
+                    />
+                  ))
+                ) : (
+                  ['details', 'Ambulance', 'Doctors', 'Pharmacy', 'Labs'].map(tab => (
+                    <button
+                      key={tab}
+                      className={`py-2 px-3 sm:px-4 cursor-pointer font-medium text-sm rounded-t-lg transition-all duration-200 ${activeTab === tab
                         ? 'text-indigo-600 border-b-2 border-indigo-600 bg-indigo-50'
                         : 'text-gray-500 hover:text-indigo-600 hover:bg-gray-100'
-                      }`}
-                    onClick={() => { setActiveTab(tab), setIsEditing(false) }}
-                    aria-current={activeTab === tab ? 'page' : undefined}
-                  >
-                    {tab === 'details' && 'Details'}
-                    {tab === 'activity' && 'Activity'}
-                    {tab === 'agents' && `Agents (${formData.agentsCount})`}
-                    {tab === 'Pharmacy' && `Pharmacy (${formData.PhCounts})`}
-                    {tab === 'Labs' && `Labs (${formData.LbCounts})`}
-                  </button>
-                ))}
+                        }`}
+                      onClick={() => { setActiveTab(tab); setIsEditing(false); }}
+                      aria-current={activeTab === tab ? 'page' : undefined}
+                    >
+                      {tab === 'details' && 'Details'}
+                      {tab === 'Ambulance' && `Ambulance (${AllStats?.ambulanceCount})`}
+                      {tab === 'Doctors' && `Doctors (${AllStats?.doctorCount})`}
+                      {tab === 'Pharmacy' && `Pharmacy (${AllStats?.pharmacyCount})`}
+                      {tab === 'Labs' && `Labs (${AllStats?.labCount})`}
+                    </button>
+                  ))
+                )}
               </div>
+
 
               {/* Details Tab Content */}
               {activeTab === 'details' && (
-                <div className="space-y-6 animate-fade-in">
+                <div className="space-y-6 animate-fade-in ">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                     <div className="flex items-center">
                       <div className="bg-blue-100 p-2.5 rounded-lg mr-3 sm:mr-4">
@@ -403,66 +409,27 @@ const [formData, setFormData] = useState(transformData(initialData));
               )}
 
               {/* Activity Tab Content */}
-              {activeTab === 'activity' && (
-                <div className="space-y-4 animate-fade-in">
-                  {[
-                    { title: 'Performance Review', date: 'August 15, 2025', status: 'Needs Attention', statusColor: 'bg-yellow-100 text-yellow-800' },
-                    { title: 'Team Meeting', date: 'August 20, 2025', status: 'Upcoming', statusColor: 'bg-blue-100 text-blue-800' },
-                    { title: 'Quarterly Report', date: 'July 30, 2025', status: 'Completed', statusColor: 'bg-green-100 text-green-800' }
-                  ].map((activity, index) => (
-                    <div key={index} className="flex justify-between items-center p-3 sm:p-4 bg-gray-50 rounded-lg shadow-sm transition-all duration-200 hover:bg-gray-100">
-                      <div>
-                        <p className="font-medium text-sm sm:text-base">{activity.title}</p>
-                        <p className="text-xs sm:text-sm text-gray-500">{activity.date}</p>
-                      </div>
-                      <span className={`px-3 py-1 rounded-full text-xs sm:text-sm font-medium ${activity.statusColor}`}>
-                        {activity.status}
-                      </span>
-                    </div>
-                  ))}
-                </div>
+              {activeTab === 'Ambulance' && (
+                <AllAmbulance data={AllStats} />
               )}
 
               {/* Agents Tab Content */}
-              {activeTab === 'agents' && (
-                <div className="animate-fade-in">
-                  <p className="text-gray-600 text-sm sm:text-base mb-4">
-                    This Circle Officer manages a team of {formData.agentsCount} agents in the {formData.circleName} region.
-                  </p>
-                  <div className="bg-blue-50 p-3 sm:p-4 rounded-lg shadow-sm">
-                    <div className="flex items-center">
-                      <div className="bg-blue-100 p-2 rounded-lg mr-3">
-                        <FaUsers className="text-blue-500" aria-hidden="true" />
-                      </div>
-                      <div>
-                        <p className="text-sm text-blue-700">
-                          Agent details are managed in the dedicated agents section.{' '}
-                          <a href="#agents" className="font-medium text-blue-600 hover:underline">View full agent list</a>
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+              {activeTab === 'Doctors' && (
+                <AllDoctor data={AllStats} />
               )}
 
               {/* CO Tab Content */}
               {activeTab === 'Pharmacy' && (
-                <div className="animate-fade-in">
-                  <p className="text-gray-600 text-sm sm:text-base mb-4">
-                    This Circle officer oversees {formData.coCounts} Pharmacys in the {formData.circleName} region.
-                  </p>
+                <div className="animate-fade-in  overflow-hidden w-full overflow-y-auto">
                   <div className="bg-purple-50 p-3 sm:p-4 rounded-lg shadow-sm">
-                    <div className="flex items-center">
-                      <div className="bg-purple-100 p-2 rounded-lg mr-3">
-                        <MdLocalPharmacy className="text-purple-500" aria-hidden="true" />
-                      </div>
-                      <div>
-                        <p className="text-sm text-purple-700">
-                          Pharmacy details are managed in the dedicated pharmacy management section.{' '}
-                          <a href="#co" className="font-medium text-purple-600 hover:underline">View full pharmacy list</a>
-                        </p>
-                      </div>
-                    </div>
+                    <AllPharmacy data={AllStats} />
+                  </div>
+                </div>
+              )}
+              {activeTab === 'Labs' && (
+                <div className="animate-fade-in  overflow-hidden w-full overflow-y-auto">
+                  <div className="bg-purple-50 p-3 sm:p-4 rounded-lg shadow-sm">
+                    <AllLabs data={AllStats} />
                   </div>
                 </div>
               )}
