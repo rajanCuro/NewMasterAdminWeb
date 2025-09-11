@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import axiosInstance from './axiosInstance';
+import { IdCard } from "lucide-react";
 
 const AuthContext = createContext();
 
@@ -17,6 +18,9 @@ export const AuthProvider = ({ children }) => {
     lng: 83.007167,
   });
   const [longitude, setLongitude] = useState(null);
+
+
+
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -65,7 +69,7 @@ export const AuthProvider = ({ children }) => {
     getALLState();
   }, []);
 
-  const getALLState = async () => {
+  const getALLState = async () => {  
     try {
       const response = await axiosInstance.get("/area/getAllStates");
       setStateList(response.data.stateList);
@@ -74,7 +78,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
- 
+
 
 
 
@@ -92,8 +96,8 @@ export const AuthProvider = ({ children }) => {
         stateList,
         loading,
         longitude, setLongitude,
-        latitude, setLatitude,        
-        submittedData, setSubmittedData
+        latitude, setLatitude,
+        submittedData, setSubmittedData,
       }}
     >
       {children}

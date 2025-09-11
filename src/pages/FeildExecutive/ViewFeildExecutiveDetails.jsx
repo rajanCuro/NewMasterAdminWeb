@@ -13,7 +13,7 @@ import AllAmbulance from '../AllAmbulance';
 
 const ViewFeildExecutiveDetails = ({ ViewData: initialData, onSave, onClose }) => {
   const { submittedData, setSubmittedData, user } = useAuth()
-  console.log("check", submittedData)
+  // console.log("check", submittedData)
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState('details');
   const [errors, setErrors] = useState({});
@@ -71,7 +71,6 @@ const ViewFeildExecutiveDetails = ({ ViewData: initialData, onSave, onClose }) =
   const fetchData = async () => {
     try {
       setLoading(true);
-
       const response = await axiosInstance.get(
         `/api/field-executive/getAgentStatistics/${user?.id}`
       );
@@ -393,7 +392,7 @@ const ViewFeildExecutiveDetails = ({ ViewData: initialData, onSave, onClose }) =
           <div className="bg-gray-50 px-4 sm:px-6 py-4 border-t border-gray-200">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <p className="text-sm text-gray-500">
-                Last updated: {formatDate(formData.lastUpdated)}
+                Jioning Date: {formatDate(formData.joiningDate)}
               </p>
               <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                 {isEditing ? (
