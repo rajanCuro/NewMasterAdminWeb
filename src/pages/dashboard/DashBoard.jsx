@@ -10,6 +10,8 @@ import Ambulance from '../Ambulance/Ambulance';
 import Doctor from '../Doctor/Doctor';
 import Pharmacy from '../Pharmacies/Pharmacy';
 import Hospital from '../Hospitals/Hospital';
+import { useAuth } from '../../auth/AuthContext';
+import axios from 'axios';
 
 // Register Chart.js components
 ChartJS.register(ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend);
@@ -19,42 +21,43 @@ function Dashboard() {
   const [hospitalModal, setHospitalModal] = useState(false);
   const [pharmaciesModal, setPharmaciesModal] = useState(false);
   const [doctorModal, setDoctorModal] = useState(false);
-  const [addAmbulanceModal, setAddAmbulanceModal] = useState(false);
-  const [addHospitalModal, setAddHospitalModal] = useState(false);
-  const [addPharmacyModal, setAddPharmacyModal] = useState(false);
-  const [addDoctorModal, setAddDoctorModal] = useState(false);
+  const [totalCity, setTotalCity] = useState([]);
+  const [totalDivision, setTotalDivision] = useState([]);
+  const [dashboardData, setDashboardData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // Mock data (same as your original)
-  const circleOfficers = [
-    { id: 1, name: 'John Doe', zone: 'Zone A', status: 'Active', cases: 24, lastActive: '2 hours ago' },
-    { id: 2, name: 'Jane Smith', zone: 'Zone B', status: 'Inactive', cases: 15, lastActive: '1 day ago' },
-    { id: 3, name: 'Robert Johnson', zone: 'Zone C', status: 'Active', cases: 32, lastActive: '30 minutes ago' },
-    { id: 4, name: 'Emily Davis', zone: 'Zone D', status: 'On Leave', cases: 8, lastActive: '3 days ago' },
-  ];
+  useEffect(() => {
+    getAllDasboardData()
+  }, [])
 
-  const zonalHeads = [
-    { id: 1, name: 'Michael Wilson', region: 'North', status: 'Active', officers: 12, performance: 'Excellent' },
-    { id: 2, name: 'Sarah Brown', region: 'South', status: 'Active', officers: 8, performance: 'Good' },
-    { id: 3, name: 'David Miller', region: 'East', status: 'Inactive', officers: 10, performance: 'Average' },
-    { id: 4, name: 'Lisa Taylor', region: 'West', status: 'Active', officers: 15, performance: 'Excellent' },
-  ];
+  const getAllDasboardData = async () => {
+    try {
+      const response = await axios.get(`http://192.168.1.14:8082/head_admin/getHeadOfficeStatistics`)
+      setDashboardData(response.data);
+      setTotalCity(response.data.totalCityAdminCount || [])
+      setTotalDivision(response.data.totalDivisionAdmin || [])
+      setLoading(false);
+    } catch (error) {
+      console.log(error)
+      setLoading(false);
+    }
+  }
 
+  // Calculate stats from actual data
   const stats = {
-    activeOfficers: 78,
-    inactiveOfficers: 12,
-    casesThisMonth: 245,
-    casesLastMonth: 198,
-    performanceTrend: [65, 59, 80, 81, 56, 55, 40, 72, 88, 76, 85, 92],
-    caseDistribution: [35, 25, 20, 15, 5],
+    totalCities: totalCity.length,
+    totalDivisions: totalDivision.length,
+    totalPopulation: totalCity.reduce((sum, city) => sum + (city.populationInMillion || 0), 0),
+    // You can add more stats based on your API data
   };
 
-  // Bar chart data
-  const performanceChartData = {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+  // Bar chart data - using actual city populations
+  const populationChartData = {
+    labels: totalCity.map(city => city.cityName),
     datasets: [
       {
-        label: 'Performance Trend (%)',
-        data: stats.performanceTrend,
+        label: 'Population (in millions)',
+        data: totalCity.map(city => city.populationInMillion),
         backgroundColor: '#3B82F6',
         borderColor: '#2563EB',
         borderWidth: 1,
@@ -62,13 +65,17 @@ function Dashboard() {
     ],
   };
 
-  // Pie chart data
-  const caseDistributionChartData = {
-    labels: ['Zone A', 'Zone B', 'Zone C', 'Zone D', 'Zone E'],
+  // Pie chart data - using division areas
+  const divisionAreaChartData = {
+    labels: totalDivision.map(division => division.zoneName),
     datasets: [
       {
-        label: 'Case Distribution',
-        data: stats.caseDistribution,
+        label: 'Area Distribution',
+        data: totalDivision.map(division => {
+          // Extract numeric value from area string (e.g., "11491 square km" -> 11491)
+          const areaValue = division.area ? parseInt(division.area.replace(/\D/g, '')) : 0;
+          return areaValue;
+        }),
         backgroundColor: ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'],
         borderColor: ['#2563EB', '#059669', '#D97706', '#DC2626', '#7C3AED'],
         borderWidth: 1,
@@ -107,6 +114,14 @@ function Dashboard() {
     // cleanup
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen main_bg p-4 flex items-center justify-center">
+        <div className="text-xl">Loading dashboard data...</div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -151,98 +166,94 @@ function Dashboard() {
           <div className="main_bg1 p-6 rounded-xl shadow">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-500">Active Officers</p>
-                <h3 className="text-2xl font-bold">{stats.activeOfficers}</h3>
+                <p className="text-gray-500">Total Cities</p>
+                <h3 className="text-2xl font-bold">{stats.totalCities}</h3>
               </div>
               <div className="bg-green-100 p-3 rounded-full">
                 <svg className="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
               </div>
             </div>
-            <p className="text-sm text-gray-500 mt-2">+12% from last month</p>
+            <p className="text-sm text-gray-500 mt-2">Cities under administration</p>
           </div>
 
           <div className="main_bg1 p-6 rounded-xl shadow">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-500">Inactive Officers</p>
-                <h3 className="text-2xl font-bold">{stats.inactiveOfficers}</h3>
-              </div>
-              <div className="bg-red-100 p-3 rounded-full">
-                <svg className="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </div>
-            </div>
-            <p className="text-sm text-gray-500 mt-2">-5% from last month</p>
-          </div>
-
-          <div className="main_bg1 p-6 rounded-xl shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-500">Cases This Month</p>
-                <h3 className="text-2xl font-bold">{stats.casesThisMonth}</h3>
+                <p className="text-gray-500">Total Divisions</p>
+                <h3 className="text-2xl font-bold">{stats.totalDivisions}</h3>
               </div>
               <div className="bg-blue-100 p-3 rounded-full">
                 <svg className="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
             </div>
-            <p className="text-sm text-gray-500 mt-2">+24% from last month</p>
+            <p className="text-sm text-gray-500 mt-2">Administrative divisions</p>
           </div>
 
           <div className="main_bg1 p-6 rounded-xl shadow">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-500">Avg. Resolution Time</p>
-                <h3 className="text-2xl font-bold">3.2 days</h3>
+                <p className="text-gray-500">Total Population</p>
+                <h3 className="text-2xl font-bold">{stats.totalPopulation}M</h3>
               </div>
-              <div className="bg-yellow-100 p-3 rounded-full">
-                <svg className="h-6 w-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <div className="bg-purple-100 p-3 rounded-full">
+                <svg className="h-6 w-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                 </svg>
               </div>
             </div>
-            <p className="text-sm text-gray-500 mt-2">-0.8 days from last month</p>
+            <p className="text-sm text-gray-500 mt-2">Total population in millions</p>
+          </div>
+
+          <div className="main_bg1 p-6 rounded-xl shadow">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-500">Avg. Population</p>
+                <h3 className="text-2xl font-bold">
+                  {stats.totalCities > 0 ? (stats.totalPopulation / stats.totalCities).toFixed(1) : 0}M
+                </h3>
+              </div>
+              <div className="bg-yellow-100 p-3 rounded-full">
+                <svg className="h-6 w-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              </div>
+            </div>
+            <p className="text-sm text-gray-500 mt-2">Average per city (in millions)</p>
           </div>
         </div>
 
-        {/* Circle Officers Section */}
+        {/* City Admins Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <div className="main_bg1 p-6 rounded-xl shadow">
+          <div className="main_bg1 p-6 rounded-xl shadow max-h-[50vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold ">Circle Officers</h2>
+              <h2 className="text-xl font-semibold ">City Administrators</h2>
               <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">View All</button>
             </div>
             <div className="space-y-4">
-              {circleOfficers.map((officer) => (
-                <div key={officer.id} className="flex items-center p-3 border rounded-lg hover:bg-gray-300 hover:cursor-pointer transition">
+              {totalCity.map((city) => (
+                <div key={city.id} className="flex items-center p-3 border rounded-lg hover:bg-gray-300 hover:cursor-pointer transition">
                   <div className="flex-shrink-0 h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
                     <span className="text-blue-600 font-medium">
-                      {officer.name.split(' ').map((n) => n[0]).join('')}
+                      {city.cityName ? city.cityName.split(' ').map((n) => n[0]).join('') : 'NA'}
                     </span>
                   </div>
                   <div className="ml-4 flex-1">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-sm font-medium text-gray-400">{officer.name}</h3>
-                      <span
-                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${officer.status === 'Active'
-                          ? 'bg-green-100 text-green-800'
-                          : officer.status === 'Inactive'
-                            ? 'bg-red-100 text-red-800'
-                            : 'bg-yellow-100 text-yellow-800'
-                          }`}
-                      >
-                        {officer.status}
+                      <h3 className="text-sm font-medium text-gray-400">{city.cityName || 'Unnamed City'}</h3>
+                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                        Active
                       </span>
                     </div>
                     <div className="flex items-center justify-between mt-1">
                       <p className="text-sm text-gray-500">
-                        {officer.zone} • {officer.cases} cases
+                        {city.zone?.zoneName || 'No zone'} • Pop: {city.populationInMillion}M
                       </p>
-                      <p className="text-xs text-gray-400">Last active: {officer.lastActive}</p>
+                      <p className="text-xs text-gray-400">Area: {city.area}</p>
                     </div>
                   </div>
                 </div>
@@ -250,35 +261,32 @@ function Dashboard() {
             </div>
           </div>
 
-          {/* Zonal Heads Section */}
-          <div className="main_bg1 p-6 rounded-xl shadow">
+          {/* Division Admins Section */}
+          <div className="main_bg1 p-6 rounded-xl shadow  max-h-[50vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold ">Zonal Heads</h2>
+              <h2 className="text-xl font-semibold ">Division Administrators</h2>
               <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">View All</button>
             </div>
             <div className="space-y-4">
-              {zonalHeads.map((head) => (
-                <div key={head.id} className="flex items-center p-3 border rounded-lg hover:bg-gray-300 hover:cursor-pointer transition">
+              {totalDivision.map((division) => (
+                <div key={division.id} className="flex items-center p-3 border rounded-lg hover:bg-gray-300 hover:cursor-pointer transition">
                   <div className="flex-shrink-0 h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center">
                     <span className="text-purple-600 font-medium">
-                      {head.name.split(' ').map((n) => n[0]).join('')}
+                      {division.zoneName ? division.zoneName.split(' ').map((n) => n[0]).join('') : 'NA'}
                     </span>
                   </div>
                   <div className="ml-4 flex-1">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-sm font-medium text-gray-500">{head.name}</h3>
-                      <span
-                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${head.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                          }`}
-                      >
-                        {head.status}
+                      <h3 className="text-sm font-medium text-gray-500">{division.zoneName || 'Unnamed Division'}</h3>
+                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                        Active
                       </span>
                     </div>
                     <div className="flex items-center justify-between mt-1">
                       <p className="text-sm text-gray-500">
-                        {head.region} Region • {head.officers} officers
+                        Code: {division.zoneCode} • Districts: {division.noOfDistricts}
                       </p>
-                      <p className="text-xs text-gray-400">Performance: {head.performance}</p>
+                      <p className="text-xs text-gray-400">Area: {division.area}</p>
                     </div>
                   </div>
                 </div>
@@ -290,10 +298,10 @@ function Dashboard() {
         {/* Graphs Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="main_bg1 p-6 rounded-xl shadow">
-            <h2 className="text-xl font-semibold  mb-4">Performance Trend</h2>
+            <h2 className="text-xl font-semibold  mb-4">City Population Distribution</h2>
             <div className="h-64">
               <Bar
-                data={performanceChartData}
+                data={populationChartData}
                 options={{
                   responsive: true,
                   maintainAspectRatio: false,
@@ -302,13 +310,13 @@ function Dashboard() {
                       beginAtZero: true,
                       title: {
                         display: true,
-                        text: 'Performance (%)',
+                        text: 'Population (Millions)',
                       },
                     },
                     x: {
                       title: {
                         display: true,
-                        text: 'Month',
+                        text: 'City',
                       },
                     },
                   },
@@ -327,11 +335,11 @@ function Dashboard() {
           </div>
 
           <div className="main_bg1 p-6 rounded-xl shadow">
-            <h2 className="text-xl font-semibold  mb-4">Case Distribution</h2>
+            <h2 className="text-xl font-semibold  mb-4">Division Area Distribution</h2>
             <div className="h-64 flex items-center justify-center">
-              <div className="w-1/2">
+              <div className="w-full">
                 <Pie
-                  data={caseDistributionChartData}
+                  data={divisionAreaChartData}
                   options={{
                     responsive: true,
                     maintainAspectRatio: false,
@@ -341,6 +349,11 @@ function Dashboard() {
                       },
                       tooltip: {
                         enabled: true,
+                        callbacks: {
+                          label: function(context) {
+                            return `${context.label}: ${context.raw} sq km`;
+                          }
+                        }
                       },
                     },
                   }}
@@ -369,9 +382,6 @@ function Dashboard() {
         </div>
       )}
 
-
-
-
       {/* doctor modal */}
       {doctorModal && (
         <div className="fixed inset-0 flex items-center justify-center z-50 backdrop-brightness-50">
@@ -390,10 +400,6 @@ function Dashboard() {
         </div>
       )}
 
-
-
-
-
       {/* pharmacy modal */}
       {pharmaciesModal && (
         <div className="fixed inset-0 flex items-center justify-center z-50 backdrop-brightness-50">
@@ -411,9 +417,6 @@ function Dashboard() {
         </div>
       )}
 
-
-
-
       {/* hospitalModal */}
       {hospitalModal && (
         <div className="fixed inset-0 flex items-center justify-center z-50 backdrop-brightness-50">
@@ -426,17 +429,13 @@ function Dashboard() {
           </button>
 
           {/* Modal Box */}
-          
-            <div className="p-2 w-full">
-              <Hospital />
-           
+
+          <div className="p-2 w-full">
+            <Hospital />
+
           </div>
         </div>
       )}
-
-
-
-
     </>
   );
 }

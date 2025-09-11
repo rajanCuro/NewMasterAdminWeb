@@ -14,7 +14,7 @@ import {
 import { MdAppRegistration } from "react-icons/md";
 import { TbLiveViewFilled, TbMapPinCode } from "react-icons/tb";
 import { CiLogin } from "react-icons/ci";
-import { FaInfoCircle, FaMapMarkerAlt } from "react-icons/fa";
+import { FaInfoCircle, FaMapMarkerAlt, FaUsers } from "react-icons/fa";
 import { useAuth } from '../auth/AuthContext';
 import { IoMdSettings } from "react-icons/io";
 import { FaFile } from "react-icons/fa";
@@ -60,10 +60,10 @@ const Sidebar = ({ collapsed, toggleSidebar }) => {
         { icon: <TbMapPinCode className="text-lg" />, label: 'Pincode', path: '/pincode' },
         { icon: <FaMapMarkerAlt className="text-lg" />, label: 'Curo Map', path: '/curo_map' },
         { icon: <IoMdSettings className="text-lg" />, label: 'Settings', path: '/setting' },
-        role === "ROLE_ZONE_ADMIN" ? { icon: <MdAppRegistration className='text-lg' />, label: 'New Registration', path: '/registration' } : null,
-        { icon: <TbLiveViewFilled  className='text-lg' />, label: 'Live Tracking', path: '/distance_info' },
+        role === "ROLE_ADMIN" ? { icon: <FaUsers className='text-lg' />, label: 'Curo Users', path: '/curo_users' } : null,
+        { icon: <TbLiveViewFilled className='text-lg' />, label: 'Live Tracking', path: '/distance_info' },
         { icon: <FaFile className="text-lg" />, label: 'File manager', path: '/file_manager' },
-        
+
     ].filter(Boolean); // ✅ This removes null
 
 
@@ -125,7 +125,7 @@ const Sidebar = ({ collapsed, toggleSidebar }) => {
                         </div>
                         {!collapsed && (
                             <div className="ml-3 flex items-center justify-between">
-                                <div>
+                                <div onClick={() => navigate('/setting')} className='cursor-pointer'>
                                     <p className="text-xs">{role}</p>
                                     <p className="text-xs text-gray-400">{user?.email}</p>
                                     <p className="text-xs text-gray-400"></p>

@@ -32,7 +32,7 @@ function AllLabs({ data }) {
         }
 
         return true;
-    }) : [];
+    }).reverse() : [];
 
     return (
         <>

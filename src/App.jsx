@@ -12,11 +12,11 @@ import FeildExecutiveList from './pages/FeildExecutive/FeildExecutiveList.jsx';
 import City from './pages/CreatCity/AllCity.jsx';
 import Division from './pages/CreatDivision/AllDivision.jsx';
 import PrivateRoute from './auth/PrivateRoute';
-import NewRegistration from './components/NewRegistration.jsx';
+import NewRegistration from './components/CuroUsers.jsx';
 import Sidebar from './components/Sidebar.jsx';
 import GetDistanceInfo from './pages/FieldExecutiveDistance/GetDistanceInfoExecutiveList.jsx';
-
 import FileManager from './components/FileManager.jsx';
+import Loader from './pages/Loader.jsx';
 
 function App() {
   const [collapsed, setCollapsed] = useState(false);
@@ -24,18 +24,31 @@ function App() {
 
   const toggleSidebar = () => setCollapsed(!collapsed);
 
+  // ⚠️ Confirm before closing or refreshing the browser tab
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      e.preventDefault();
+      e.returnValue = ''; // Required for some browsers (like Chrome)
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, []);
+
   if (loading) {
-    return <div className="p-4">Loading...</div>;
+    return <Loader/>
   }
-  
+
   return (
     <Router>
       <div className="flex">
         {token && <Sidebar collapsed={collapsed} toggleSidebar={toggleSidebar} />}
 
         <main
-          className={`flex-1 transition-all duration-300 ease-in-out ${token ? (collapsed ? 'md:ml-20' : 'md:ml-64') : ''
-            } ${token ? 'ml-0' : ''}`}
+          className={`flex-1 transition-all duration-300 ease-in-out ${token ? (collapsed ? 'md:ml-20' : 'md:ml-64') : ''} ${token ? 'ml-0' : ''}`}
         >
           <Routes>
             <Route path="/" element={token ? <Navigate to="/dashboard" replace /> : <Login />} />
@@ -129,10 +142,26 @@ function App() {
                 </PrivateRoute>
               }
             />
-            <Route path='/registration' element={<PrivateRoute><NewRegistration /></PrivateRoute>} />
-            <Route path='/distance_info' element={<PrivateRoute><GetDistanceInfo /></PrivateRoute>} />
 
-             <Route
+            <Route
+              path="/curo_users"
+              element={
+                <PrivateRoute>
+                  <NewRegistration />
+                </PrivateRoute>
+              }
+            />
+
+            <Route
+              path="/distance_info"
+              element={
+                <PrivateRoute>
+                  <GetDistanceInfo />
+                </PrivateRoute>
+              }
+            />
+
+            <Route
               path="/file_manager"
               element={
                 <PrivateRoute>

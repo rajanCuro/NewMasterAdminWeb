@@ -2,41 +2,46 @@ import React, { useState, useEffect } from 'react';
 import axiosInstance from '../auth/axiosInstance';
 import { useAuth } from '../auth/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import Loader from '../pages/Loader';
+import ViewCuroUsers from './ViewCuroUsers';
 
-function NewRegistration() {
+function CuroUsers() {
   const { role } = useAuth();
   const navigate = useNavigate();
 
   const [registrations, setRegistrations] = useState([]);
   const [filteredRegistrations, setFilteredRegistrations] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [filters, setFilters] = useState({
     status: 'all',
     role: 'all',
     search: ''
   });
+  const [viewCuroUserModal, setViewCuroUserModal] = useState(false)
+  const [viewCuroUserData, setViewCuroUserData] = useState(null)
 
   useEffect(() => {
-    if (role !== "ROLE_ZONE_ADMIN") {
+    if (role == "ROLE_ZONE_ADMIN") {
       navigate('/dashboard');
     }
   }, [role, navigate]);
-
+    
   // Simulate API call
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axiosInstance.get('/head_admin/getNewRegistrations');
-        setRegistrations(response.data.dtoList || []);
-        setLoading(false);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-        setLoading(false);
-      }
-    };
-
     fetchData();
   }, []);
+
+  const fetchData = async () => {
+    setLoading(true)
+    try {
+      const response = await axiosInstance.get('/head_admin/getNewRegistrations');
+      setRegistrations((response.data.dtoList || []).reverse());
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      setLoading(false);
+    }
+  };
 
   // Apply filters whenever filters or registrations change
   useEffect(() => {
@@ -94,20 +99,32 @@ function NewRegistration() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-      </div>
+      <Loader />
     );
   }
 
-  const tableHeaders = ["User", "Contact Info", "Status", "Role", "Last Login"];
+  const tableHeaders = ["S.no", "User", "Contact Info", "Status", "Role", "Last Login"];
+  const handleViewUser = (user) => {
+    setViewCuroUserData(user)
+    setViewCuroUserModal(true)
+  }
+
+  const closeCuroViewUserModal = () => {
+    setViewCuroUserModal(false)
+    setViewCuroUserData(null)
+  }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">New Registrations</h1>
+    <div className="container mx-auto px-4 py-2">
+      <div className='flex flex-row justify-between items-center'>
+        <h1 className="text-2xl font-bold text-gray-800 mb-6">💼 Curo User Registry</h1>
+        <button onClick={() => fetchData()} className='submit-btn'>Refresh</button>
+
+
+      </div>
 
       {/* Filters and Search */}
-      <div className="bg-white p-4 rounded-lg shadow mb-6">
+      <div className="bg-gray-50 p-4 rounded-lg shadow mb-6 sticky top-0">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Status Filter */}
           <div>
@@ -179,8 +196,9 @@ function NewRegistration() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredRegistrations.map((user) => (
-                  <tr key={user.id} className="hover:bg-gray-50">
+                {filteredRegistrations.map((user, index) => (
+                  <tr onClick={() => handleViewUser(user)} key={user.id} className="hover:bg-gray-50">
+                    <td className='text-center'>{index + 1}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-10 w-10">
@@ -227,8 +245,23 @@ function NewRegistration() {
           </div>
         </div>
       )}
+
+      {viewCuroUserModal &&
+        <div
+          onClick={closeCuroViewUserModal}
+          className="fixed inset-0 rounded-xl backdrop-brightness-50 flex items-center justify-center  z-50">
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="rounded-xl shadow-xl w-full max-w-5xl relative flex flex-col max-h-[90vh]">
+            {/* Scrollable Content */}
+            <div className="overflow-y-auto rounded-xl hide-scrollbar ">
+              <ViewCuroUsers onCLose={closeCuroViewUserModal} data={viewCuroUserData} />
+            </div>
+          </div>
+        </div>
+      }
     </div>
   );
 }
 
-export default NewRegistration;
+export default CuroUsers;

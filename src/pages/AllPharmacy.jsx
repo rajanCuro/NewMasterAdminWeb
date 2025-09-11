@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import NoDataPage from '../NodataPage';
 
 function AllPharmacy({ data }) {
   const [selectedPharmacy, setSelectedPharmacy] = useState(null);
@@ -6,16 +7,14 @@ function AllPharmacy({ data }) {
 
   if (!data || !data.pharmacies) {
     return (
-      <div className="p-6 text-center text-gray-500">
-        No pharmacy data available
-      </div>
+      <NoDataPage/>
     );
   }
 
   const filteredPharmacies = data.pharmacies.filter(pharmacy =>
     pharmacy.pharmacyName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     pharmacy.email?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  ).reverse();
 
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';

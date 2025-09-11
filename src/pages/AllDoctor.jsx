@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import NoDataPage from '../NodataPage';
 
 function AllDoctor({ data }) {
   const [selectedDoctor, setSelectedDoctor] = useState(null);
@@ -7,30 +8,31 @@ function AllDoctor({ data }) {
 
   if (!data || !data.doctors) {
     return (
-      <div className="p-6 text-center text-gray-500">
-        No doctor data available
-      </div>
+      <NoDataPage />
     );
   }
 
-  const filteredDoctors = data.doctors.filter(doctor => {
-    const matchesSearch = 
-      doctor.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      doctor.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      doctor.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      doctor.specialization?.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    let matchesFilter = true;
-    if (activeFilter === 'active') {
-      matchesFilter = doctor.active;
-    } else if (activeFilter === 'verified') {
-      matchesFilter = doctor.licenceVerified;
-    } else if (activeFilter === 'inactive') {
-      matchesFilter = !doctor.active;
-    }
-    
-    return matchesSearch && matchesFilter;
-  });
+  const filteredDoctors = data.doctors
+    .filter(doctor => {
+      const matchesSearch =
+        doctor.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        doctor.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        doctor.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        doctor.specialization?.toLowerCase().includes(searchTerm.toLowerCase());
+
+      let matchesFilter = true;
+      if (activeFilter === 'active') {
+        matchesFilter = doctor.active;
+      } else if (activeFilter === 'verified') {
+        matchesFilter = doctor.licenceVerified;
+      } else if (activeFilter === 'inactive') {
+        matchesFilter = !doctor.active;
+      }
+
+      return matchesSearch && matchesFilter;
+    })
+    .reverse(); // 🔁 Reverse the final filtered list
+
 
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
@@ -44,7 +46,7 @@ function AllDoctor({ data }) {
 
   return (
     <>
-      <div className="">   
+      <div className="">
         {/* Search and Filter Bar */}
         <div className="bg-white rounded-lg shadow p-4 mb-6">
           <div className="flex flex-col md:flex-row gap-4">
@@ -58,25 +60,25 @@ function AllDoctor({ data }) {
               />
             </div>
             <div className="flex flex-wrap gap-2">
-              <button 
+              <button
                 className={`px-4 py-2 rounded-lg ${activeFilter === 'all' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
                 onClick={() => setActiveFilter('all')}
               >
                 All
               </button>
-              <button 
+              <button
                 className={`px-4 py-2 rounded-lg ${activeFilter === 'active' ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-700'}`}
                 onClick={() => setActiveFilter('active')}
               >
                 Active
               </button>
-              <button 
+              <button
                 className={`px-4 py-2 rounded-lg ${activeFilter === 'verified' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
                 onClick={() => setActiveFilter('verified')}
               >
                 Verified
               </button>
-              <button 
+              <button
                 className={`px-4 py-2 rounded-lg ${activeFilter === 'inactive' ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-700'}`}
                 onClick={() => setActiveFilter('inactive')}
               >
@@ -91,7 +93,7 @@ function AllDoctor({ data }) {
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-100">
-              <tr className='bg-gray-400 text-white'>
+                <tr className='bg-gray-400 text-white'>
                   <th className="px-6 py-3 text-left text-xs font-medium  uppercase tracking-wider">
                     Doctor
                   </th>
@@ -114,8 +116,8 @@ function AllDoctor({ data }) {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredDoctors.map((doctor) => (
-                  <tr 
-                    key={doctor.id} 
+                  <tr
+                    key={doctor.id}
                     className="hover:bg-gray-50 cursor-pointer"
                     onClick={() => setSelectedDoctor(doctor)}
                   >
@@ -231,7 +233,7 @@ function AllDoctor({ data }) {
                     <p className="text-gray-600">{selectedDoctor.qualification}</p>
                     <p className="text-gray-800 font-medium mt-2">{selectedDoctor.specialization}</p>
                     <p className="text-gray-600">{selectedDoctor.yearsOfExperience} years of experience</p>
-                    
+
                     <div className="flex gap-2 mt-4">
                       <span className={`px-3 py-1 rounded-full text-sm ${selectedDoctor.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                         {selectedDoctor.active ? 'Active' : 'Inactive'}
@@ -242,7 +244,7 @@ function AllDoctor({ data }) {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <h4 className="text-lg font-medium text-gray-700 mb-2">Professional Information</h4>
@@ -263,7 +265,7 @@ function AllDoctor({ data }) {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="mt-6">
                   <h4 className="text-lg font-medium text-gray-700 mb-2">Account Information</h4>
                   <div className="grid grid-cols-2 gap-4">
