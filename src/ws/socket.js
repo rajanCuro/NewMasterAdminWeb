@@ -1,7 +1,7 @@
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 
-const SOCKET_URL = 'http://192.168.1.5:8082/ws'; 
+const SOCKET_URL = 'https://test.curo24.com/ws'; 
 
 const stompClient = new Client({
   brokerURL: SOCKET_URL, 

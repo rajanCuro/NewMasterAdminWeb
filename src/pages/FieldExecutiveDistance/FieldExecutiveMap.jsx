@@ -2,103 +2,108 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { GoogleMap, Marker, Polyline, useLoadScript } from '@react-google-maps/api';
+import axiosInstance from '../../auth/axiosInstance';
 
 const containerStyle = {
-    width: '100%',
-    height: '100%',
-    borderRadius: '1rem'
+  width: '100%',
+  height: '100%',
+  borderRadius: '1rem',
 };
 
-const fallbackCenter = { lat: 0, lng: 0 };
+function Map({ location, data }) {
+  console.log("new Path", data);
 
-function Map({ location }) {
-    const [savedLocation] = useState({
-        latitude: 25.3572815,
-        longitude: 83.0106447
-    });
+  const [savedLocation] = useState({
+    latitude: 25.3572815,
+    longitude: 83.0106447,
+  });
 
-    const [path, setPath] = useState([
-        {
-            lat: 25.3572815,
-            lng: 83.0106447
-        }
-    ]);
+  const [path, setPath] = useState([]);
 
-    const mapRef = useRef(null);
+  const mapRef = useRef(null);
 
-    // Load Google Maps
-    const { isLoaded, loadError } = useLoadScript({
-        googleMapsApiKey: 'AIzaSyArgNP_2JIkchiqTZQWA0lLNXjPi98X5Wk', // Use .env properly in Vite
-    });
+  const { isLoaded, loadError } = useLoadScript({
+    googleMapsApiKey: 'AIzaSyArgNP_2JIkchiqTZQWA0lLNXjPi98X5Wk',
+  });
 
-    // Update path with new location points
-    useEffect(() => {
-        if (location?.latitude && location?.longitude) {
-            setPath((prevPath) => [
-                ...prevPath,
-                { lat: location.latitude, lng: location.longitude }
-            ]);
-        }
-    }, [location]);
+  // 👉 Update path when "data" prop changes
+  useEffect(() => {
+    if (Array.isArray(data) && data.length > 0) {
+      const newPath = data.map((point) => ({
+        lat: point.latitude,
+        lng: point.longitude,
+      }));
+      setPath(newPath);
+    }
+  }, [data]);
 
-    if (loadError) return <div>Error loading Google Maps</div>;
-    if (!isLoaded) return <div>Loading Google Maps...</div>;
+  // Optional: Append live location if available
+  useEffect(() => {
+    if (location?.latitude && location?.longitude) {
+      setPath((prevPath) => [
+        ...prevPath,
+        { lat: location.latitude, lng: location.longitude },
+      ]);
+    }
+  }, [location]);
 
-    const mapCenter = location
-        ? { lat: location.latitude, lng: location.longitude }
-        : { lat: savedLocation.latitude, lng: savedLocation.longitude };
+  if (loadError) return <div>Error loading Google Maps</div>;
+  if (!isLoaded) return <div>Loading Google Maps...</div>;
 
-    return (
-        <GoogleMap
-            mapContainerStyle={containerStyle}
-            center={mapCenter}
-            zoom={13}
-            onLoad={(map) => (mapRef.current = map)}
-        >
-            {/* Starting marker (savedLocation) */}
-            <Marker
-                position={{
-                    lat: savedLocation.latitude,
-                    lng: savedLocation.longitude
-                }}
-                label=""
-            />
+  const mapCenter = location
+    ? { lat: location.latitude, lng: location.longitude }
+    : (path.length > 0 ? path[0] : { lat: savedLocation.latitude, lng: savedLocation.longitude });
 
-            {/* Current location marker */}
-            {location && (
-                <Marker
-                    position={{
-                        lat: location.latitude,
-                        lng: location.longitude
-                    }}
-                    label=""
-                />
-            )}
+  return (
+    <GoogleMap
+      mapContainerStyle={containerStyle}
+      center={mapCenter}
+      zoom={13}
+      onLoad={(map) => (mapRef.current = map)}
+    >
+      {/* Start marker */}
+      <Marker
+        position={{
+          lat: savedLocation.latitude,
+          lng: savedLocation.longitude,
+        }}
+        label=""
+      />
 
-            {/* Polyline path from savedLocation through all updates */}
-            {path.length > 1 && (
-                <Polyline
-                    path={path}
-                    options={{
-                        strokeColor: '#0000FF',
-                        strokeOpacity: 0.8,
-                        strokeWeight: 4,
-                        icons: [
-                            {
-                                icon: {
-                                    path: window.google?.maps.SymbolPath.FORWARD_OPEN_ARROW, // sleeker open arrow
-                                    scale: 3, // adjust size
-                                    strokeColor: '#0000FF' // match your path color
-                                },
-                                offset: '100%',
-                            },
-                        ],
+      {/* Current location marker */}
+      {location && (
+        <Marker
+          position={{
+            lat: location.latitude,
+            lng: location.longitude,
+          }}
+          label=""
+        />
+      )}
 
-                    }}
-                />
-            )}
-        </GoogleMap>
-    );
+      {/* Polyline */}
+      {path.length > 1 && (
+        <Polyline
+          path={path}
+          options={{
+            strokeColor: '#0000FF',
+            strokeOpacity: 0.8,
+            strokeWeight: 4,
+            icons: [
+              {
+                icon: {
+                  path: window.google?.maps.SymbolPath.FORWARD_OPEN_ARROW,
+                  scale: 3,
+                  strokeColor: '#0000FF',
+                },
+                offset: '100%',
+              },
+            ],
+          }}
+        />
+      )}
+    </GoogleMap>
+  );
 }
 
 export default React.memo(Map);

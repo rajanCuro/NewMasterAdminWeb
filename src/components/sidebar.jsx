@@ -52,7 +52,7 @@ const Sidebar = ({ collapsed, toggleSidebar }) => {
         { icon: <FiHome className="text-lg" />, label: 'Dashboard', path: '/dashboard' },
         (role === "ROLE_ZONE_ADMIN" || role === "ROLE_CIRCLE_OFFICER")
             ? null
-            : { icon: <FiUsers className="text-lg" />, label: 'Division Officer', path: '/zonal' },
+            : { icon: <FiUsers className="text-lg" />, label: 'Division Officer', path: '/division_officier' },
         (role === "ROLE_ZONE_ADMIN" || role === "ROLE_CIRCLE_OFFICER") ? null : { icon: <SiPrivatedivision className="text-lg" />, label: 'All Divisions', path: '/all_division' },
         role === "ROLE_CIRCLE_OFFICER" ? null : { icon: <FiUserCheck className="text-lg" />, label: 'City Officer', path: '/circle-officer' },
         role === "ROLE_CIRCLE_OFFICER" ? null : { icon: <FaMountainCity className="text-lg" />, label: 'All Cities', path: '/all_cities' },
