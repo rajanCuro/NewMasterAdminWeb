@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Bar, Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js';
-import { FaAmbulance, FaCapsules, FaHospital, FaUserMd } from 'react-icons/fa';
+import { FaAmbulance, FaCapsules, FaHospital, FaUserMd, FaEye, FaTimes } from 'react-icons/fa';
 import AddDoctor from '../Doctor/AddDoctor';
 import AddAmbulance from '../Ambulance/AddAmbulance';
 import AddPharmacy from '../Pharmacies/AddPharmacy';
@@ -12,6 +12,10 @@ import Pharmacy from '../Pharmacies/Pharmacy';
 import Hospital from '../Hospitals/Hospital';
 import { useAuth } from '../../auth/AuthContext';
 import axios from 'axios';
+import CityOfficerDetail from '../CityOfficer/CityOfficerDetail'
+import ViewDivisionDetails from '../Division/ViewDivisionDetails';
+import { useNavigate } from 'react-router-dom';
+import Loader from '../Loader';
 
 // Register Chart.js components
 ChartJS.register(ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend);
@@ -21,10 +25,15 @@ function Dashboard() {
   const [hospitalModal, setHospitalModal] = useState(false);
   const [pharmaciesModal, setPharmaciesModal] = useState(false);
   const [doctorModal, setDoctorModal] = useState(false);
+  const [cityDetailModal, setCityDetailModal] = useState(false);
+  const [divisionDetailModal, setDivisionDetailModal] = useState(false);
+  const [selectedCity, setSelectedCity] = useState(null);
+  const [selectedDivision, setSelectedDivision] = useState(null);
   const [totalCity, setTotalCity] = useState([]);
   const [totalDivision, setTotalDivision] = useState([]);
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate()
 
   useEffect(() => {
     getAllDasboardData()
@@ -44,20 +53,29 @@ function Dashboard() {
   }
 
   // Calculate stats from actual data
+  const activeCityAdmins = totalCity.filter(admin => admin.enabled).length;
+  const inactiveCityAdmins = totalCity.length - activeCityAdmins;
+
+  const activeDivisionAdmins = totalDivision.filter(admin => admin.enabled).length;
+  const inactiveDivisionAdmins = totalDivision.length - activeDivisionAdmins;
+
   const stats = {
     totalCities: totalCity.length,
     totalDivisions: totalDivision.length,
-    totalPopulation: totalCity.reduce((sum, city) => sum + (city.populationInMillion || 0), 0),
-    // You can add more stats based on your API data
+    activeCityAdmins,
+    inactiveCityAdmins,
+    activeDivisionAdmins,
+    inactiveDivisionAdmins,
+    totalPopulation: totalCity.reduce((sum, admin) => sum + (admin.city?.populationInMillion || 0), 0),
   };
 
   // Bar chart data - using actual city populations
   const populationChartData = {
-    labels: totalCity.map(city => city.cityName),
+    labels: totalCity.map(admin => admin.city?.cityName || 'Unknown City'),
     datasets: [
       {
         label: 'Population (in millions)',
-        data: totalCity.map(city => city.populationInMillion),
+        data: totalCity.map(admin => admin.city?.populationInMillion || 0),
         backgroundColor: '#3B82F6',
         borderColor: '#2563EB',
         borderWidth: 1,
@@ -67,13 +85,14 @@ function Dashboard() {
 
   // Pie chart data - using division areas
   const divisionAreaChartData = {
-    labels: totalDivision.map(division => division.zoneName),
+    labels: totalDivision.map(admin => admin.division?.zoneName || 'Unknown Division'),
     datasets: [
       {
         label: 'Area Distribution',
-        data: totalDivision.map(division => {
+        data: totalDivision.map(admin => {
           // Extract numeric value from area string (e.g., "11491 square km" -> 11491)
-          const areaValue = division.area ? parseInt(division.area.replace(/\D/g, '')) : 0;
+          const areaString = admin.division?.area || '0 square km';
+          const areaValue = parseInt(areaString.replace(/\D/g, '')) || 0;
           return areaValue;
         }),
         backgroundColor: ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'],
@@ -95,11 +114,26 @@ function Dashboard() {
   const handleDoctor = () => {
     setDoctorModal(true);
   }
+
+  const handleViewCity = (cityAdmin) => {
+    setSelectedCity(cityAdmin);
+    setCityDetailModal(true);
+  }
+
+  const handleViewDivision = (divisionAdmin) => {
+    setSelectedDivision(divisionAdmin);
+    setDivisionDetailModal(true);
+  }
+
   const closeModals = () => {
     setAmbulanceModal(false);
     setHospitalModal(false);
     setPharmaciesModal(false);
     setDoctorModal(false);
+    setCityDetailModal(false);
+    setDivisionDetailModal(false);
+    setSelectedCity(null);
+    setSelectedDivision(null);
   }
 
   useEffect(() => {
@@ -117,9 +151,7 @@ function Dashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen main_bg p-4 flex items-center justify-center">
-        <div className="text-xl">Loading dashboard data...</div>
-      </div>
+      <Loader/>
     );
   }
 
@@ -197,8 +229,9 @@ function Dashboard() {
           <div className="main_bg1 p-6 rounded-xl shadow">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-500">Total Population</p>
-                <h3 className="text-2xl font-bold">{stats.totalPopulation}M</h3>
+                <p className="text-gray-500">Active City Admins</p>
+                <h3 className="text-2xl font-bold text-green-600">{stats.activeCityAdmins}</h3>
+                <p className="text-sm text-red-500">Inactive: {stats.inactiveCityAdmins}</p>
               </div>
               <div className="bg-purple-100 p-3 rounded-full">
                 <svg className="h-6 w-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -206,16 +239,15 @@ function Dashboard() {
                 </svg>
               </div>
             </div>
-            <p className="text-sm text-gray-500 mt-2">Total population in millions</p>
+            <p className="text-sm text-gray-500 mt-2">City administrator status</p>
           </div>
 
           <div className="main_bg1 p-6 rounded-xl shadow">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-500">Avg. Population</p>
-                <h3 className="text-2xl font-bold">
-                  {stats.totalCities > 0 ? (stats.totalPopulation / stats.totalCities).toFixed(1) : 0}M
-                </h3>
+                <p className="text-gray-500">Active Division Admins</p>
+                <h3 className="text-2xl font-bold text-green-600">{stats.activeDivisionAdmins}</h3>
+                <p className="text-sm text-red-500">Inactive: {stats.inactiveDivisionAdmins}</p>
               </div>
               <div className="bg-yellow-100 p-3 rounded-full">
                 <svg className="h-6 w-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -223,7 +255,7 @@ function Dashboard() {
                 </svg>
               </div>
             </div>
-            <p className="text-sm text-gray-500 mt-2">Average per city (in millions)</p>
+            <p className="text-sm text-gray-500 mt-2">Division administrator status</p>
           </div>
         </div>
 
@@ -231,29 +263,45 @@ function Dashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <div className="main_bg1 p-6 rounded-xl shadow max-h-[50vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold ">City Administrators</h2>
-              <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">View All</button>
+              <h2 onClick={() => navigate('/circle-officer')} className="text-xl font-semibold ">City Administrators</h2>
+              <div className="flex items-center gap-2">
+                <span className="text-green-600 text-sm font-medium">{stats.activeCityAdmins} Active</span>
+                <span className="text-red-600 text-sm font-medium">{stats.inactiveCityAdmins} Inactive</span>
+              </div>
             </div>
             <div className="space-y-4">
-              {totalCity.map((city) => (
-                <div key={city.id} className="flex items-center p-3 border rounded-lg hover:bg-gray-300 hover:cursor-pointer transition">
+              {totalCity.map((admin) => (
+                <div
+                  key={admin.id}
+                  className="flex items-center p-3 border rounded-lg hover:bg-gray-300 hover:cursor-pointer transition"
+                  onClick={() => handleViewCity(admin)}
+                >
                   <div className="flex-shrink-0 h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
                     <span className="text-blue-600 font-medium">
-                      {city.cityName ? city.cityName.split(' ').map((n) => n[0]).join('') : 'NA'}
+                      {admin.city?.cityName ? admin.city.cityName.split(' ').map((n) => n[0]).join('') : 'NA'}
                     </span>
                   </div>
                   <div className="ml-4 flex-1">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-sm font-medium text-gray-400">{city.cityName || 'Unnamed City'}</h3>
-                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                        Active
+                      <h3 className="text-sm font-medium text-gray-400">{admin.firstName} {admin.lastName}</h3>
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${admin.enabled ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                        }`}>
+                        {admin.enabled ? 'Active' : 'Inactive'}
                       </span>
                     </div>
                     <div className="flex items-center justify-between mt-1">
                       <p className="text-sm text-gray-500">
-                        {city.zone?.zoneName || 'No zone'} • Pop: {city.populationInMillion}M
+                        {admin.city?.cityName || 'No city'} • Pop: {admin.city?.populationInMillion || 0}M
                       </p>
-                      <p className="text-xs text-gray-400">Area: {city.area}</p>
+                      <button
+                        className="text-blue-600 hover:text-blue-800 text-sm flex items-center"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleViewCity(admin);
+                        }}
+                      >
+                        <FaEye className="mr-1" /> View
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -264,29 +312,45 @@ function Dashboard() {
           {/* Division Admins Section */}
           <div className="main_bg1 p-6 rounded-xl shadow  max-h-[50vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold ">Division Administrators</h2>
-              <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">View All</button>
+              <h2 onClick={() => navigate('/division_officier ')} className="text-xl font-semibold ">Division Administrators</h2>
+              <div className="flex items-center gap-2">
+                <span className="text-green-600 text-sm font-medium">{stats.activeDivisionAdmins} Active</span>
+                <span className="text-red-600 text-sm font-medium">{stats.inactiveDivisionAdmins} Inactive</span>
+              </div>
             </div>
             <div className="space-y-4">
-              {totalDivision.map((division) => (
-                <div key={division.id} className="flex items-center p-3 border rounded-lg hover:bg-gray-300 hover:cursor-pointer transition">
+              {totalDivision.map((admin) => (
+                <div
+                  key={admin.id}
+                  className="flex items-center p-3 border rounded-lg hover:bg-gray-300 hover:cursor-pointer transition"
+                  onClick={() => handleViewDivision(admin)}
+                >
                   <div className="flex-shrink-0 h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center">
                     <span className="text-purple-600 font-medium">
-                      {division.zoneName ? division.zoneName.split(' ').map((n) => n[0]).join('') : 'NA'}
+                      {admin.division?.zoneName ? admin.division.zoneName.split(' ').map((n) => n[0]).join('') : 'NA'}
                     </span>
                   </div>
                   <div className="ml-4 flex-1">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-sm font-medium text-gray-500">{division.zoneName || 'Unnamed Division'}</h3>
-                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                        Active
+                      <h3 className="text-sm font-medium text-gray-500">{admin.firstName} {admin.lastName}</h3>
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${admin.enabled ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                        }`}>
+                        {admin.enabled ? 'Active' : 'Inactive'}
                       </span>
                     </div>
                     <div className="flex items-center justify-between mt-1">
                       <p className="text-sm text-gray-500">
-                        Code: {division.zoneCode} • Districts: {division.noOfDistricts}
+                        {admin.division?.zoneName || 'No division'} • Districts: {admin.division?.noOfDistricts || 0}
                       </p>
-                      <p className="text-xs text-gray-400">Area: {division.area}</p>
+                      <button
+                        className="text-blue-600 hover:text-blue-800 text-sm flex items-center"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleViewDivision(admin);
+                        }}
+                      >
+                        <FaEye className="mr-1" /> View
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -350,7 +414,7 @@ function Dashboard() {
                       tooltip: {
                         enabled: true,
                         callbacks: {
-                          label: function(context) {
+                          label: function (context) {
                             return `${context.label}: ${context.raw} sq km`;
                           }
                         }
@@ -364,11 +428,40 @@ function Dashboard() {
         </div>
       </div>
 
+      {/* City Detail Modal */}
+      {cityDetailModal && selectedCity && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 backdrop-brightness-50">
+          <div className="relative bg-white rounded-lg shadow-xl max-w-7xl w-full max-h-[90vh] overflow-y-auto">
+            <button
+              onClick={closeModals}
+              className="absolute cursor-pointer top-4 right-4 flex items-center justify-center w-8 h-8 rounded-full bg-gray-200 text-gray-600 hover:bg-gray-300 hover:text-gray-800 transition"
+            >
+              <FaTimes />
+            </button>
+            <CityOfficerDetail ViewData={selectedCity} />
+          </div>
+        </div>
+      )}
+
+      {/* Division Detail Modal */}
+      {divisionDetailModal && selectedDivision && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 backdrop-brightness-50">
+          <div className="relative bg-white rounded-lg shadow-xl max-w-7xl w-full max-h-[90vh] overflow-y-auto">
+            <button
+              onClick={closeModals}
+              className="absolute cursor-pointer top-4 right-4 flex items-center justify-center w-8 h-8 rounded-full bg-gray-200 text-gray-600 hover:bg-gray-300 hover:text-gray-800 transition"
+            >
+              <FaTimes />
+            </button>
+            <ViewDivisionDetails ViewData={selectedDivision} />
+          </div>
+        </div>
+      )}
+
       {/* ambulance Modal */}
       {ambulanceModal && (
         <div className="fixed inset-0 flex items-center justify-center z-50 backdrop-brightness-50">
           <div className="relative bg-red-50 rounded-lg shadow-xl max-w-full w-full h-screen overflow-y-auto">
-
             <button
               onClick={closeModals}
               className="absolute cursor-pointer top-4 right-4 flex items-center justify-center w-8 h-8 rounded-full bg-gray-200 text-gray-600 hover:bg-gray-300 hover:text-gray-800 transition"
@@ -386,7 +479,6 @@ function Dashboard() {
       {doctorModal && (
         <div className="fixed inset-0 flex items-center justify-center z-50 backdrop-brightness-50">
           <div className="relative bg-green-50 rounded-lg shadow-xl max-w-full w-full h-screen overflow-y-auto">
-
             <button
               onClick={closeModals}
               className="absolute z-70 cursor-pointer top-4 right-4 flex items-center justify-center w-8 h-8 rounded-full bg-gray-200 text-gray-600 hover:bg-gray-300 hover:text-gray-800 transition"
@@ -420,19 +512,14 @@ function Dashboard() {
       {/* hospitalModal */}
       {hospitalModal && (
         <div className="fixed inset-0 flex items-center justify-center z-50 backdrop-brightness-50">
-
           <button
             onClick={closeModals}
             className="fixed top-0 right-0 z-50 flex items-center justify-center w-8 h-8 rounded-full bg-gray-200 text-gray-600 hover:bg-gray-300 hover:text-gray-800 transition"
           >
             ✕
           </button>
-
-          {/* Modal Box */}
-
           <div className="p-2 w-full">
             <Hospital />
-
           </div>
         </div>
       )}

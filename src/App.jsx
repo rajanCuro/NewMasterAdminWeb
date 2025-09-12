@@ -72,7 +72,7 @@ function App() {
             />
 
             <Route
-              path="/zonal"
+              path="/division_officier"
               element={
                 <PrivateRoute>
                   <Zonal />

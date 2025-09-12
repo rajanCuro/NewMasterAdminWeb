@@ -14,8 +14,8 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true); // important
   const [submittedData, setSubmittedData] = useState(null)
   const [latitude, setLatitude] = useState({
-    lat: 25.356917,
-    lng: 83.007167,
+    lat: ``,
+    lng:``,
   });
   const [longitude, setLongitude] = useState(null);
 

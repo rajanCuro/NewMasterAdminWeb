@@ -3,9 +3,12 @@ import Map from '../Map/Map'
 
 import stompClient from '../../ws/socket';
 import FieldExecutiveMap from './FieldExecutiveMap';
+import axiosInstance from '../../auth/axiosInstance';
+import axios from 'axios';
 
-function DistanceInfo({ data }) {
+function DistanceInfo({ data, date }) { 
     const [mapData, setMapData] = useState(null)
+    const [newDataPath, setNewDataPath] = useState([])
     if (!data) {
         return <div className="text-gray-500 p-4">No data available</div>;
     }
@@ -34,7 +37,22 @@ function DistanceInfo({ data }) {
         firstName,
         lastName
     } = data;
+    useEffect(() => {
+        getTravelPath();
+    }, []);
 
+    const getTravelPath = async () => {
+        try {
+            const response = await axiosInstance.get(`/api/field-executive/getTravelPathByDate?userId=${data?.id}&date=${date}`
+            );
+            console.log('path', response);
+            setNewDataPath(response.data.travelPath)
+            // Optionally set path here using API response
+            // Example: setPath(response.data?.path || []);
+        } catch (error) {
+            console.log(error);
+        }
+    };
     return (
         <div className="flex flex-col lg:flex-row gap-1 p-2 ">
             {/* <WebSocketComponent /> */}
@@ -44,7 +62,7 @@ function DistanceInfo({ data }) {
                     Distance & Performance Metrics
                     {firstName && lastName && (
                         <span className="block text-sm text-gray-600 mt-1">
-                            for {firstName} {lastName}
+                            for {firstName} {lastName} - {date}
                         </span>
                     )}
                 </h2>
@@ -101,7 +119,7 @@ function DistanceInfo({ data }) {
 
             {/* Map Container */}
             <div className='w-full lg:w-3/4 xl:w-3/4 h-80 md:h-96 lg:h-auto'>
-                <FieldExecutiveMap location={mapData} />
+                <FieldExecutiveMap data={newDataPath} location={mapData} />
                 {/* <Map location={mapData} data={'mapE'} /> */}
             </div>
         </div>

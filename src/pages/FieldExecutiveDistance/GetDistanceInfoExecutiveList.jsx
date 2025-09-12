@@ -16,6 +16,7 @@ const GetDistanceInfo = () => {
     const [loading, setLoading] = useState(true);
     const [FieldExecutiveInfoModal, setFieldExecutiveInfoModal] = useState(false);
     const [viewData, setViewData] = useState(null);
+    const [chooseDate, setChooseDate] = useState(null)
 
     const [filters, setFilters] = useState({
         searchTerm: "",
@@ -26,7 +27,7 @@ const GetDistanceInfo = () => {
         try {
             setLoading(true);
             const response = await axiosInstance.get(`/city-admin/getAllFieldExecutiveAddedByCityAdmin`);
-            
+
             if (response.data && Array.isArray(response.data.dtoList)) {
                 setCurrentAgents(response.data.dtoList);
                 setAgents(response.data.dtoList);
@@ -49,7 +50,7 @@ const GetDistanceInfo = () => {
     // Filter agents based on filter criteria
     useEffect(() => {
         let result = [...agents];
-        
+
         if (filters.searchTerm) {
             const searchTerm = filters.searchTerm.toLowerCase();
             result = result.filter(
@@ -79,10 +80,42 @@ const GetDistanceInfo = () => {
         }));
     };
 
-    const handleViewExecutiveInfoModal = (agent) => {
-        setFieldExecutiveInfoModal(true);
-        setViewData(agent);
+    const handleViewExecutiveInfoModal = async (agent) => {
+        try {
+            // Show date picker with default value = today
+            const result = await Swal.fire({
+                title: 'Select a Date',
+                input: 'text',
+                inputLabel: 'Choose a date',
+                inputPlaceholder: 'YYYY-MM-DD',
+                inputValue: new Date().toISOString().split('T')[0], // default: today
+                showCancelButton: true,
+                inputAttributes: {
+                    type: 'date',
+                    min: '2020-01-01',
+                    max: '2030-12-31',
+                },
+                confirmButtonText: 'Confirm',
+            });
+
+            // Get selected date or use current date
+            const selectedDate = result.isConfirmed && result.value
+                ? result.value
+                : new Date().toISOString().split('T')[0];
+
+            console.log('Selected Date:', selectedDate);
+            setChooseDate(selectedDate)
+            setFieldExecutiveInfoModal(true);
+            setViewData({
+                ...agent,
+                selectedDate,
+            });
+
+        } catch (error) {
+            console.error('Date picker error:', error);
+        }
     };
+
 
     // Format agent name
     const formatAgentName = (agent) => {
@@ -117,22 +150,31 @@ const GetDistanceInfo = () => {
                 cancelButtonText: "Cancel",
             });
 
-            if (result.isConfirmed) {
-                const response = await axiosInstance.put(`/head_admin/toggleLockStatusUserById/${id}`);
-
-                Swal.fire({
-                    icon: "success",
-                    title: "Success",
-                    text: response.data.message || "Status updated successfully",
-                });
-
-                getAllFieldExecutives();
+            // ✅ Only proceed if user confirms
+            if (!result.isConfirmed) {
+                console.log("Status change cancelled by user.");
+                return; // Exit early, no change made
             }
+
+            // 👇 Proceed with API call
+            const response = await axiosInstance.put(`/head_admin/toggleLockStatusUserById/${id}`);
+
+            // ✅ Show success message
+            Swal.fire({
+                icon: "success",
+                title: "Success",
+                text: response.data.message || "Status updated successfully",
+            });
+
+            // ✅ Refresh data
+            getAllFieldExecutives();
+
         } catch (error) {
             console.error("Error updating status:", error);
             Swal.fire("Error", "Failed to update status", "error");
         }
     };
+
 
     if (loading) {
         return <Loader />;
@@ -249,6 +291,7 @@ const GetDistanceInfo = () => {
                                                     </button>
                                                 </div>
                                             </td>
+
                                         </tr>
                                     ))
                                 ) : (
@@ -262,7 +305,7 @@ const GetDistanceInfo = () => {
                         </table>
                     </div>
                 </div>
-                
+
                 {FieldExecutiveInfoModal && (
                     <div
                         className="fixed inset-0 backdrop-brightness-50 flex items-center justify-center z-50 p-4"
@@ -283,7 +326,7 @@ const GetDistanceInfo = () => {
                                 </button>
                             </div>
                             <div>
-                                <DistanceInfo data={viewData} />
+                                <DistanceInfo data={viewData} date={chooseDate} />
                             </div>
                         </div>
                     </div>
