@@ -1,7 +1,8 @@
 import axios from "axios";
 
 // You can dynamically pick the base URL depending on the environment
-const baseURL = import.meta.env.VITE_DEVLOP_API_BASE_URL;
+// const baseURL = import.meta.env.VITE_DEVLOP_API_BASE_URL;
+const baseURL = import.meta.env.VITE_LOCAL_API_BASE_URL
 // const baseURL = import.meta.env.VITE_TEST_API_BASE_URL;
 // const baseURL = import.meta.env.VITE_PRODUCTION_API_BASE_URL;
 

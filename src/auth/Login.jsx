@@ -72,7 +72,7 @@ function Login() {
             const response = await axiosInstance.post("/auth/generateOtp", {
                 email: username,   // e.g. "ravi@curo24.com"
                 password: password ,// e.g. "123456"
-                requstedFrom:"WEB"
+                requestFrom:"adminWeb"
             }, {
                 headers: {
                     "accept": "*/*",

@@ -72,7 +72,7 @@ const ViewFeildExecutiveDetails = ({ ViewData: initialData, onSave, onClose }) =
     try {
       setLoading(true);
       const response = await axiosInstance.get(
-        `/api/field-executive/getAgentStatistics/${user?.id}`
+        `/api/field-executive/getAgentStatistics/${initialData?.id}`
       );
       setAllStates(response.data);
     } catch (error) {
@@ -210,8 +210,8 @@ const ViewFeildExecutiveDetails = ({ ViewData: initialData, onSave, onClose }) =
                         {tab === 'details' && 'Details'}
                         {tab === 'ambulance' && `Ambulance (${AllStats?.ambulanceCount})`}
                         {tab === 'doctor' && `Doctor (${AllStats?.doctorCount})`}
-                        {tab === 'Pharmacy' && `Pharmacy (${formData.PhCounts})`}
-                        {tab === 'Labs' && `Labs (${formData.LbCounts})`}
+                        {tab === 'Pharmacy' && `Pharmacy (${AllStats.pharmacyCount})`}
+                        {tab === 'Labs' && `Labs (${AllStats.labCount})`}
                       </button>
                     ))}
                   </div>

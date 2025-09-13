@@ -20,6 +20,8 @@ import Loader from './pages/Loader.jsx';
 import HospitalList from './pages/Hospitals/HospitalList.jsx'
 import AmbulanceList from './pages/Ambulance/AmbulanceLIst.jsx';
 import PharmacyList from './pages/Pharmacies/PharmacyList.jsx'
+import DoctorList from './pages/Doctor/DoctorList.jsx';
+import Lablist from './pages/Lab/LabList.jsx'
 
 
 function App() {
@@ -43,7 +45,7 @@ function App() {
   }, []);
 
   if (loading) {
-    return <Loader/>
+    return <Loader />
   }
 
   return (
@@ -194,6 +196,22 @@ function App() {
               element={
                 <PrivateRoute>
                   <PharmacyList />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/doctors"
+              element={
+                <PrivateRoute>
+                  <DoctorList />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/labs"
+              element={
+                <PrivateRoute>
+                  <Lablist />
                 </PrivateRoute>
               }
             />

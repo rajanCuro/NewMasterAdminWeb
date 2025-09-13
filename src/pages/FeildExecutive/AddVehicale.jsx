@@ -76,37 +76,85 @@ function AddVehicle({ id, onClose, editeVehicleData }) {
             id="number"
             name="number"
             value={formData.number}
-            onChange={handleChange}
+            onChange={(e) => {
+              let raw = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+              let formatted = '';
+
+              if (raw.length <= 2) {
+                formatted = raw;
+              } else if (raw.length <= 4) {
+                formatted = `${raw.slice(0, 2)}-${raw.slice(2)}`;
+              } else if (raw.length <= 6) {
+                formatted = `${raw.slice(0, 2)}-${raw.slice(2, 4)} ${raw.slice(4)}`;
+              } else if (raw.length <= 8) {
+                formatted = `${raw.slice(0, 2)}-${raw.slice(2, 4)} ${raw.slice(4, 6)}-${raw.slice(6)}`;
+              } else {
+                formatted = `${raw.slice(0, 2)}-${raw.slice(2, 4)} ${raw.slice(4, 6)}-${raw.slice(6, 10)}`;
+              }
+
+              handleChange({
+                target: {
+                  name: 'number',
+                  value: formatted,
+                },
+              });
+            }}
             className="float-input uppercase"
             required
             placeholder=" "
+            maxLength={14} // Max length to fit format: UP-65 FM-6848
           />
           <label htmlFor="number" className="float-label">Vehicle Number</label>
+
         </div>
+
         <div className="relative mt-6">
           <input
             type="text"
             id="model"
             name="model"
             value={formData.model}
-            onChange={handleChange}
+            onChange={(e) => {
+              // Allow only digits and limit to 4 characters
+              const value = e.target.value.replace(/\D/g, '').slice(0, 4);
+              handleChange({
+                target: {
+                  name: 'model',
+                  value,
+                },
+              });
+            }}
             className="float-input"
             placeholder=" "
+            required
+            maxLength={4}
           />
           <label htmlFor="model" className="float-label">Model</label>
         </div>
+
         <div className="relative mt-6">
           <input
             type="text"
             id="color"
             name="color"
             value={formData.color}
-            onChange={handleChange}
+            onChange={(e) => {
+              // Allow only letters and spaces
+              const value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
+              handleChange({
+                target: {
+                  name: 'color',
+                  value,
+                },
+              });
+            }}
             className="float-input"
             placeholder=" "
+            required
           />
           <label htmlFor="color" className="float-label">Color</label>
         </div>
+
         <div className="relative mt-6">
           <input
             type="date"

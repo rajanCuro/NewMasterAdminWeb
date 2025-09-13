@@ -3,15 +3,14 @@ import { RiSearchLine, RiFilter3Line } from "react-icons/ri";
 import { FiEdit } from "react-icons/fi";
 import { FaCamera, FaEye, FaPhone, FaUser } from "react-icons/fa";
 import { MdOutlineMailOutline, MdTrackChanges, MdMoreVert } from "react-icons/md";
-import { IoIosCopy, IoIosClose, IoIosArrowRoundBack, IoMdArrowRoundBack } from "react-icons/io";
+import { IoIosCopy, IoIosClose, IoMdArrowRoundBack } from "react-icons/io";
 import axiosInstance from "../../auth/axiosInstance";
 import { useAuth } from "../../auth/AuthContext";
 import Swal from "sweetalert2";
 import Loader from "../Loader";
 import Pagination from "../Pagination";
-import Ambulance from "./Ambulance";
+import Labs from "./Labs";
 import { useNavigate } from "react-router-dom";
-import { AiOutlineArrowLeft } from "react-icons/ai";
 
 const FeildExecutiveList = () => {
     const { uploadImage, role } = useAuth();
@@ -23,7 +22,7 @@ const FeildExecutiveList = () => {
     const [error, setError] = useState(null);
     const [showFilters, setShowFilters] = useState(false);
     const [actionMenu, setActionMenu] = useState(null);
-    const [doctorModal, setDoctorModal] = useState(false)
+    const [labsModal, setLabsModal] = useState(false)
     const [totalItems, setTotalItems] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
 
@@ -33,7 +32,7 @@ const FeildExecutiveList = () => {
         sortBy: "newest"
     });
 
-    const navigate = useNavigate();
+    const navigate = useNavigate()
 
     const getAllFieldExecutives = async () => {
         try {
@@ -260,12 +259,12 @@ const FeildExecutiveList = () => {
     const [ids, setIds] = useState(null)
     const handleViewHospital = (id) => {
         setIds(id)
-        setDoctorModal(true)
+        setLabsModal(true)
     }
 
     const closeModal = () => {
         setIds(null)
-        setDoctorModal(false)
+        setLabsModal(false)
     }
 
     return (
@@ -273,16 +272,12 @@ const FeildExecutiveList = () => {
             {/* Header */}
             <div className="bg-white px-6 py-5 border-b border-gray-200">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-                    <div className="flex items-center gap-4 mb-4">                     
-
-                        {/* Heading Content */}
-                        <div>
-                            <div className="flex justify-start items-center gap-2">
-                                <IoMdArrowRoundBack  onClick={() => navigate('/dashboard')} className="cursor-pointer" size={26}  />
-                                <h1 className="text-2xl font-semibold text-gray-800">Field Executives</h1>
-                            </div>
-                            <p className="text-gray-500 mt-1">Manage your team of field executives</p>
+                    <div>
+                        <div className="flex justify-start items-center gap-2">
+                            <IoMdArrowRoundBack onClick={() => navigate(-1)} className="cursor-pointer" size={26} />
+                            <h1 className="text-2xl font-semibold text-gray-800">Field Executives</h1>
                         </div>
+                        <p className="text-gray-500 mt-1">Manage your team of field executives</p>
                     </div>
 
                     {role !== "ROLE_ADMIN" && role !== "ROLE_ZONE_ADMIN" && (
@@ -586,17 +581,25 @@ const FeildExecutiveList = () => {
                     )}
                 </div>
             </div>
-            {doctorModal && (
+            {labsModal && (
                 <div className="fixed inset-0 flex items-center justify-center z-50 backdrop-brightness-50">
-                    <button
-                        onClick={closeModal}
-                        className="fixed top-0 bg-red-500 right-0 z-50 flex items-center justify-center w-8 h-8 rounded-full  text-gray-50 cursor-pointer hover:bg-gray-300 hover:text-gray-800 transition"
-                    >
-                        ✕
-                    </button>
-                    <div className="p-2 w-full">
-                        {/* <Hospital /> */}
-                        <Ambulance id={ids} />
+                    <div className="p-2 w-[70%] max-h-[90vh] overflow-hidden bg-white rounded shadow relative">
+
+                        {/* Header: Sticky at top */}
+                        <div className="sticky top-0 z-10 bg-white flex items-center justify-between p-4 border-b">
+                            <h1 className="text-lg font-semibold">Labs</h1>
+                            <button
+                                onClick={closeModal}
+                                className="bg-red-500 w-8 h-8 flex items-center justify-center rounded-full text-white hover:bg-gray-300 hover:text-gray-800 transition"
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        {/* Scrollable Content */}
+                        <div className="overflow-y-auto max-h-[calc(90vh-64px)] p-4">
+                            <Labs id={ids} />
+                        </div>
                     </div>
                 </div>
             )}

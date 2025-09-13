@@ -32,7 +32,7 @@ export default function AmbulanceTable({ id }) {
       // alert(id)
       const response = await axiosInstance.get(`/api/field-executive/getAgentStatistics/${id}`);
       setAmbulances(response.data.ambulances || []);
-      console.log(response.data.ambulances)
+      console.log(response.data)
     } catch (error) {
       setError(true); // Fixed: Now setError is defined
       console.error('Error fetching data:', error);

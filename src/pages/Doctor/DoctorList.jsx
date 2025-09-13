@@ -3,15 +3,14 @@ import { RiSearchLine, RiFilter3Line } from "react-icons/ri";
 import { FiEdit } from "react-icons/fi";
 import { FaCamera, FaEye, FaPhone, FaUser } from "react-icons/fa";
 import { MdOutlineMailOutline, MdTrackChanges, MdMoreVert } from "react-icons/md";
-import { IoIosCopy, IoIosClose, IoIosArrowRoundBack, IoMdArrowRoundBack } from "react-icons/io";
+import { IoIosCopy, IoIosClose, IoMdArrowRoundBack } from "react-icons/io";
 import axiosInstance from "../../auth/axiosInstance";
 import { useAuth } from "../../auth/AuthContext";
 import Swal from "sweetalert2";
 import Loader from "../Loader";
 import Pagination from "../Pagination";
-import Ambulance from "./Ambulance";
+import Doctor from "./Doctor";
 import { useNavigate } from "react-router-dom";
-import { AiOutlineArrowLeft } from "react-icons/ai";
 
 const FeildExecutiveList = () => {
     const { uploadImage, role } = useAuth();
@@ -33,7 +32,7 @@ const FeildExecutiveList = () => {
         sortBy: "newest"
     });
 
-    const navigate = useNavigate();
+    const navigate = useNavigate()
 
     const getAllFieldExecutives = async () => {
         try {
@@ -273,16 +272,12 @@ const FeildExecutiveList = () => {
             {/* Header */}
             <div className="bg-white px-6 py-5 border-b border-gray-200">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-                    <div className="flex items-center gap-4 mb-4">                     
-
-                        {/* Heading Content */}
-                        <div>
-                            <div className="flex justify-start items-center gap-2">
-                                <IoMdArrowRoundBack  onClick={() => navigate('/dashboard')} className="cursor-pointer" size={26}  />
-                                <h1 className="text-2xl font-semibold text-gray-800">Field Executives</h1>
-                            </div>
-                            <p className="text-gray-500 mt-1">Manage your team of field executives</p>
+                    <div>
+                        <div className="flex justify-start items-center gap-2">
+                            <IoMdArrowRoundBack onClick={() => navigate(-1)} className="cursor-pointer" size={26} />
+                            <h1 className="text-2xl font-semibold text-gray-800">Field Executives</h1>
                         </div>
+                        <p className="text-gray-500 mt-1">Manage your team of field executives</p>
                     </div>
 
                     {role !== "ROLE_ADMIN" && role !== "ROLE_ZONE_ADMIN" && (
@@ -596,7 +591,7 @@ const FeildExecutiveList = () => {
                     </button>
                     <div className="p-2 w-full">
                         {/* <Hospital /> */}
-                        <Ambulance id={ids} />
+                        <Doctor id={ids} />
                     </div>
                 </div>
             )}

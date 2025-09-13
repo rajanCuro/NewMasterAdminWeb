@@ -29,6 +29,8 @@ const FeildExecutiveList = () => {
   const [error, setError] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
   const [actionMenu, setActionMenu] = useState(null);
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
 
   const [filters, setFilters] = useState({
     searchTerm: "",
@@ -47,6 +49,8 @@ const FeildExecutiveList = () => {
       if (response.data && Array.isArray(response.data.dtoList)) {
         setAgents(response.data.dtoList);
         setFilteredAgents(response.data.dtoList);
+        setTotalItems(response.data.totalItems);
+        setTotalPages(response.data.totalPages);
       } else {
         setError("No agents found in the response.");
       }
@@ -97,7 +101,6 @@ const FeildExecutiveList = () => {
     }
 
     setFilteredAgents(result);
-    setCurrentPage(1);
   }, [filters, agents]);
 
   // Handle filter changes
@@ -172,13 +175,6 @@ const FeildExecutiveList = () => {
     getAllFieldExecutives();
     setEditData(null);
   };
-
-  const totalItems = filteredAgents.length;
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
-
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentAgents = filteredAgents.slice(indexOfFirstItem, indexOfLastItem);
 
   const formatAgentName = (agent) => {
     return `${agent.firstName || ""} ${agent.lastName || ""}`.trim() || "Unknown Agent";
@@ -404,7 +400,7 @@ const FeildExecutiveList = () => {
             </div>
             <div className="ml-3">
               <p className="text-sm text-gray-500">Total Executives</p>
-              <p className="text-lg font-semibold">{agents.length}</p>
+              <p className="text-lg font-semibold">{totalItems}</p>
             </div>
           </div>
 
@@ -436,6 +432,28 @@ const FeildExecutiveList = () => {
           <div className="overflow-x-auto">
             {loading ? (
               <Loader />
+            ) : error ? (
+              <div className="p-8 text-center">
+                <p className="text-red-500">{error}</p>
+                <button 
+                  onClick={getAllFieldExecutives}
+                  className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                >
+                  Try Again
+                </button>
+              </div>
+            ) : filteredAgents.length === 0 ? (
+              <div className="p-8 text-center">
+                <p className="text-gray-500">No field executives found.</p>
+                {role !== "ROLE_ADMIN" && role !== "ROLE_ZONE_ADMIN" && (
+                  <button 
+                    onClick={handleAddAgent}
+                    className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  >
+                    Add Your First Field Executive
+                  </button>
+                )}
+              </div>
             ) : (
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
@@ -458,7 +476,7 @@ const FeildExecutiveList = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {currentAgents.map((agent, index) => (
+                  {filteredAgents.map((agent) => (
                     <tr
                       key={agent.id}
                       className="hover:bg-gray-50 transition-colors cursor-pointer"
@@ -642,7 +660,7 @@ const FeildExecutiveList = () => {
           </div>
         </div>
         {/* Pagination */}
-        {filteredAgents.length > 0 && (
+        {totalItems > 0 && (
           <div className="px-6 py-4 bg-white border-t border-gray-200">
             <Pagination
               currentPage={currentPage}

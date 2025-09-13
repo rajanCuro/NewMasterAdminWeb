@@ -174,14 +174,14 @@ function Dashboard() {
           </button>
 
           <button
-            onClick={() => navigate('/hospitals')}
+            onClick={() => navigate('/labs')}
             className="flex items-center cursor-pointer gap-2 px-4 py-2 rounded-lg text-white bg-blue-600 hover:bg-blue-700"
           >
-            <FaHospital /> Hospital
+            <FaHospital /> Lab
           </button>
 
           <button
-            onClick={handleDoctor}
+            onClick={()=>navigate('/doctors')}
             className="flex items-center cursor-pointer gap-2 px-4 py-2 rounded-lg text-white bg-purple-600 hover:bg-purple-700"
           >
             <FaUserMd /> Doctor

@@ -30,9 +30,9 @@ const Loader = () => {
                 <p className="text-gray-600 text-center">Please wait while we process your request...</p>
 
                 {/* Progress bar for additional visual feedback */}
-                <div className="mt-6 bg-gray-200 rounded-full h-2">
+                {/* <div className="mt-6 bg-gray-200 rounded-full h-2">
                     <div className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full w-3/4 animate-pulse"></div>
-                </div>
+                </div> */}
             </div>
 
         </div>

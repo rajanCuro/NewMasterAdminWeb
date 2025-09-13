@@ -20,7 +20,7 @@ const FeildExecutiveList = () => {
     const [error, setError] = useState(null);
     const [showFilters, setShowFilters] = useState(false);
     const [actionMenu, setActionMenu] = useState(null);
-    const [hospitalModal, setHospitalModal] = useState(false)
+    const [pharmacyModal, setPharmacyModal] = useState(false)
 
     const [filters, setFilters] = useState({
         searchTerm: "",
@@ -258,12 +258,12 @@ const FeildExecutiveList = () => {
     const [ids, setIds] = useState(null)
     const handleViewHospital = (id) => {
         setIds(id)
-        setHospitalModal(true)
+        setPharmacyModal(true)
     }
 
     const closeModal = () => {
         setIds(null)
-        setHospitalModal(false)
+        setPharmacyModal(false)
     }
 
     return (
@@ -610,20 +610,30 @@ const FeildExecutiveList = () => {
                     )}
                 </div>
             </div>
-            {hospitalModal && (
+            {pharmacyModal && (
                 <div className="fixed inset-0 flex items-center justify-center z-50 backdrop-brightness-50">
-                    <button
-                        onClick={closeModal}
-                        className="fixed top-0 bg-red-500 right-0 z-50 flex items-center justify-center w-8 h-8 rounded-full  text-gray-50 cursor-pointer hover:bg-gray-300 hover:text-gray-800 transition"
-                    >
-                        ✕
-                    </button>
-                    <div className="p-2 w-full">
-                        {/* <Hospital /> */}
-                        <Pharmacy id={ids} />
+                    <div className="p-2 w-[70%] max-h-[90vh] overflow-hidden bg-white rounded shadow relative">
+
+                        {/* Header: Sticky at top */}
+                        <div className="sticky top-0 z-10 bg-white flex items-center justify-between p-4 border-b">
+                            <h1 className="text-lg font-semibold">Pharmacies</h1>
+                            <button
+                                onClick={closeModal}
+                                className="bg-red-500 w-8 h-8 flex items-center justify-center rounded-full text-white hover:bg-gray-300 hover:text-gray-800 transition"
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        {/* Scrollable Content */}
+                        <div className="overflow-y-auto max-h-[calc(90vh-64px)] p-4">
+                            <Pharmacy id={ids} />
+                        </div>
                     </div>
                 </div>
             )}
+
+
         </div>
     );
 };
