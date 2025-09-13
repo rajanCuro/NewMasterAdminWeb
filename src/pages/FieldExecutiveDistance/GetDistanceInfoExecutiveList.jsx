@@ -82,7 +82,6 @@ const GetDistanceInfo = () => {
 
     const handleViewExecutiveInfoModal = async (agent) => {
         try {
-            // Show date picker with default value = today
             const result = await Swal.fire({
                 title: 'Select a Date',
                 input: 'text',
@@ -98,13 +97,20 @@ const GetDistanceInfo = () => {
                 confirmButtonText: 'Confirm',
             });
 
-            // Get selected date or use current date
-            const selectedDate = result.isConfirmed && result.value
+            // ✅ Only continue if user confirms
+            if (!result.isConfirmed) {
+                console.log('User cancelled date selection');
+                return; // Exit early
+            }
+
+            // ✅ Use selected date or today's date if none provided
+            const selectedDate = result.value?.trim()
                 ? result.value
                 : new Date().toISOString().split('T')[0];
 
             console.log('Selected Date:', selectedDate);
-            setChooseDate(selectedDate)
+
+            // ✅ Open modal and pass data
             setFieldExecutiveInfoModal(true);
             setViewData({
                 ...agent,
@@ -115,6 +121,7 @@ const GetDistanceInfo = () => {
             console.error('Date picker error:', error);
         }
     };
+
 
 
     // Format agent name

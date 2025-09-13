@@ -10,12 +10,14 @@ import Ambulance from '../Ambulance/Ambulance';
 import Doctor from '../Doctor/Doctor';
 import Pharmacy from '../Pharmacies/Pharmacy';
 import Hospital from '../Hospitals/Hospital';
+import HospitalList from '../Hospitals/HospitalList'
 import { useAuth } from '../../auth/AuthContext';
 import axios from 'axios';
 import CityOfficerDetail from '../CityOfficer/CityOfficerDetail'
 import ViewDivisionDetails from '../Division/ViewDivisionDetails';
 import { useNavigate } from 'react-router-dom';
 import Loader from '../Loader';
+import axiosInstance from '../../auth/axiosInstance';
 
 // Register Chart.js components
 ChartJS.register(ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend);
@@ -31,18 +33,15 @@ function Dashboard() {
   const [selectedDivision, setSelectedDivision] = useState(null);
   const [totalCity, setTotalCity] = useState([]);
   const [totalDivision, setTotalDivision] = useState([]);
-  const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate()
 
   useEffect(() => {
     getAllDasboardData()
   }, [])
-
   const getAllDasboardData = async () => {
     try {
-      const response = await axios.get(`http://192.168.1.14:8082/head_admin/getHeadOfficeStatistics`)
-      setDashboardData(response.data);
+      const response = await axiosInstance.get(`/head_admin/getHeadOfficeStatistics`)
       setTotalCity(response.data.totalCityAdminCount || [])
       setTotalDivision(response.data.totalDivisionAdmin || [])
       setLoading(false);
@@ -55,10 +54,8 @@ function Dashboard() {
   // Calculate stats from actual data
   const activeCityAdmins = totalCity.filter(admin => admin.enabled).length;
   const inactiveCityAdmins = totalCity.length - activeCityAdmins;
-
   const activeDivisionAdmins = totalDivision.filter(admin => admin.enabled).length;
   const inactiveDivisionAdmins = totalDivision.length - activeDivisionAdmins;
-
   const stats = {
     totalCities: totalCity.length,
     totalDivisions: totalDivision.length,
@@ -151,7 +148,7 @@ function Dashboard() {
 
   if (loading) {
     return (
-      <Loader/>
+      <Loader />
     );
   }
 
@@ -163,21 +160,21 @@ function Dashboard() {
 
         <div className="flex items-center space-x-4">
           <button
-            onClick={handleAmbulance}
+            onClick={() => navigate('/ambulances')}
             className="flex items-center cursor-pointer gap-2 px-4 py-2 rounded-lg text-white bg-red-600 hover:bg-red-700"
           >
             <FaAmbulance /> Ambulance
           </button>
 
           <button
-            onClick={handlePharmacy}
+            onClick={() => navigate('/pharmacies')}
             className="flex items-center cursor-pointer gap-2 px-4 py-2 rounded-lg text-white bg-green-600 hover:bg-green-700"
           >
             <FaCapsules /> Pharmacy
           </button>
 
           <button
-            onClick={handleHospital}
+            onClick={() => navigate('/hospitals')}
             className="flex items-center cursor-pointer gap-2 px-4 py-2 rounded-lg text-white bg-blue-600 hover:bg-blue-700"
           >
             <FaHospital /> Hospital
@@ -509,20 +506,6 @@ function Dashboard() {
         </div>
       )}
 
-      {/* hospitalModal */}
-      {hospitalModal && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 backdrop-brightness-50">
-          <button
-            onClick={closeModals}
-            className="fixed top-0 right-0 z-50 flex items-center justify-center w-8 h-8 rounded-full bg-gray-200 text-gray-600 hover:bg-gray-300 hover:text-gray-800 transition"
-          >
-            ✕
-          </button>
-          <div className="p-2 w-full">
-            <Hospital />
-          </div>
-        </div>
-      )}
     </>
   );
 }

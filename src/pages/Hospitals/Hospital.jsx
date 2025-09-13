@@ -1,58 +1,61 @@
-import React, { useState, useMemo, useCallback } from "react";
-import { FaSearch, FaStar, FaMapMarkerAlt, FaPhone, FaSort, FaPlus, FaEdit, FaTrash, FaBed } from "react-icons/fa";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
+import { FaSearch, FaSort, FaPlus, FaEdit, FaTrash, FaAmbulance } from "react-icons/fa";
 import debounce from "lodash.debounce";
-import { hospitals as initialHospitals } from "./data.hospital";
-import AddHospital from "./AddHospital";
 import Pagination from "../Pagination";
+import axiosInstance from "../../auth/axiosInstance";
+import Loader from "../Loader";
+import NoDataPage from "../../NodataPage";
 
-export default function HospitalTable() {
-  const [hospitals, setHospitals] = useState(initialHospitals);
+export default function AmbulanceTable({ id }) {
+  const [ambulances, setAmbulances] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "ascending" });
-  const [locationFilter, setLocationFilter] = useState("All");
-  const [specialtyFilter, setSpecialtyFilter] = useState("All");
+  const [typeFilter, setTypeFilter] = useState("All");
+  const [availabilityFilter, setAvailabilityFilter] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [hospitalToEdit, setHospitalToEdit] = useState(null);
-  const [hospitalToDelete, setHospitalToDelete] = useState(null);
+  const [ambulanceToEdit, setAmbulanceToEdit] = useState(null);
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(false); // Fixed: Added setError
+  const [ambulanceToDelete, setAmbulanceToDelete] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  const locations = ["All", ...new Set(hospitals.map((hospital) => hospital.location))];
+  useEffect(() => {
+    fetchData()
+  }, [])
 
-  // Calculate hospital statistics
-  const hospitalStats = useMemo(() => {
-    const total = hospitals.length;
-    const active = hospitals.filter(hospital => hospital.status === "active").length;
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      // alert(id)
+      const response = await axiosInstance.get(`/api/field-executive/getAgentStatistics/${id}`);
+      setAmbulances(response.data.ambulances || []);
+      console.log(response.data.ambulances)
+    } catch (error) {
+      setError(true); // Fixed: Now setError is defined
+      console.error('Error fetching data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Extract all unique ambulance types
+  const ambulanceTypes = useMemo(() => {
+    return ["All", ...new Set(ambulances.map(ambulance => ambulance.type || "Unknown"))];
+  }, [ambulances]);
+
+  // Calculate ambulance statistics
+  const ambulanceStats = useMemo(() => {
+    const total = ambulances.length;
+    const active = ambulances.filter(ambulance => ambulance.enabled).length;
     const inactive = total - active;
-    
-    // Calculate bed statistics
-    let occupiedBeds = 0;
-    let totalBeds = 0;
-    
-    hospitals.forEach(hospital => {
-      if (hospital.beds) {
-        occupiedBeds += hospital.beds.occupied || 0;
-        totalBeds += hospital.beds.total || 0;
-      }
-    });
-    
-    const availableBeds = totalBeds - occupiedBeds;
-    
-    return { total, active, inactive, occupiedBeds, availableBeds, totalBeds };
-  }, [hospitals]);
+    const available = ambulances.filter(ambulance => ambulance.available).length;
+    const occupied = total - available;
 
-  // Extract all unique specialties from all hospitals
-  const allSpecialties = useMemo(() => {
-    const specialtiesSet = new Set();
-    hospitals.forEach(hospital => {
-      hospital.specialties.split(',').forEach(spec => {
-        specialtiesSet.add(spec.trim());
-      });
-    });
-    return ["All", ...Array.from(specialtiesSet).sort()];
-  }, [hospitals]);
+    return { total, active, inactive, available, occupied };
+  }, [ambulances]);
 
   const debouncedSetSearchTerm = useCallback(debounce((value) => setSearchTerm(value), 300), []);
 
@@ -64,36 +67,40 @@ export default function HospitalTable() {
     setSortConfig({ key, direction });
   };
 
-  const filteredHospitals = useMemo(() => {
-    return hospitals
-      .filter((hospital) => {
+  const filteredAmbulances = useMemo(() => {
+    return ambulances
+      .filter((ambulance) => {
         const matchesSearch =
-          hospital.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          hospital.specialties.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesLocation = locationFilter === "All" || hospital.location === locationFilter;
+          ambulance.ambulanceNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          ambulance.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          ambulance.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          ambulance.email?.toLowerCase().includes(searchTerm.toLowerCase());
 
-        // Check if hospital has the selected specialty
-        const matchesSpecialty = specialtyFilter === "All" ||
-          hospital.specialties.split(',').some(spec =>
-            spec.trim().toLowerCase() === specialtyFilter.toLowerCase()
-          );
+        const matchesType = typeFilter === "All" || ambulance.type === typeFilter;
+        const matchesAvailability = availabilityFilter === "All" ||
+          (availabilityFilter === "Available" && ambulance.available) ||
+          (availabilityFilter === "Occupied" && !ambulance.available);
 
-        return matchesSearch && matchesLocation && matchesSpecialty;
+        return matchesSearch && matchesType && matchesAvailability;
       })
       .sort((a, b) => {
         if (sortConfig.key) {
-          if (a[sortConfig.key] < b[sortConfig.key]) {
+          // Handle null/undefined values in sorting
+          const aValue = a[sortConfig.key] || "";
+          const bValue = b[sortConfig.key] || "";
+
+          if (aValue < bValue) {
             return sortConfig.direction === "ascending" ? -1 : 1;
           }
-          if (a[sortConfig.key] > b[sortConfig.key]) {
+          if (aValue > bValue) {
             return sortConfig.direction === "ascending" ? 1 : -1;
           }
         }
         return 0;
       });
-  }, [searchTerm, locationFilter, specialtyFilter, sortConfig, hospitals]);
+  }, [searchTerm, typeFilter, availabilityFilter, sortConfig, ambulances]);
 
-  const paginatedHospitals = filteredHospitals.slice(
+  const paginatedAmbulances = filteredAmbulances.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
@@ -105,65 +112,71 @@ export default function HospitalTable() {
     return <FaSort className="ml-1" />;
   };
 
-  const handleAddHospital = (newHospital) => {
-    const hospitalWithId = {
-      id: hospitals.length > 0 ? Math.max(...hospitals.map(h => h.id)) + 1 : 1,
-      ...newHospital
+  const handleAddAmbulance = (newAmbulance) => {
+    const ambulanceWithId = {
+      id: ambulances.length > 0 ? Math.max(...ambulances.map(a => a.id)) + 1 : 1,
+      ...newAmbulance
     };
-    setHospitals([...hospitals, hospitalWithId]);
+    setAmbulances([...ambulances, ambulanceWithId]);
     setShowAddModal(false);
   };
 
-  const handleEditHospital = (updatedHospital) => {
-    setHospitals(hospitals.map(hospital =>
-      hospital.id === updatedHospital.id ? updatedHospital : hospital
-    ));
-    setShowEditModal(false);
-    setHospitalToEdit(null);
-  };
+  
 
-  const handleDeleteHospital = () => {
-    if (hospitalToDelete) {
-      setHospitals(hospitals.filter(hospital => hospital.id !== hospitalToDelete.id));
+  const handleDeleteAmbulance = () => {
+    if (ambulanceToDelete) {
+      setAmbulances(ambulances.filter(ambulance => ambulance.id !== ambulanceToDelete.id));
       setShowDeleteConfirm(false);
-      setHospitalToDelete(null);
+      setAmbulanceToDelete(null);
     }
   };
 
-  const openEditModal = (hospital) => {
-    setHospitalToEdit(hospital);
+  const openEditModal = (ambulance) => {
+    setAmbulanceToEdit(ambulance);
     setShowEditModal(true);
   };
 
-  const openDeleteConfirm = (hospital) => {
-    setHospitalToDelete(hospital);
+  const openDeleteConfirm = (ambulance) => {
+    setAmbulanceToDelete(ambulance);
     setShowDeleteConfirm(true);
   };
 
+  if (loading) {
+    return (
+      <Loader />
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="text-xl text-red-500">Error loading ambulance data</div>
+      </div>
+    );
+  }
+
   return (
     <>
-      <div className="bg-gray-50 h-screen overflow-y-auto w-full p-4">
+      <div className="bg-gray-50 h-screen overflow-y-auto w-full p-8">
         <div className="bg-white rounded-xl p-6 mb-6 shadow-sm">
           {/* Stats Cards Section */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
-            {/* Total Hospitals Card */}
+            {/* Total Ambulances Card */}
             <div className="bg-white rounded-lg shadow p-4 border-l-4 border-blue-500">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
                   <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                    <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                    </svg>
+                    <FaAmbulance className="w-5 h-5 text-blue-500" />
                   </div>
                 </div>
                 <div className="ml-3">
-                  <h3 className="text-sm font-medium text-gray-500">Total Hospitals</h3>
-                  <p className="text-xl font-semibold text-gray-900">{hospitalStats.total}</p>
+                  <h3 className="text-sm font-medium text-gray-500">Total Ambulances</h3>
+                  <p className="text-xl font-semibold text-gray-900">{ambulanceStats.total}</p>
                 </div>
               </div>
             </div>
 
-            {/* Active Hospitals Card */}
+            {/* Active Ambulances Card */}
             <div className="bg-white rounded-lg shadow p-4 border-l-4 border-green-500">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
@@ -174,13 +187,13 @@ export default function HospitalTable() {
                   </div>
                 </div>
                 <div className="ml-3">
-                  <h3 className="text-sm font-medium text-gray-500">Active Hospitals</h3>
-                  <p className="text-xl font-semibold text-gray-900">{hospitalStats.active}</p>
+                  <h3 className="text-sm font-medium text-gray-500">Active Ambulances</h3>
+                  <p className="text-xl font-semibold text-gray-900">{ambulanceStats.active}</p>
                 </div>
               </div>
             </div>
 
-            {/* Inactive Hospitals Card */}
+            {/* Inactive Ambulances Card */}
             <div className="bg-white rounded-lg shadow p-4 border-l-4 border-red-500">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
@@ -191,39 +204,38 @@ export default function HospitalTable() {
                   </div>
                 </div>
                 <div className="ml-3">
-                  <h3 className="text-sm font-medium text-gray-500">Inactive Hospitals</h3>
-                  <p className="text-xl font-semibold text-gray-900">{hospitalStats.inactive}</p>
+                  <h3 className="text-sm font-medium text-gray-500">Inactive Ambulances</h3>
+                  <p className="text-xl font-semibold text-gray-900">{ambulanceStats.inactive}</p>
                 </div>
               </div>
             </div>
 
-            {/* Occupied Beds Card */}
-            <div className="bg-white rounded-lg shadow p-4 border-l-4 border-orange-500">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
-                    <FaBed className="w-5 h-5 text-orange-500" />
-                  </div>
-                </div>
-                <div className="ml-3">
-                  <h3 className="text-sm font-medium text-gray-500">Occupied Beds</h3>
-                  <p className="text-xl font-semibold text-gray-900">{hospitalStats.occupiedBeds}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Available Beds Card */}
+            {/* Available Ambulances Card */}
             <div className="bg-white rounded-lg shadow p-4 border-l-4 border-purple-500">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
                   <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
-                    <FaBed className="w-5 h-5 text-purple-500" />
+                    <FaAmbulance className="w-5 h-5 text-purple-500" />
                   </div>
                 </div>
                 <div className="ml-3">
-                  <h3 className="text-sm font-medium text-gray-500">Available Beds</h3>
-                  <p className="text-xl font-semibold text-gray-900">{hospitalStats.availableBeds}</p>
-                  <p className="text-xs text-gray-500">Total: {hospitalStats.totalBeds}</p>
+                  <h3 className="text-sm font-medium text-gray-500">Available Ambulances</h3>
+                  <p className="text-xl font-semibold text-gray-900">{ambulanceStats.available}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Occupied Ambulances Card */}
+            <div className="bg-white rounded-lg shadow p-4 border-l-4 border-orange-500">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
+                    <FaAmbulance className="w-5 h-5 text-orange-500" />
+                  </div>
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-gray-500">Occupied Ambulances</h3>
+                  <p className="text-xl font-semibold text-gray-900">{ambulanceStats.occupied}</p>
                 </div>
               </div>
             </div>
@@ -231,8 +243,8 @@ export default function HospitalTable() {
 
           <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
             <div>
-              <h2 className="text-2xl font-bold text-gray-800">Hospital Directory</h2>
-              <p className="text-gray-600 mt-1">Manage and search healthcare facilities</p>
+              <h2 className="text-2xl font-bold text-gray-800">Ambulance Management</h2>
+              <p className="text-gray-600 mt-1">Manage and search ambulance fleet</p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3 mt-4 md:mt-0">
               <div className="relative">
@@ -241,58 +253,48 @@ export default function HospitalTable() {
                 </div>
                 <input
                   type="text"
-                  placeholder="Search hospitals or specialties..."
+                  placeholder="Search ambulances..."
                   className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full md:w-64"
                   onChange={(e) => debouncedSetSearchTerm(e.target.value)}
-                  aria-label="Search hospitals by name or specialties"
+                  aria-label="Search ambulances by number, name, or email"
                 />
-              </div>
-              <button
-                onClick={() => setShowAddModal(true)}
-                className="flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200"
-              >
-                <FaPlus className="mr-2" />
-                Add Hospital
-              </button>
+              </div>              
             </div>
           </div>
-
           <div className="mb-4">
             <div className="flex flex-col md:flex-row gap-4">
               <div className="w-full md:w-1/2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Filter by Location</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Filter by Type</label>
                 <select
                   className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  value={locationFilter}
+                  value={typeFilter}
                   onChange={(e) => {
-                    setLocationFilter(e.target.value);
+                    setTypeFilter(e.target.value);
                     setCurrentPage(1);
                   }}
-                  aria-label="Filter hospitals by location"
+                  aria-label="Filter ambulances by type"
                 >
-                  {locations.map((location) => (
-                    <option key={location} value={location}>
-                      {location}
+                  {ambulanceTypes.map((type) => (
+                    <option key={type} value={type}>
+                      {type}
                     </option>
                   ))}
                 </select>
               </div>
               <div className="w-full md:w-1/2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Filter by Specialty</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Filter by Availability</label>
                 <select
                   className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  value={specialtyFilter}
+                  value={availabilityFilter}
                   onChange={(e) => {
-                    setSpecialtyFilter(e.target.value);
+                    setAvailabilityFilter(e.target.value);
                     setCurrentPage(1);
                   }}
-                  aria-label="Filter hospitals by specialty"
+                  aria-label="Filter ambulances by availability"
                 >
-                  {allSpecialties.map((specialty) => (
-                    <option key={specialty} value={specialty}>
-                      {specialty}
-                    </option>
-                  ))}
+                  <option value="All">All</option>
+                  <option value="Available">Available</option>
+                  <option value="Occupied">Occupied</option>
                 </select>
               </div>
             </div>
@@ -305,35 +307,41 @@ export default function HospitalTable() {
                   <tr>
                     <th
                       className="p-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                      onClick={() => handleSort("name")}
-                      aria-sort={sortConfig.key === "name" ? sortConfig.direction : "none"}
+                      onClick={() => handleSort("ambulanceNumber")}
+                      aria-sort={sortConfig.key === "ambulanceNumber" ? sortConfig.direction : "none"}
                     >
                       <div className="flex items-center">
-                        Hospital Name {getSortIcon("name")}
+                        Ambulance Number {getSortIcon("ambulanceNumber")}
                       </div>
                     </th>
                     <th
                       className="p-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                      onClick={() => handleSort("location")}
-                      aria-sort={sortConfig.key === "location" ? sortConfig.direction : "none"}
+                      onClick={() => handleSort("firstName")}
+                      aria-sort={sortConfig.key === "firstName" ? sortConfig.direction : "none"}
                     >
                       <div className="flex items-center">
-                        <FaMapMarkerAlt className="mr-1" /> Location {getSortIcon("location")}
+                        Driver Name {getSortIcon("firstName")}
                       </div>
                     </th>
                     <th className="p-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Specialties
-                    </th>
-                    <th className="p-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      <FaPhone className="inline mr-1" /> Contact
+                      Contact
                     </th>
                     <th
                       className="p-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                      onClick={() => handleSort("rating")}
-                      aria-sort={sortConfig.key === "rating" ? sortConfig.direction : "none"}
+                      onClick={() => handleSort("type")}
+                      aria-sort={sortConfig.key === "type" ? sortConfig.direction : "none"}
                     >
                       <div className="flex items-center">
-                        Rating {getSortIcon("rating")}
+                        Type {getSortIcon("type")}
+                      </div>
+                    </th>
+                    <th
+                      className="p-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                      onClick={() => handleSort("available")}
+                      aria-sort={sortConfig.key === "available" ? sortConfig.direction : "none"}
+                    >
+                      <div className="flex items-center">
+                        Status {getSortIcon("available")}
                       </div>
                     </th>
                     <th className="p-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -342,63 +350,49 @@ export default function HospitalTable() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {paginatedHospitals.map((hospital) => (
-                    <tr key={hospital.id} className="hover:bg-blue-50 transition-colors duration-150">
+                  {paginatedAmbulances.map((ambulance) => (
+                    <tr key={ambulance.id} className="hover:bg-blue-50 transition-colors duration-150">
                       <td className="p-4 font-medium text-gray-900">
                         <div className="flex items-center">
                           <div className="flex-shrink-0 h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
-                            <span className="text-blue-600 font-bold">{hospital.name.charAt(0)}</span>
+                            <FaAmbulance className="text-blue-600" />
                           </div>
-                          {hospital.name}
+                          {ambulance.ambulanceNumber || "N/A"}
                         </div>
                       </td>
                       <td className="p-4 text-gray-600">
-                        <div className="flex items-center">
-                          <FaMapMarkerAlt className="text-gray-400 mr-1" />
-                          {hospital.location}
-                        </div>
-                      </td>
-                      <td className="p-4 text-gray-600 text-sm">
-                        <div className="flex flex-wrap gap-1">
-                          {hospital.specialties.split(",").map((spec, index) => (
-                            <span key={index} className="bg-gray-100 px-2 py-1 rounded-md text-xs">
-                              {spec.trim()}
-                            </span>
-                          ))}
-                        </div>
+                        {ambulance.firstName} {ambulance.lastName}
                       </td>
                       <td className="p-4 text-blue-600 font-medium">
-                        {hospital.contact}
+                        <div>{ambulance.mobileNumber || "N/A"}</div>
+                        <div className="text-sm text-gray-500">{ambulance.email || "N/A"}</div>
+                      </td>
+                      <td className="p-4 text-gray-600">
+                        <span className="bg-gray-100 px-2 py-1 rounded-md text-xs capitalize">
+                          {ambulance.type || "Unknown"}
+                        </span>
                       </td>
                       <td className="p-4">
-                        <div className="flex items-center">
-                          <div className="flex text-yellow-400">
-                            {[...Array(5)].map((_, i) => (
-                              <FaStar
-                                key={i}
-                                className={i < Math.floor(hospital.rating || 0) ? "fill-current" : "text-gray-300"}
-                                aria-hidden="true"
-                              />
-                            ))}
-                          </div>
-                          <span className="ml-2 text-gray-600 font-medium">
-                            {(hospital.rating || 0).toFixed(1)}
-                          </span>
-                        </div>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${ambulance.available
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-red-100 text-red-800'
+                          }`}>
+                          {ambulance.available ? 'Available' : 'Occupied'}
+                        </span>
                       </td>
                       <td className="p-4">
                         <div className="flex space-x-2">
                           <button
                             className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors duration-150"
-                            onClick={() => openEditModal(hospital)}
-                            aria-label={`Edit ${hospital.name}`}
+                            onClick={() => openEditModal(ambulance)}
+                            aria-label={`Edit ${ambulance.ambulanceNumber}`}
                           >
                             <FaEdit />
                           </button>
                           <button
                             className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors duration-150"
-                            onClick={() => openDeleteConfirm(hospital)}
-                            aria-label={`Delete ${hospital.name}`}
+                            onClick={() => openDeleteConfirm(ambulance)}
+                            aria-label={`Delete ${ambulance.ambulanceNumber}`}
                           >
                             <FaTrash />
                           </button>
@@ -411,23 +405,15 @@ export default function HospitalTable() {
             </div>
           </div>
 
-          {filteredHospitals.length === 0 && (
-            <div className="text-center py-12 text-gray-500">
-              <div className="mb-4">
-                <svg className="inline-block h-16 w-16 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-medium text-gray-700 mb-1">No hospitals found</h3>
-              <p className="text-gray-500">Try adjusting your search or filter criteria</p>
-            </div>
+          {filteredAmbulances.length === 0 && (
+            <NoDataPage/>
           )}
 
-          {filteredHospitals.length > 0 && (
+          {filteredAmbulances.length > 0 && (
             <div className="px-6 py-4 bg-white border-t border-gray-200">
               <Pagination
                 currentPage={currentPage}
-                totalItems={filteredHospitals.length}
+                totalItems={filteredAmbulances.length}
                 itemsPerPage={itemsPerPage}
                 onPageChange={setCurrentPage}
                 onItemsPerPageChange={setItemsPerPage}
@@ -436,41 +422,11 @@ export default function HospitalTable() {
           )}
         </div>
 
-        {/* Add Hospital Modal */}
-        {showAddModal && (
-          <div className="fixed inset-0 backdrop-brightness-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-xl shadow-xl w-full max-w-5xl relative flex flex-col max-h-[90vh]">
-
-              {/* Fixed Header */}
-              <div className="p-4 border-b rounded-t-2xl border-gray-200 flex justify-between items-center sticky top-0 bg-white z-10">
-                <h3 className="text-xl font-semibold text-gray-800">Add New Hospital</h3>
-                <button
-                  onClick={() => setShowAddModal(false)}
-                  className="p-2 text-gray-500 hover:text-gray-700 rounded-full hover:bg-gray-100 transition-colors duration-150"
-                  aria-label="Close modal"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-
-              {/* Scrollable Content */}
-              <div className="overflow-y-auto p-6">
-                <AddHospital
-                  onSave={handleAddHospital}
-                  onCancel={() => setShowAddModal(false)}
-                />
-              </div>
-            </div>
-          </div>
-        )}
-
-
-        {/* Edit Hospital Modal - You'll need to implement this similar to AddHospital */}
+        {/* Add Ambulance Modal */}
+        
 
         {/* Delete Confirmation Modal */}
-        {showDeleteConfirm && hospitalToDelete && (
+        {showDeleteConfirm && ambulanceToDelete && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
             <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
               <div className="p-6 border-b border-gray-200">
@@ -478,7 +434,7 @@ export default function HospitalTable() {
               </div>
               <div className="p-6">
                 <p className="text-gray-700 mb-4">
-                  Are you sure you want to delete <span className="font-semibold">{hospitalToDelete.name}</span>? This action cannot be undone.
+                  Are you sure you want to delete ambulance <span className="font-semibold">{ambulanceToDelete.ambulanceNumber}</span>? This action cannot be undone.
                 </p>
                 <div className="flex justify-end space-x-3">
                   <button
@@ -488,7 +444,7 @@ export default function HospitalTable() {
                     Cancel
                   </button>
                   <button
-                    onClick={handleDeleteHospital}
+                    onClick={handleDeleteAmbulance}
                     className="px-4 py-2 bg-red-600 text-white rounded-md text-sm font-medium hover:bg-red-700"
                   >
                     Delete

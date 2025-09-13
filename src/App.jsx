@@ -17,6 +17,10 @@ import Sidebar from './components/Sidebar.jsx';
 import GetDistanceInfo from './pages/FieldExecutiveDistance/GetDistanceInfoExecutiveList.jsx';
 import FileManager from './components/FileManager.jsx';
 import Loader from './pages/Loader.jsx';
+import HospitalList from './pages/Hospitals/HospitalList.jsx'
+import AmbulanceList from './pages/Ambulance/AmbulanceLIst.jsx';
+import PharmacyList from './pages/Pharmacies/PharmacyList.jsx'
+
 
 function App() {
   const [collapsed, setCollapsed] = useState(false);
@@ -166,6 +170,30 @@ function App() {
               element={
                 <PrivateRoute>
                   <FileManager />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/hospitals"
+              element={
+                <PrivateRoute>
+                  <HospitalList />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/ambulances"
+              element={
+                <PrivateRoute>
+                  <AmbulanceList />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/pharmacies"
+              element={
+                <PrivateRoute>
+                  <PharmacyList />
                 </PrivateRoute>
               }
             />

@@ -71,7 +71,8 @@ function Login() {
         try {
             const response = await axiosInstance.post("/auth/generateOtp", {
                 email: username,   // e.g. "ravi@curo24.com"
-                password: password // e.g. "123456"
+                password: password ,// e.g. "123456"
+                requstedFrom:"WEB"
             }, {
                 headers: {
                     "accept": "*/*",
@@ -101,7 +102,8 @@ function Login() {
             const response = await axiosInstance.post('/auth/signin', {
                 email: username,
                 password: password,
-                logInOtp: otpString
+                logInOtp: otpString,
+
             });
 
             console.log("Login successful:", response.data);
