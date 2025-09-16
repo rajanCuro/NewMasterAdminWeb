@@ -80,47 +80,17 @@ const GetDistanceInfo = () => {
         }));
     };
 
-    const handleViewExecutiveInfoModal = async (agent) => {
-        try {
-            const result = await Swal.fire({
-                title: 'Select a Date',
-                input: 'text',
-                inputLabel: 'Choose a date',
-                inputPlaceholder: 'YYYY-MM-DD',
-                inputValue: new Date().toISOString().split('T')[0], // default: today
-                showCancelButton: true,
-                inputAttributes: {
-                    type: 'date',
-                    min: '2020-01-01',
-                    max: '2030-12-31',
-                },
-                confirmButtonText: 'Confirm',
-            });
+    const handleViewExecutiveInfoModal = (agent) => {
 
-            // ✅ Only continue if user confirms
-            if (!result.isConfirmed) {
-                console.log('User cancelled date selection');
-                return; // Exit early
-            }
+        console.log("Selected Agent:", agent);
+    setChooseDate(new Date().toISOString().split('T')[0]) // Format: YYYY-MM-DD
+    setFieldExecutiveInfoModal(true);
+    setViewData({
+        ...agent,
+        selectedDate: chooseDate,
+    });
+};
 
-            // ✅ Use selected date or today's date if none provided
-            const selectedDate = result.value?.trim()
-                ? result.value
-                : new Date().toISOString().split('T')[0];
-
-            console.log('Selected Date:', selectedDate);
-
-            // ✅ Open modal and pass data
-            setFieldExecutiveInfoModal(true);
-            setViewData({
-                ...agent,
-                selectedDate,
-            });
-
-        } catch (error) {
-            console.error('Date picker error:', error);
-        }
-    };
 
 
 
@@ -332,7 +302,7 @@ const GetDistanceInfo = () => {
                                     &times;
                                 </button>
                             </div>
-                            <div>
+                            <div>   
                                 <DistanceInfo data={viewData} date={chooseDate} />
                             </div>
                         </div>
