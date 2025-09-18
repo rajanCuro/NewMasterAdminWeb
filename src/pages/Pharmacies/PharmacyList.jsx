@@ -3,13 +3,16 @@ import { RiSearchLine, RiFilter3Line } from "react-icons/ri";
 import { FiEdit } from "react-icons/fi";
 import { FaCamera, FaEye, FaPhone, FaUser } from "react-icons/fa";
 import { MdOutlineMailOutline, MdTrackChanges, MdMoreVert } from "react-icons/md";
-import { IoIosCopy, IoIosClose } from "react-icons/io";
+import { IoIosCopy, IoIosClose, IoIosArrowRoundBack, IoMdArrowRoundBack } from "react-icons/io";
 import axiosInstance from "../../auth/axiosInstance";
 import { useAuth } from "../../auth/AuthContext";
 import Swal from "sweetalert2";
 import Loader from "../Loader";
 import Pagination from "../Pagination";
 import Pharmacy from "./Pharmacy";
+import { useNavigate } from "react-router-dom";
+import { AiOutlineArrowLeft } from "react-icons/ai";
+
 const FeildExecutiveList = () => {
     const { uploadImage, role } = useAuth();
     const [agents, setAgents] = useState([]);
@@ -20,13 +23,17 @@ const FeildExecutiveList = () => {
     const [error, setError] = useState(null);
     const [showFilters, setShowFilters] = useState(false);
     const [actionMenu, setActionMenu] = useState(null);
-    const [pharmacyModal, setPharmacyModal] = useState(false)
+    const [doctorModal, setDoctorModal] = useState(false)
+    const [totalItems, setTotalItems] = useState(0);
+    const [totalPages, setTotalPages] = useState(0);
 
     const [filters, setFilters] = useState({
         searchTerm: "",
         statusFilter: "all",
         sortBy: "newest"
     });
+
+    const navigate = useNavigate();
 
     const getAllFieldExecutives = async () => {
         try {
@@ -39,6 +46,8 @@ const FeildExecutiveList = () => {
             if (response.data && Array.isArray(response.data.dtoList)) {
                 setAgents(response.data.dtoList);
                 setFilteredAgents(response.data.dtoList);
+                setTotalItems(response.data.totalItems);
+                setTotalPages(response.data.totalPages);
             } else {
                 setError("No agents found in the response.");
             }
@@ -89,7 +98,6 @@ const FeildExecutiveList = () => {
         }
 
         setFilteredAgents(result);
-        setCurrentPage(1);
     }, [filters, agents]);
 
     // Handle filter changes
@@ -102,12 +110,6 @@ const FeildExecutiveList = () => {
     };
 
 
-    const totalItems = filteredAgents.length;
-    const totalPages = Math.ceil(totalItems / itemsPerPage);
-
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentAgents = filteredAgents.slice(indexOfFirstItem, indexOfLastItem);
 
     const formatAgentName = (agent) => {
         return `${agent.firstName || ""} ${agent.lastName || ""}`.trim() || "Unknown Agent";
@@ -256,14 +258,16 @@ const FeildExecutiveList = () => {
     }, []);
 
     const [ids, setIds] = useState(null)
-    const handleViewHospital = (id) => {
-        setIds(id)
-        setPharmacyModal(true)
+    const [viewHospitalData, setViewHospitalData] = useState(null)
+    const handleViewHospital = (agent) => {
+        setIds(agent.id)
+        setViewHospitalData(agent)
+        setDoctorModal(true)
     }
 
     const closeModal = () => {
         setIds(null)
-        setPharmacyModal(false)
+        setDoctorModal(false)
     }
 
     return (
@@ -271,9 +275,16 @@ const FeildExecutiveList = () => {
             {/* Header */}
             <div className="bg-white px-6 py-5 border-b border-gray-200">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-                    <div>
-                        <h1 className="text-2xl font-semibold text-gray-800">Field Executives</h1>
-                        <p className="text-gray-500 mt-1">Manage your team of field executives</p>
+                    <div className="flex items-center gap-4 mb-4">
+
+                        {/* Heading Content */}
+                        <div>
+                            <div className="flex justify-start items-center gap-2">
+                                <IoMdArrowRoundBack onClick={() => navigate('/dashboard')} className="cursor-pointer" size={26} />
+                                <h1 className="text-2xl font-semibold text-gray-800">Field Executives</h1>
+                            </div>
+                            <p className="text-gray-500 mt-1">Manage your team of field executives</p>
+                        </div>
                     </div>
 
                     {role !== "ROLE_ADMIN" && role !== "ROLE_ZONE_ADMIN" && (
@@ -361,40 +372,7 @@ const FeildExecutiveList = () => {
                 )}
             </div>
 
-            {/* Stats Bar */}
-            <div className="px-6 py-4 bg-white border-b border-gray-200">
-                <div className="flex flex-wrap gap-6">
-                    <div className="flex items-center">
-                        <div className="bg-blue-100 p-2 rounded-lg">
-                            <FaUser className="text-blue-600" />
-                        </div>
-                        <div className="ml-3">
-                            <p className="text-sm text-gray-500">Total Executives</p>
-                            <p className="text-lg font-semibold">{agents.length}</p>
-                        </div>
-                    </div>
 
-                    <div className="flex items-center">
-                        <div className="bg-green-100 p-2 rounded-lg">
-                            <FaUser className="text-green-600" />
-                        </div>
-                        <div className="ml-3">
-                            <p className="text-sm text-gray-500">Active</p>
-                            <p className="text-lg font-semibold">{agents.filter(a => a.accountNonLocked).length}</p>
-                        </div>
-                    </div>
-
-                    <div className="flex items-center">
-                        <div className="bg-red-100 p-2 rounded-lg">
-                            <FaUser className="text-red-600" />
-                        </div>
-                        <div className="ml-3">
-                            <p className="text-sm text-gray-500">Inactive</p>
-                            <p className="text-lg font semibold">{agents.filter(a => !a.accountNonLocked).length}</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
             {/* Agents Table Container with Scroll */}
             <div className="flex-1 px-6 py-4 overflow-hidden">
@@ -439,9 +417,9 @@ const FeildExecutiveList = () => {
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
-                                    {currentAgents.map((agent) => (
+                                    {filteredAgents.map((agent) => (
                                         <tr
-                                            onClick={() => handleViewHospital(agent.id)}
+                                            onClick={() => handleViewHospital(agent)}
                                             key={agent.id}
                                             className="hover:bg-gray-50 transition-colors cursor-pointer"
                                         >
@@ -596,7 +574,7 @@ const FeildExecutiveList = () => {
                     </div>
 
                     {/* Pagination */}
-                    {filteredAgents.length > 0 && (
+                    {totalItems > 0 && (
                         <div className="px-6 py-4 bg-white border-t border-gray-200">
                             <Pagination
                                 currentPage={currentPage}
@@ -610,13 +588,16 @@ const FeildExecutiveList = () => {
                     )}
                 </div>
             </div>
-            {pharmacyModal && (
+            {doctorModal && (
                 <div className="fixed inset-0 flex items-center justify-center z-50 backdrop-brightness-50">
                     <div className="p-2 w-[70%] max-h-[90vh] overflow-hidden bg-white rounded shadow relative">
 
                         {/* Header: Sticky at top */}
                         <div className="sticky top-0 z-10 bg-white flex items-center justify-between p-4 border-b">
-                            <h1 className="text-lg font-semibold">Pharmacies</h1>
+                            <div className="flex flex-col">
+                                <h1 className="text-lg font-semibold">Pharmacy</h1>
+                                <p className="text-gray-500 text-sm mt-1">Ambulances managed by this <span className=" font-semibold underline">{viewHospitalData.firstName} {viewHospitalData.lastName}</span>, Email <span className=" font-semibold underline text-blue-700">{viewHospitalData.email}</span></p>
+                            </div>
                             <button
                                 onClick={closeModal}
                                 className="bg-red-500 w-8 h-8 flex items-center justify-center rounded-full text-white hover:bg-gray-300 hover:text-gray-800 transition"
@@ -631,9 +612,8 @@ const FeildExecutiveList = () => {
                         </div>
                     </div>
                 </div>
+
             )}
-
-
         </div>
     );
 };

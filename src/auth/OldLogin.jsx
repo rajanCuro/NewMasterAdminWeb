@@ -1,13 +1,13 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import leaf from '../assets/doc.png';
 import axiosInstance from './axiosInstance';
 import { useAuth } from './AuthContext';
-import { AiOutlineArrowLeft } from 'react-icons/ai';
 
 function Login() {
-    const { setToken, setUser, setRole, forgetPassword, setForgetPassword } = useAuth()
+    const { setToken, setUser, setRole } = useAuth()
     const [otp, setOtp] = useState(Array(6).fill(""));
     const [showPassword, setShowPassword] = useState(false);
     const [username, setUsername] = useState();
@@ -72,8 +72,8 @@ function Login() {
         try {
             const response = await axiosInstance.post("/auth/generateOtp", {
                 email: username,   // e.g. "ravi@curo24.com"
-                password: password,// e.g. "123456"
-                requestFrom: "adminWeb"
+                password: password ,// e.g. "123456"
+                requestFrom:"adminWeb"
             }, {
                 headers: {
                     "accept": "*/*",
@@ -145,18 +145,89 @@ function Login() {
     const handleResendOtp = () => {
         handleGenerateOtp();
     };
-    const handleBackLogin = () => {
-        setShowOtpSection(false)
-    }
 
     return (
-        <div className=" flex justify-center items-center   h-full w-full">
-            <div className="w-full  flex items-center justify-center ">
-                <form onSubmit={handleSubmit} className="w-full max-w-md p-6 shadow-md     ">
-                    {showOtpSection && <div onClick={handleBackLogin} className="flex items-center text-[#0cc0df] cursor-pointer hover:underline">
-                        <AiOutlineArrowLeft className="mr-2" size={20} />
-                        Back to Login
-                    </div>}
+        <div className="min-h-screen flex flex-col md:flex-row body">
+            {/* Left Side - Animation/Illustration */}
+            <div className="w-full md:w-1/2 bg-gradient-to-br from-blue-600 to-blue-400 flex items-center justify-center p-8">
+                <div className="text-white text-center max-w-md">
+                    <h1 className="text-4xl font-bold mb-4">Welcome to Curo24</h1>
+                    <p className="text-xl mb-8">Your 24/7 digital healthcare companion</p>
+                    {/* SVG kept as in original */}
+                    <div className="relative h-64">
+                        <div className="relative h-64">
+                            <svg className="w-full h-full" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M100,300 L150,250 L200,300 L250,250 L300,300 L350,250 L400,300"
+                                    fill="none"
+                                    stroke="rgba(255,255,255,0.3)"
+                                    strokeWidth="3"
+                                >
+                                    <animate
+                                        attributeName="stroke-dashoffset"
+                                        values="0;100;0"
+                                        dur="4s"
+                                        repeatCount="indefinite"
+                                    />
+                                </path>
+
+                                <rect
+                                    x="225" y="175"
+                                    width="50" height="150"
+                                    rx="3"
+                                    fill="rgba(255,255,255,0.15)"
+                                    stroke="white"
+                                    strokeWidth="2"
+                                >
+                                    <animateTransform
+                                        attributeName="transform"
+                                        type="translate"
+                                        values="0 0; 0 -5; 0 0"
+                                        dur="3s"
+                                        repeatCount="indefinite"
+                                    />
+                                </rect>
+                                <rect
+                                    x="175" y="225"
+                                    width="150" height="50"
+                                    rx="3"
+                                    fill="rgba(255,255,255,0.15)"
+                                    stroke="white"
+                                    strokeWidth="2"
+                                />
+
+                                <g transform="rotate(0 250 250)">
+                                    <circle cx="380" cy="250" r="15" fill="white" opacity="0.7">
+                                        <animateMotion
+                                            path="M0,0a130,130 0 1,1 0,1z"
+                                            dur="8s"
+                                            repeatCount="indefinite"
+                                        />
+                                    </circle>
+                                    <text x="380" y="250" textAnchor="middle" fontSize="20" fill="white">❤️</text>
+                                </g>
+                            </svg>
+                        </div>
+                    </div>
+                    <p className="text-sm opacity-80 mt-8">
+                        HIPAA-compliant platform connecting you to healthcare professionals 24/7
+                    </p>
+                    <p className="text-xs opacity-60 mt-2">
+                        Secure patient portal | Instant telehealth | AI symptom checker
+                    </p>
+                </div>
+            </div>
+
+            {/* Right Side - Login Form */}
+            <div className="w-full md:w-1/2 flex items-center justify-center p-8 relative">
+                <div className='absolute -top-5 -left-4 -md:top-5 md:left-10 z-100'>
+                    <img
+                        src={leaf}
+                        alt=""
+                        className="h-58 w-40 rotate-45 opacity-70 "
+                    />
+                </div>
+                <form onSubmit={handleSubmit} className="w-full max-w-md border px-14 py-8 border-gray-200 shadow rounded-xl ">
                     <h2 className="text-2xl font-bold text-gray-800 mb-6">Sign in securely</h2>
 
                     {error && (
@@ -205,15 +276,12 @@ function Login() {
                                 {showPassword ? <FaEyeSlash /> : <FaEye />}
                             </button>
                         </div>
-                        {!showOtpSection && <div>
-                            <div onClick={() => setForgetPassword(true)} className='text-[#0cc0df] cursor-pointer'>Forget Password ?</div>
-                        </div>}
 
                         {/* OTP Section */}
                         {showOtpSection && (
                             <div className="otp-section space-y-4">
                                 <p className="text-sm text-gray-600">Enter the 6-digit OTP sent to your email</p>
-                                <div className="flex justify-between space-x-1">
+                                <div className="flex justify-between space-x-2">
                                     {otp.map((digit, index) => (
                                         <input
                                             key={index}
@@ -232,7 +300,7 @@ function Login() {
                                 <button
                                     type="button"
                                     onClick={handleResendOtp}
-                                    className="text-sm text-[#0cc0df] hover:text-[#0cc0df]"
+                                    className="text-sm text-blue-600 hover:text-blue-800"
                                     disabled={isLoading}
                                 >
                                     Resend OTP

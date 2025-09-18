@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { GoogleMap, Marker, useJsApiLoader } from "@react-google-maps/api";
 import AddAddress from "./AddAddress"; // Make sure this path is correct
 import { useAuth } from "../../auth/AuthContext";
+import Loader from "../Loader";
 
 export default function MyLocationMap({ mapE }) {
   // alert(mapE)
@@ -28,7 +29,7 @@ export default function MyLocationMap({ mapE }) {
   };
 
   if (loadError) return <p>❌ Map cannot be loaded: {loadError.message}</p>;
-  if (!isLoaded) return <p>Loading map...</p>;
+  if (!isLoaded) return <Loader/>;
 
   return (
     <div className="relative p-2">

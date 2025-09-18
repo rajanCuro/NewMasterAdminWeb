@@ -15,9 +15,11 @@ export const AuthProvider = ({ children }) => {
   const [submittedData, setSubmittedData] = useState(null)
   const [latitude, setLatitude] = useState({
     lat: ``,
-    lng:``,
+    lng: ``,
   });
   const [longitude, setLongitude] = useState(null);
+  const [forgetPassword, setForgetPassword] = useState(false)
+  const [passwordSuccess, setPasswordSuccess] = useState(false)
 
 
 
@@ -69,7 +71,7 @@ export const AuthProvider = ({ children }) => {
     getALLState();
   }, []);
 
-  const getALLState = async () => {  
+  const getALLState = async () => {
     try {
       const response = await axiosInstance.get("/area/getAllStates");
       setStateList(response.data.stateList);
@@ -98,6 +100,8 @@ export const AuthProvider = ({ children }) => {
         longitude, setLongitude,
         latitude, setLatitude,
         submittedData, setSubmittedData,
+        forgetPassword, setForgetPassword,
+        passwordSuccess, setPasswordSuccess
       }}
     >
       {children}
