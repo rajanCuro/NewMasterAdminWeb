@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import Login from './auth/Login';
+import Login from './auth/LoginWrap.jsx';
 import Zonal from './pages/Division/DivisionList.jsx';
 import CityOfficerList from './pages/CityOfficer/CityOfficerList.jsx';
 import DashBoard from './pages/dashboard/DashBoard';
@@ -31,18 +31,18 @@ function App() {
   const toggleSidebar = () => setCollapsed(!collapsed);
 
   // ⚠️ Confirm before closing or refreshing the browser tab
-  useEffect(() => {
-    const handleBeforeUnload = (e) => {
-      e.preventDefault();
-      e.returnValue = ''; // Required for some browsers (like Chrome)
-    };
+  // useEffect(() => {
+  //   const handleBeforeUnload = (e) => {
+  //     e.preventDefault();
+  //     e.returnValue = ''; // Required for some browsers (like Chrome)
+  //   };
 
-    window.addEventListener('beforeunload', handleBeforeUnload);
+  //   window.addEventListener('beforeunload', handleBeforeUnload);
 
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
-  }, []);
+  //   return () => {
+  //     window.removeEventListener('beforeunload', handleBeforeUnload);
+  //   };
+  // }, []);
 
   if (loading) {
     return <Loader />

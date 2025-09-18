@@ -8,6 +8,7 @@ import { useAuth } from '../../auth/AuthContext';
 import { FaCamera } from "react-icons/fa";
 import Swal from 'sweetalert2';
 import Loader from '../Loader';
+import NoDataPage from '../../NodataPage';
 
 function DivisionList() {
   const { getALLState, uploadImage } = useAuth();
@@ -81,7 +82,7 @@ function DivisionList() {
       }
     } catch (error) {
       console.log("Error getting all divisions:", error);
-      Swal.fire("Error", "Failed to load division admins", "error");
+      // Swal.fire("Error", "Failed to load division admins", "error");
     } finally {
       setIsLoading(false);
     }
@@ -306,13 +307,7 @@ function DivisionList() {
                 ) : filteredZonalHeads.length === 0 ? (
                   <tr>
                     <td colSpan="7" className="px-6 py-8 text-center">
-                      <div className="flex flex-col items-center justify-center text-gray-500">
-                        <svg className="w-16 h-16 mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                        <p className="text-lg font-medium">No division admins found</p>
-                        <p className="text-sm mt-1">Try adjusting your search or filter criteria</p>
-                      </div>
+                      <NoDataPage name={"Division List"}/>
                     </td>
                   </tr>
                 ) : (
@@ -382,8 +377,8 @@ function DivisionList() {
                       </td>
 
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{zonal.division?.zoneName || "N/A"}</div>
-                        <div className="text-xs text-gray-500">ID: {zonal.division?.id || "N/A"}</div>
+                        <div className="text-sm font-medium text-gray-900">{zonal. list?.zoneName || "N/A"}</div>
+                        <div className="text-xs text-gray-500">ID: {zonal. list?.id || "N/A"}</div>
                       </td>
                       <td onClick={() => handleStatusChange(zonal.id)} className="px-6 py-4 whitespace-nowrap cursor-pointer">
                         <span

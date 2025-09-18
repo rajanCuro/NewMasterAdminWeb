@@ -7,16 +7,30 @@ import NoDataPage from '../../NodataPage';
 
 function AllCities() {
   const [citiesList, setCitiesList] = useState([]);
+  const [filteredCities, setFilteredCities] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10); // Reduced for better pagination demo
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [totalItems, setTotalItems] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [openModal, setOpenModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     getAllCitiesList();
   }, [currentPage, itemsPerPage]);
+
+  useEffect(() => {
+    // Filter cities based on search query
+    if (searchQuery.trim() === '') {
+      setFilteredCities(citiesList);
+    } else {
+      const filtered = citiesList.filter(city => 
+        city.cityName.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setFilteredCities(filtered);
+    }
+  }, [searchQuery, citiesList]);
 
   const getAllCitiesList = async () => {
     try {
@@ -27,14 +41,25 @@ function AllCities() {
       console.log("city", response);
       const { cityList, totalItems, totalPages } = response.data;
       setCitiesList(cityList || []);
+      setFilteredCities(cityList || []); // Initialize filtered list with all cities
       setTotalItems(totalItems || 0);
       setTotalPages(totalPages || 0);
     } catch (error) {
       console.log('Error fetching cities list:', error);
       setCitiesList([]);
+      setFilteredCities([]);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleSearch = (e) => {
+    setSearchQuery(e.target.value);
+    setCurrentPage(1); // Reset to first page when searching
+  };
+
+  const clearSearch = () => {
+    setSearchQuery('');
   };
 
   return (
@@ -50,11 +75,46 @@ function AllCities() {
           </div>
         </div>
 
+        {/* Search Bar */}
+        <div className="mb-4 flex items-center">
+          <div className="relative flex-grow max-w-md">
+            <input
+              type="text"
+              placeholder="Search by city name..."
+              value={searchQuery}
+              onChange={handleSearch}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+            />
+            {searchQuery && (
+              <button
+                onClick={clearSearch}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+        </div>
+
         <div className="bg-white rounded-lg shadow flex flex-col flex-grow overflow-hidden">
           {isLoading ? (
             <Loader />
-          ) : citiesList.length === 0 ? (
-            <NoDataPage />
+          ) : filteredCities.length === 0 ? (
+            <div className="flex flex-col items-center justify-center p-8">
+              {searchQuery ? (
+                <div className="text-center">
+                  <p className="text-gray-500 text-lg">No cities found matching "{searchQuery}"</p>
+                  <button 
+                    onClick={clearSearch}
+                    className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+                  >
+                    Clear Search
+                  </button>
+                </div>
+              ) : (
+                <NoDataPage />
+              )}
+            </div>
           ) : (
             <div className="flex flex-col flex-grow overflow-hidden">
               {/* Table container with fixed header and scrollable body */}
@@ -71,7 +131,7 @@ function AllCities() {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {citiesList.map((city, index) => (
+                    {filteredCities.map((city, index) => (
                       <tr key={city.id} className="hover:bg-gray-50 transition-colors duration-150">
                         <td className="px-6 py-4 whitespace-nowrap">{(currentPage - 1) * itemsPerPage + index + 1}</td>
                         <td className="px-6 py-4 text-blue-600 whitespace-nowrap">{city.cityName}</td>
@@ -89,8 +149,8 @@ function AllCities() {
               <div className="sticky bottom-0 bg-white border-t border-gray-200 px-4 py-3 mt-auto">
                 <Pagination
                   currentPage={currentPage}
-                  totalItems={totalItems}
-                  totalPages={totalPages}
+                  totalItems={searchQuery ? filteredCities.length : totalItems}
+                  totalPages={searchQuery ? Math.ceil(filteredCities.length / itemsPerPage) : totalPages}
                   itemsPerPage={itemsPerPage}
                   onPageChange={setCurrentPage}
                   onItemsPerPageChange={setItemsPerPage}

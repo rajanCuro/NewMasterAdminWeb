@@ -31,6 +31,12 @@ const FeildExecutiveList = () => {
   const [actionMenu, setActionMenu] = useState(null);
   const [totalItems, setTotalItems] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
+  const [image, setImage] = useState(null)
+  const [inputId, setInputId] = useState(null)
+
+  // console.log("image",image)
+
+
 
   const [filters, setFilters] = useState({
     searchTerm: "",
@@ -180,9 +186,12 @@ const FeildExecutiveList = () => {
     return `${agent.firstName || ""} ${agent.lastName || ""}`.trim() || "Unknown Agent";
   };
 
-  const updateProfilePic = async (id, imageUrl) => {
+
+
+  const updateProfilePic = async () => {
+    console.log(image, inputId)
     try {
-      await axiosInstance.put(`/auth/updateProfilePic?url=${imageUrl}&id=${id}`);
+      await axiosInstance.put(`/auth/updateProfilePic?url=${image}&id=${inputId}`);
       Swal.fire({
         icon: "success",
         title: "Success",
@@ -190,10 +199,17 @@ const FeildExecutiveList = () => {
       });
       getAllFieldExecutives();
     } catch (error) {
+      setImage(null)
+      setInputId(null)
       console.error("Error updating profile picture:", error);
       Swal.fire("Error", "Failed to update profile picture.", "error");
     }
   };
+
+
+  if (image) {
+    updateProfilePic()
+  }
 
   const handleStatusChange = async (id) => {
     try {
@@ -435,7 +451,7 @@ const FeildExecutiveList = () => {
             ) : error ? (
               <div className="p-8 text-center">
                 <p className="text-red-500">{error}</p>
-                <button 
+                <button
                   onClick={getAllFieldExecutives}
                   className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                 >
@@ -446,7 +462,7 @@ const FeildExecutiveList = () => {
               <div className="p-8 text-center">
                 <p className="text-gray-500">No field executives found.</p>
                 {role !== "ROLE_ADMIN" && role !== "ROLE_ZONE_ADMIN" && (
-                  <button 
+                  <button
                     onClick={handleAddAgent}
                     className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                   >
@@ -497,32 +513,30 @@ const FeildExecutiveList = () => {
                               </div>
                             )}
                             <div
-                              className="absolute inset-0 bg-black/40 rounded-full opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity cursor-pointer"
+                              className="absolute -bottom-2 -right-2 bg-black/60 rounded-full p-1 cursor-pointer"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 document.getElementById(`fileInput-${agent.id}`).click();
+                                setViewAgentModal(false)
                               }}
                             >
                               <FaCamera size={12} className="text-white" />
                             </div>
+
                             <input
                               id={`fileInput-${agent.id}`}
                               type="file"
                               accept="image/*"
                               className="hidden"
-                              onChange={async (e) => {
-                                const file = e.target.files[0];
-                                if (!file) return;
-                                try {
-                                  const result = await uploadImage(file);
-                                  const imageUrl = result.imageUrl || result.url;
-                                  await updateProfilePic(agent.id, imageUrl);
-                                } catch (err) {
-                                  console.error("Error updating profile image:", err);
-                                  Swal.fire("Error", "Failed to update profile picture.", "error");
-                                }
+                              onChange={(e) => {
+                                const selectedFile = e.target.files[0];
+                                const inputId = e.target.id;
+
+                                setImage(selectedFile);      // Set the selected file
+                                setInputId(inputId);         // Store the ID (you need a state for this)
                               }}
                             />
+
                           </div>
                           <div className="ml-4">
                             <div className="text-sm font-medium text-gray-900">

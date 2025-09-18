@@ -158,7 +158,7 @@ function Pincode() {
                     <Loader />
                 ) : error ? (
                     <div className="flex justify-center items-center py-16 flex-grow">
-                        <NoDataPage />
+                        <NoDataPage name={"Pincode"} />
                     </div>
                 ) : (
                     <>
