@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Bar, Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js';
-import { FaAmbulance, FaCapsules, FaHospital, FaUserMd, FaEye, FaTimes } from 'react-icons/fa';
+import { FaAmbulance, FaCapsules, FaHospital, FaUserMd, FaEye, FaTimes, FaComment } from 'react-icons/fa';
 import AddDoctor from '../Doctor/AddDoctor';
 import AddAmbulance from '../Ambulance/AddAmbulance';
 import AddPharmacy from '../Pharmacies/AddPharmacy';
@@ -185,6 +185,12 @@ function Dashboard() {
             className="flex items-center cursor-pointer gap-2 px-4 py-2 rounded-lg text-white bg-purple-600 hover:bg-purple-700"
           >
             <FaUserMd /> Doctor
+          </button>
+          <button
+            onClick={()=>navigate('/feedback')}
+            className="flex items-center cursor-pointer gap-2 px-4 py-2 rounded-lg text-white bg-indigo-600 hover:bg-indigo-700"
+          >
+            <FaComment /> FeedBack
           </button>
         </div>
       </div>

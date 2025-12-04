@@ -22,6 +22,7 @@ import AmbulanceList from './pages/Ambulance/AmbulanceLIst.jsx';
 import PharmacyList from './pages/Pharmacies/PharmacyList.jsx'
 import DoctorList from './pages/Doctor/DoctorList.jsx';
 import Lablist from './pages/Lab/LabList.jsx'
+import FeedBack from './components/FeedBack.jsx';
 
 
 function App() {
@@ -215,6 +216,7 @@ function App() {
                 </PrivateRoute>
               }
             />
+            <Route path='/feedback' element={<FeedBack />} />
           </Routes>
         </main>
       </div>
