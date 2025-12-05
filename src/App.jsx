@@ -1,3 +1,4 @@
+// src/App.jsx
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './auth/LoginWrap.jsx';
@@ -13,7 +14,7 @@ import City from './pages/CreatCity/AllCity.jsx';
 import Division from './pages/CreatDivision/AllDivision.jsx';
 import PrivateRoute from './auth/PrivateRoute';
 import NewRegistration from './components/CuroUsers.jsx';
-import Sidebar from './components/Sidebar.jsx';
+import Sidebar from './components/sidebar.jsx'
 import GetDistanceInfo from './pages/FieldExecutiveDistance/GetDistanceInfoExecutiveList.jsx';
 import FileManager from './components/FileManager.jsx';
 import Loader from './pages/Loader.jsx';
